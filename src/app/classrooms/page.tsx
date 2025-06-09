@@ -1,4 +1,7 @@
 
+'use client'; // This needs to be at the top for the DeleteClassroomButton
+
+import * as React from 'react'; // Added React import
 import Link from 'next/link';
 import { PlusCircle, School, Edit, Trash2 } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
@@ -11,7 +14,7 @@ import { DeleteConfirmationDialog } from '@/components/shared/DeleteConfirmation
 import { toast } from '@/hooks/use-toast';
 
 function DeleteClassroomButton({ classroomId, className }: { classroomId: string, className?: string }) {
-  'use client';
+  // 'use client' directive is already at the top of the file, which covers this component.
   const [isPending, setIsPending] = React.useState(false);
 
   const handleDelete = async () => {
@@ -117,3 +120,4 @@ export default async function ClassroomsPage() {
     </>
   );
 }
+

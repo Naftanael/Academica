@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "mbpld7sn-p7dm6f7",
+    "name": "Sala 01",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  }
+]
