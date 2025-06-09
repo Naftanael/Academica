@@ -22,7 +22,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button'; // Import Button
+import { Button } from '@/components/ui/button'; 
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -56,7 +56,7 @@ export default function SidebarNav() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href}>
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
