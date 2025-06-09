@@ -4,21 +4,22 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { CLASS_GROUP_SHIFTS, CLASS_GROUP_STATUSES } from '@/lib/constants';
+import { CLASS_GROUP_SHIFTS, CLASS_GROUP_STATUSES, DAYS_OF_WEEK } from '@/lib/constants';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassGroup, ClassGroupShift, ClassGroupStatus } from '@/types';
+import type { ClassGroup, ClassGroupShift, ClassGroupStatus, DayOfWeek } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
 const classGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, { message: "Turno inválido." }),
+  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { message: "Turno inválido." }),
+  classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
+    .min(1, { message: "Selecione pelo menos um dia da semana." }),
   // Fields not in the form but part of ClassGroup, will be defaulted
   year: z.number().optional(),
   mainModuleId: z.string().optional(),
   status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  classDays: z.array(z.string()).optional(), // Assuming DayOfWeek will be string here
   disciplines: z.array(z.object({
     courseId: z.string(),
     completed: z.boolean(),
@@ -44,13 +45,13 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     const newClassGroup: ClassGroup = {
       id: generateId(),
       name: validatedValues.name,
-      shift: validatedValues.shift,
+      shift: validatedValues.shift as ClassGroupShift,
+      classDays: validatedValues.classDays as DayOfWeek[],
       year: validatedValues.year || now.getFullYear(),
       mainModuleId: validatedValues.mainModuleId || '', // Default to empty if not provided
-      status: validatedValues.status || 'Planejada',
+      status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
       startDate: validatedValues.startDate || formatISO(now),
       endDate: validatedValues.endDate || formatISO(addMonths(now, 1)),
-      classDays: validatedValues.classDays || [],
       disciplines: validatedValues.disciplines || [],
       responsibleProfessorIds: [],
       assignedClassroomId: undefined,

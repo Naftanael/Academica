@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { PlusCircle, UsersRound, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, UsersRound, Edit, Trash2, CalendarDays } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,6 +87,7 @@ export default async function ClassGroupsPage() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Turno</TableHead>
+                  <TableHead>Dias de Aula</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Ano</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -97,6 +98,19 @@ export default async function ClassGroupsPage() {
                   <TableRow key={cg.id}>
                     <TableCell className="font-medium">{cg.name}</TableCell>
                     <TableCell>{cg.shift}</TableCell>
+                    <TableCell>
+                      {cg.classDays && cg.classDays.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {cg.classDays.map(day => (
+                            <Badge key={day} variant="secondary" className="text-xs">
+                              {day.substring(0,3)}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">N/D</span>
+                      )}
+                    </TableCell>
                     <TableCell><Badge variant={cg.status === 'Em Andamento' ? 'default' : cg.status === 'Planejada' ? 'secondary' : 'outline'}>{cg.status}</Badge></TableCell>
                     <TableCell>{cg.year}</TableCell>
                     <TableCell className="text-right">
@@ -120,4 +134,3 @@ export default async function ClassGroupsPage() {
     </>
   );
 }
-

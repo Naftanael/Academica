@@ -28,15 +28,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { createClassGroup, type ClassGroupFormValues } from '@/lib/actions/classgroups';
-import { CLASS_GROUP_SHIFTS } from '@/lib/constants';
+import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
 
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
   shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { message: "Turno inválido." }),
+  classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
+    .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
 
 export default function NewClassGroupPage() {
@@ -48,13 +51,14 @@ export default function NewClassGroupPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      shift: undefined, // Or a default shift like 'Manhã'
+      shift: undefined,
+      classDays: [],
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsPending(true);
-    const result = await createClassGroup(values as ClassGroupFormValues); // Cast needed if ClassGroupFormValues has more fields
+    const result = await createClassGroup(values);
     setIsPending(false);
 
     if (result.success) {
@@ -65,12 +69,11 @@ export default function NewClassGroupPage() {
       router.push('/classgroups');
     } else {
       if (result.errors) {
-        // Handle Zod errors specifically for form fields
         Object.entries(result.errors).forEach(([field, errors]) => {
           if (errors) {
-            form.setError(field as keyof z.infer<typeof formSchema>, {
+            form.setError(field as keyof z.infer<typeof formSchema>, { // Ensure field is a key of formSchema
               type: 'manual',
-              message: errors.join(', '),
+              message: Array.isArray(errors) ? errors.join(', ') : String(errors), // Handle array or string errors
             });
           }
         });
@@ -150,6 +153,56 @@ export default function NewClassGroupPage() {
                     <FormDescription>
                       O período em que as aulas da turma ocorrerão.
                     </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="classDays"
+                render={() => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Dias de Aula</FormLabel>
+                      <FormDescription>
+                        Selecione os dias da semana em que haverá aula para esta turma.
+                      </FormDescription>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {DAYS_OF_WEEK.map((day) => (
+                      <FormField
+                        key={day}
+                        control={form.control}
+                        name="classDays"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={day}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(day)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, day])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== day
+                                          )
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {day}
+                              </FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
