@@ -23,7 +23,7 @@ const classGroupFormSchema = z.object({
   disciplines: z.array(z.object({
     courseId: z.string(),
     completed: z.boolean(),
-    professorId: z.string().optional(),
+    // professorId: z.string().optional(), // Removed
     startDate: z.string().optional(),
     endDate: z.string().optional(),
   })).optional(),
@@ -53,7 +53,7 @@ export async function createClassGroup(values: ClassGroupFormValues) {
       startDate: validatedValues.startDate || formatISO(now),
       endDate: validatedValues.endDate || formatISO(addMonths(now, 1)),
       disciplines: validatedValues.disciplines || [],
-      responsibleProfessorIds: [],
+      // responsibleProfessorIds: [], // Removed
       assignedClassroomId: undefined,
     };
 

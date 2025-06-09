@@ -2,18 +2,7 @@
 export type DayOfWeek = 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
 export type PeriodOfDay = 'Manhã' | 'Tarde' | 'Noite';
 
-export interface Availability {
-  day: DayOfWeek;
-  periods: PeriodOfDay[];
-}
-
-export interface Professor {
-  id: string;
-  name: string;
-  email: string;
-  specializations: string[];
-  availability: Availability[];
-}
+// Professor interface and Availability interface removed
 
 export interface Classroom {
   id: string;
@@ -38,7 +27,7 @@ export interface Course {
 export interface ClassGroupDiscipline {
   courseId: string;
   completed: boolean;
-  professorId?: string;
+  // professorId?: string; removed
   startDate?: string; // ISO Date string
   endDate?: string; // ISO Date string
 }
@@ -55,7 +44,7 @@ export interface ClassGroup {
   status: ClassGroupStatus;
   startDate: string; // ISO Date string
   endDate: string; // ISO Date string
-  responsibleProfessorIds?: string[];
+  // responsibleProfessorIds?: string[]; removed
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
   disciplines: ClassGroupDiscipline[];
@@ -75,7 +64,7 @@ export interface DashboardStats {
   totalClassGroups: number;
   activeClassGroups: number;
   plannedClassGroups: number;
-  totalProfessors: number;
+  // totalProfessors: number; removed
   totalClassrooms: number;
   totalModules: number;
 }

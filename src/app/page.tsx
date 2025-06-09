@@ -1,16 +1,17 @@
+
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, DashboardStats, Professor, Classroom, Module, Course } from '@/types';
+import type { ClassGroup, DashboardStats, Classroom, Module, Course } from '@/types'; // Removed Professor type
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart, BookOpen, CalendarClock, Home, Presentation, Users, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react';
+import { BarChart, BookOpen, CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react'; // Removed Home, Users
 import Link from 'next/link';
 import { Progress } from "@/components/ui/progress";
-import { format, parseISO, isWithinInterval, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 async function getDashboardData() {
-  const professors = await readData<Professor>('professors.json');
+  // const professors = await readData<Professor>('professors.json'); // Removed
   const classrooms = await readData<Classroom>('classrooms.json');
   const modules = await readData<Module>('modules.json');
   const classGroups = await readData<ClassGroup>('classgroups.json');
@@ -24,7 +25,7 @@ async function getDashboardData() {
     totalClassGroups: classGroups.length,
     activeClassGroups: activeClassGroups.length,
     plannedClassGroups: plannedClassGroups.length,
-    totalProfessors: professors.length,
+    // totalProfessors: professors.length, // Removed
     totalClassrooms: classrooms.length,
     totalModules: modules.length,
   };
@@ -36,24 +37,20 @@ async function getDashboardData() {
     const totalDisciplines = cg.disciplines.length;
     const progress = totalDisciplines > 0 ? (completedDisciplines / totalDisciplines) * 100 : 0;
     
-    let currentOrNextDiscipline: { name: string; professorName?: string } | null = null;
-    // This logic can be complex; for now, a placeholder or first non-completed.
-    // A more robust solution would check dates.
+    let currentOrNextDiscipline: { name: string; /* professorName?: string */ } | null = null; // Removed professorName
     const firstPendingDisciplineCourseId = cg.disciplines.find(d => !d.completed)?.courseId;
     if (firstPendingDisciplineCourseId) {
         const course = courses.find(c => c.id === firstPendingDisciplineCourseId);
         if (course) {
-            const professor = professors.find(p => p.id === cg.disciplines.find(d=>d.courseId === course.id)?.professorId);
-            currentOrNextDiscipline = { name: course.name, professorName: professor?.name };
+            // const professor = professors.find(p => p.id === cg.disciplines.find(d=>d.courseId === course.id)?.professorId); // Removed professor logic
+            currentOrNextDiscipline = { name: course.name /*, professorName: professor?.name */ }; // Removed professorName
         }
     }
-
 
     const startDate = parseISO(cg.startDate);
     const endDate = parseISO(cg.endDate);
     const daysRemaining = differenceInDays(endDate, currentDate);
     const nearEnd = daysRemaining <= 7 && daysRemaining >= 0;
-
 
     return {
       ...cg,
@@ -87,7 +84,7 @@ export default async function DashboardPage() {
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-blue-500' },
     { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' },
     { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-yellow-500' },
-    { title: 'Total de Professores', value: stats.totalProfessors, icon: Users, color: 'text-purple-500' },
+    // { title: 'Total de Professores', value: stats.totalProfessors, icon: Users, color: 'text-purple-500' }, // Removed
     { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-indigo-500' },
     { title: 'Módulos no Currículo', value: stats.totalModules, icon: BookOpen, color: 'text-teal-500' },
   ];
@@ -147,7 +144,7 @@ export default async function DashboardPage() {
                   {cg.currentOrNextDiscipline && (
                     <p className="text-sm">
                       <span className="font-medium">Próx. Disciplina:</span> {cg.currentOrNextDiscipline.name}
-                      {cg.currentOrNextDiscipline.professorName && ` (Prof. ${cg.currentOrNextDiscipline.professorName})`}
+                      {/* {cg.currentOrNextDiscipline.professorName && ` (Prof. ${cg.currentOrNextDiscipline.professorName})`} Removed professor display */}
                     </p>
                   )}
                   <p className="text-sm">

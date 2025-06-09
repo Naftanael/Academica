@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Users,
   School,
   BookOpen,
   UsersRound,
@@ -23,12 +22,11 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button'; 
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/professors', label: 'Professores', icon: Users },
   { href: '/classrooms', label: 'Salas de Aula', icon: School },
   { href: '/modules', label: 'Módulos', icon: BookOpen },
   // Courses will be managed within modules, so no top-level nav item for now.
@@ -85,4 +83,3 @@ export default function SidebarNav() {
     </>
   );
 }
-
