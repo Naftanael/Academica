@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -35,7 +36,7 @@ import { CLASS_GROUP_SHIFTS } from '@/lib/constants';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, { message: "Turno inválido." }),
+  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { message: "Turno inválido." }),
 });
 
 export default function NewClassGroupPage() {
@@ -170,4 +171,3 @@ export default function NewClassGroupPage() {
     </>
   );
 }
-
