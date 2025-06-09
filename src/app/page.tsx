@@ -1,19 +1,17 @@
 
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, DashboardStats, Classroom, Module, Course } from '@/types'; // Removed Professor type
+import type { ClassGroup, DashboardStats, Classroom, Course } from '@/types';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart, BookOpen, CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react'; // Removed Home, Users
+import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from "@/components/ui/progress";
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 async function getDashboardData() {
-  // const professors = await readData<Professor>('professors.json'); // Removed
   const classrooms = await readData<Classroom>('classrooms.json');
-  const modules = await readData<Module>('modules.json');
   const classGroups = await readData<ClassGroup>('classgroups.json');
 
   const currentDate = new Date();
@@ -25,25 +23,21 @@ async function getDashboardData() {
     totalClassGroups: classGroups.length,
     activeClassGroups: activeClassGroups.length,
     plannedClassGroups: plannedClassGroups.length,
-    // totalProfessors: professors.length, // Removed
     totalClassrooms: classrooms.length,
-    totalModules: modules.length,
   };
 
   // Enhance active class groups with more details
   const detailedActiveClassGroups = activeClassGroups.map(cg => {
-    const module = modules.find(m => m.id === cg.mainModuleId);
     const completedDisciplines = cg.disciplines.filter(d => d.completed).length;
     const totalDisciplines = cg.disciplines.length;
     const progress = totalDisciplines > 0 ? (completedDisciplines / totalDisciplines) * 100 : 0;
     
-    let currentOrNextDiscipline: { name: string; /* professorName?: string */ } | null = null; // Removed professorName
+    let currentOrNextDiscipline: { name: string; } | null = null;
     const firstPendingDisciplineCourseId = cg.disciplines.find(d => !d.completed)?.courseId;
     if (firstPendingDisciplineCourseId) {
         const course = courses.find(c => c.id === firstPendingDisciplineCourseId);
         if (course) {
-            // const professor = professors.find(p => p.id === cg.disciplines.find(d=>d.courseId === course.id)?.professorId); // Removed professor logic
-            currentOrNextDiscipline = { name: course.name /*, professorName: professor?.name */ }; // Removed professorName
+            currentOrNextDiscipline = { name: course.name };
         }
     }
 
@@ -54,7 +48,6 @@ async function getDashboardData() {
 
     return {
       ...cg,
-      moduleName: module?.name || 'N/A',
       progress,
       completedDisciplines,
       totalDisciplines,
@@ -84,9 +77,7 @@ export default async function DashboardPage() {
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-blue-500' },
     { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' },
     { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-yellow-500' },
-    // { title: 'Total de Professores', value: stats.totalProfessors, icon: Users, color: 'text-purple-500' }, // Removed
     { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-indigo-500' },
-    { title: 'Módulos no Currículo', value: stats.totalModules, icon: BookOpen, color: 'text-teal-500' },
   ];
 
   return (
@@ -127,7 +118,7 @@ export default async function DashboardPage() {
                     {cg.nearEnd && <Badge variant="destructive">Perto do Fim</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {cg.moduleName} - {cg.shift} - {cg.year}
+                    {cg.shift} - {cg.year}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -144,7 +135,6 @@ export default async function DashboardPage() {
                   {cg.currentOrNextDiscipline && (
                     <p className="text-sm">
                       <span className="font-medium">Próx. Disciplina:</span> {cg.currentOrNextDiscipline.name}
-                      {/* {cg.currentOrNextDiscipline.professorName && ` (Prof. ${cg.currentOrNextDiscipline.professorName})`} Removed professor display */}
                     </p>
                   )}
                   <p className="text-sm">

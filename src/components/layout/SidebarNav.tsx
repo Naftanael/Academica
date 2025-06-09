@@ -6,12 +6,10 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   School,
-  BookOpen,
   UsersRound,
   CalendarDays,
   Landmark,
   ListChecks,
-  Presentation,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -28,7 +26,6 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/classrooms', label: 'Salas de Aula', icon: School },
-  { href: '/modules', label: 'Módulos', icon: BookOpen },
   // Courses will be managed within modules, so no top-level nav item for now.
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
