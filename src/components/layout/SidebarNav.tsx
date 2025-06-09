@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -56,24 +57,22 @@ export default function SidebarNav() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
-                  className={cn(
-                    'justify-start',
-                    (pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)))
-                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                      : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )}
-                  tooltip={{ children: item.label, side: 'right' }}
-                >
-                  <a>
-                    <item.icon className="w-5 h-5" />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                  </a>
-                </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
+                className={cn(
+                  'justify-start',
+                  (pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)))
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                    : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                )}
+                tooltip={{ children: item.label, side: 'right' }}
+              >
+                <Link href={item.href}>
+                  <item.icon className="w-5 h-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -86,3 +85,4 @@ export default function SidebarNav() {
     </>
   );
 }
+
