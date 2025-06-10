@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { PlusCircle, School, Edit } from 'lucide-react';
+import { PlusCircle, School } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getClassrooms } from '@/lib/actions/classrooms';
 import type { Classroom } from '@/types';
 import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton';
+import { EditClassroomButton } from '@/components/classrooms/EditClassroomButton';
 
 export default async function ClassroomsPage() {
   const classrooms = await getClassrooms();
@@ -57,12 +58,7 @@ export default async function ClassroomsPage() {
                     <TableCell className="font-medium">{room.name}</TableCell>
                     <TableCell>{room.capacity ?? 'N/A'}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" asChild className="mr-2">
-                        <Link href={`/classrooms/${room.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Editar Sala</span>
-                        </Link>
-                      </Button>
+                      <EditClassroomButton classroomId={room.id} className="mr-2" />
                       <DeleteClassroomButton classroomId={room.id} />
                     </TableCell>
                   </TableRow>
