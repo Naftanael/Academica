@@ -1,18 +1,23 @@
 
 import Link from 'next/link';
-import { PlusCircle, UsersRound, Edit, CalendarDays } from 'lucide-react';
+import { PlusCircle, UsersRound, BookOpen } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { getClassGroups } from '@/lib/actions/classgroups';
-import type { ClassGroup } from '@/types';
+import { getCourses } from '@/lib/actions/courses'; // Import getCourses
+import type { ClassGroup, Course } from '@/types';
 import { DeleteClassGroupButton } from '@/components/classgroups/DeleteClassGroupButton';
 
 
 export default async function ClassGroupsPage() {
   const classGroups = await getClassGroups();
+  const courses = await getCourses(); // Fetch courses
+
+  // Create a map for quick course lookup
+  const courseMap = new Map(courses.map((course: Course) => [course.id, course.name]));
 
   return (
     <>
@@ -49,6 +54,7 @@ export default async function ClassGroupsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
+                  <TableHead>Curso</TableHead>
                   <TableHead>Turno</TableHead>
                   <TableHead>Dias de Aula</TableHead>
                   <TableHead>Status</TableHead>
@@ -60,6 +66,16 @@ export default async function ClassGroupsPage() {
                 {classGroups.map((cg: ClassGroup) => (
                   <TableRow key={cg.id}>
                     <TableCell className="font-medium">{cg.name}</TableCell>
+                    <TableCell>
+                      {cg.courseId ? (
+                        <Link href={`/courses`} className="hover:underline flex items-center text-sm">
+                           <BookOpen className="mr-1 h-3 w-3" />
+                          {courseMap.get(cg.courseId) || 'Curso não encontrado'}
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">N/D</span>
+                      )}
+                    </TableCell>
                     <TableCell>{cg.shift}</TableCell>
                     <TableCell>
                       {cg.classDays && cg.classDays.length > 0 ? (

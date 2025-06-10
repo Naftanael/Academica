@@ -13,7 +13,7 @@ export interface Classroom {
 export interface Course {
   id: string;
   name: string;
-  workload: number; // Carga Horária (Quantidade de aulas)
+  workload: number; // Quantidade de aulas
 }
 
 export interface ClassGroupDiscipline {
@@ -37,6 +37,7 @@ export interface ClassGroup {
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
   disciplines: ClassGroupDiscipline[];
+  courseId?: string; // ID do curso ao qual a turma pertence
 }
 
 export interface LabReservation {
