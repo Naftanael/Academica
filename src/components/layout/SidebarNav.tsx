@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Landmark,
   ListChecks,
+  BookOpen, // Added icon for Courses
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -26,7 +27,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/classrooms', label: 'Salas de Aula', icon: School },
-  // Courses will be managed within modules, so no top-level nav item for now.
+  { href: '/courses', label: 'Disciplinas', icon: BookOpen },
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
   { href: '/reservations', label: 'Reservas', icon: ListChecks },

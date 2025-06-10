@@ -13,8 +13,7 @@ export interface Classroom {
 export interface Course {
   id: string;
   name: string;
-  workload: number; // Carga Horária
-  moduleId: string; // Keeping this for now, can be removed in a future step if courses are no longer tied to any module concept
+  workload: number; // Carga Horária (Quantidade de aulas)
 }
 
 export interface ClassGroupDiscipline {
@@ -56,3 +55,4 @@ export interface DashboardStats {
   plannedClassGroups: number;
   totalClassrooms: number;
 }
+
