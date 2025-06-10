@@ -16,7 +16,7 @@ export interface Course { // Este é o tipo para "Disciplinas"
   workload: number; // Quantidade de aulas
 }
 
-export interface AppCurso { // Este é o novo tipo para "Cursos" (Programas de Estudo)
+export interface AppCurso { // Este é o tipo para "Cursos" (Programas de Estudo)
   id: string;
   name: string;
 }
@@ -42,8 +42,7 @@ export interface ClassGroup {
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
   disciplines: ClassGroupDiscipline[];
-  courseId?: string; // ID da Disciplina (do tipo Course) à qual a turma está vinculada (se aplicável de forma geral, ou pode ser removido se turmas pertencem a AppCurso)
-  // TODO: Considerar se class groups devem pertencer a um AppCurso (programa) em vez de um Course (disciplina)
+  appCursoId?: string; // ID do AppCurso (Programa de Estudo) ao qual a turma está vinculada
 }
 
 export interface LabReservation {

@@ -30,24 +30,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { updateClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
-import type { Course, ClassGroup, ClassGroupShift, DayOfWeek } from '@/types';
+import type { AppCurso, ClassGroup, ClassGroupShift, DayOfWeek } from '@/types'; // Changed Course to AppCurso
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
   shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { required_error: "Selecione um turno.", invalid_type_error: "Turno inválido." }),
   classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  courseId: z.string({ required_error: "Selecione um curso." }).min(1, { message: "Selecione um curso." }),
+  appCursoId: z.string({ required_error: "Selecione um curso (programa)." }).min(1, { message: "Selecione um curso (programa)." }), // Changed from courseId to appCursoId
 });
 
 type EditClassGroupFormValues = z.infer<typeof formSchema>;
 
 interface EditClassGroupFormProps {
   classGroup: ClassGroup;
-  courses: Course[];
+  appCursos: AppCurso[]; // Changed from courses: Course[] to appCursos: AppCurso[]
 }
 
-export default function EditClassGroupForm({ classGroup, courses }: EditClassGroupFormProps) {
+export default function EditClassGroupForm({ classGroup, appCursos }: EditClassGroupFormProps) { // Changed prop name
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, setIsPending] = React.useState(false);
@@ -58,7 +58,7 @@ export default function EditClassGroupForm({ classGroup, courses }: EditClassGro
       name: classGroup.name,
       shift: classGroup.shift,
       classDays: classGroup.classDays || [],
-      courseId: classGroup.courseId || undefined,
+      appCursoId: classGroup.appCursoId || undefined, // Changed from courseId to appCursoId
     },
   });
 
@@ -119,31 +119,31 @@ export default function EditClassGroupForm({ classGroup, courses }: EditClassGro
         />
         <FormField
           control={form.control}
-          name="courseId"
+          name="appCursoId" // Changed from courseId to appCursoId
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Curso</FormLabel>
+              <FormLabel>Curso (Programa)</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o curso da turma" />
+                    <SelectValue placeholder="Selecione o curso (programa) da turma" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {courses.length === 0 && (
-                    <SelectItem value="no-courses" disabled>
-                      Nenhum curso cadastrado. Cadastre um curso primeiro.
+                  {appCursos.length === 0 && ( // Changed from courses to appCursos
+                    <SelectItem value="no-app-cursos" disabled>
+                      Nenhum curso (programa) cadastrado. Cadastre um primeiro.
                     </SelectItem>
                   )}
-                  {courses.map((course) => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.name}
+                  {appCursos.map((ac) => ( // Changed from course to ac (AppCurso)
+                    <SelectItem key={ac.id} value={ac.id}>
+                      {ac.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <FormDescription>
-                O curso ao qual esta turma pertence.
+                O curso (programa de estudo) ao qual esta turma pertence.
               </FormDescription>
               <FormMessage />
             </FormItem>

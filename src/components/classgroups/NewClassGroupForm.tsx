@@ -30,21 +30,21 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { createClassGroup, type ClassGroupFormValues } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
-import type { Course } from '@/types';
+import type { AppCurso } from '@/types'; // Changed from Course to AppCurso
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
   shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { required_error: "Selecione um turno.", invalid_type_error: "Turno inválido." }),
   classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  courseId: z.string({ required_error: "Selecione um curso." }).min(1, { message: "Selecione um curso." }),
+  appCursoId: z.string({ required_error: "Selecione um curso (programa)." }).min(1, { message: "Selecione um curso (programa)." }), // Changed from courseId to appCursoId
 });
 
 interface NewClassGroupFormProps {
-  courses: Course[];
+  appCursos: AppCurso[]; // Changed from courses: Course[] to appCursos: AppCurso[]
 }
 
-export default function NewClassGroupForm({ courses }: NewClassGroupFormProps) {
+export default function NewClassGroupForm({ appCursos }: NewClassGroupFormProps) { // Changed prop name
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, setIsPending] = React.useState(false);
@@ -55,7 +55,7 @@ export default function NewClassGroupForm({ courses }: NewClassGroupFormProps) {
       name: '',
       shift: undefined,
       classDays: [],
-      courseId: undefined,
+      appCursoId: undefined, // Changed from courseId to appCursoId
     },
   });
 
@@ -116,31 +116,31 @@ export default function NewClassGroupForm({ courses }: NewClassGroupFormProps) {
         />
         <FormField
           control={form.control}
-          name="courseId"
+          name="appCursoId" // Changed from courseId to appCursoId
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Curso</FormLabel>
+              <FormLabel>Curso (Programa)</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o curso da turma" />
+                    <SelectValue placeholder="Selecione o curso (programa) da turma" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {courses.length === 0 && (
-                    <SelectItem value="no-courses" disabled>
-                      Nenhum curso cadastrado.
+                  {appCursos.length === 0 && (
+                    <SelectItem value="no-app-cursos" disabled>
+                      Nenhum curso (programa) cadastrado.
                     </SelectItem>
                   )}
-                  {courses.map((course) => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.name}
+                  {appCursos.map((ac) => ( // Changed from course to ac (AppCurso)
+                    <SelectItem key={ac.id} value={ac.id}>
+                      {ac.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <FormDescription>
-                O curso ao qual esta turma pertence.
+                O curso (programa de estudo) ao qual esta turma pertence.
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -1,6 +1,6 @@
 
 import { getClassGroupById } from '@/lib/actions/classgroups';
-import { getCourses } from '@/lib/actions/courses';
+import { getAppCursos } from '@/lib/actions/app_cursos'; // Changed from getCourses to getAppCursos
 import PageHeader from '@/components/shared/PageHeader';
 import { UsersRound, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ interface EditClassGroupPageProps {
 
 export default async function EditClassGroupPage({ params }: EditClassGroupPageProps) {
   const classGroup = await getClassGroupById(params.id);
-  const courses = await getCourses();
+  const appCursos = await getAppCursos(); // Changed from courses and getCourses to appCursos and getAppCursos
 
   if (!classGroup) {
     return (
@@ -53,12 +53,12 @@ export default async function EditClassGroupPage({ params }: EditClassGroupPageP
           <CardTitle>Dados da Turma</CardTitle>
         </CardHeader>
         <CardContent>
-          {courses.length === 0 ? (
+          {appCursos.length === 0 ? ( // Changed from courses to appCursos
             <div className="p-6 text-center text-muted-foreground">
-              <p>Nenhum curso cadastrado. Por favor, <Link href="/courses/new" className="underline hover:text-primary">cadastre um curso</Link> antes de editar uma turma.</p>
+              <p>Nenhum curso (programa) cadastrado. Por favor, <Link href="/app-cursos/new" className="underline hover:text-primary">cadastre um curso (programa)</Link> antes de editar uma turma.</p>
             </div>
           ) : (
-            <EditClassGroupForm classGroup={classGroup} courses={courses} />
+            <EditClassGroupForm classGroup={classGroup} appCursos={appCursos} /> // Changed prop name from courses to appCursos
           )}
         </CardContent>
       </Card>

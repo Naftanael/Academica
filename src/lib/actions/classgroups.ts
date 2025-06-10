@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { CLASS_GROUP_SHIFTS, CLASS_GROUP_STATUSES, DAYS_OF_WEEK } from '@/lib/constants';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassGroup, ClassGroupShift, ClassGroupStatus, DayOfWeek, Course } from '@/types';
+import type { ClassGroup, ClassGroupShift, ClassGroupStatus, DayOfWeek } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
 const classGroupFormSchema = z.object({
@@ -13,7 +13,7 @@ const classGroupFormSchema = z.object({
   shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { required_error: "Selecione um turno.", invalid_type_error: "Turno inválido." }),
   classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  courseId: z.string({ required_error: "Selecione um curso." }).min(1, { message: "Selecione um curso." }),
+  appCursoId: z.string({ required_error: "Selecione um curso (programa)." }).min(1, { message: "Selecione um curso (programa)." }),
   // Fields not in the form but part of ClassGroup, will be defaulted for create
   year: z.number().optional(),
   status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
@@ -45,7 +45,7 @@ export async function createClassGroup(values: ClassGroupFormValues) {
       name: validatedValues.name,
       shift: validatedValues.shift as ClassGroupShift,
       classDays: validatedValues.classDays as DayOfWeek[],
-      courseId: validatedValues.courseId,
+      appCursoId: validatedValues.appCursoId,
       year: validatedValues.year || now.getFullYear(),
       status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
       startDate: validatedValues.startDate || formatISO(now),
@@ -87,7 +87,7 @@ export async function updateClassGroup(id: string, values: ClassGroupFormValues)
       name: validatedValues.name,
       shift: validatedValues.shift as ClassGroupShift,
       classDays: validatedValues.classDays as DayOfWeek[],
-      courseId: validatedValues.courseId,
+      appCursoId: validatedValues.appCursoId,
       // year, status, startDate, endDate, disciplines, assignedClassroomId are preserved
     };
 

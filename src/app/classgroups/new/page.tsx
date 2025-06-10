@@ -5,10 +5,10 @@ import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm';
-import { getCourses } from '@/lib/actions/courses';
+import { getAppCursos } from '@/lib/actions/app_cursos'; // Changed from getCourses to getAppCursos
 
 export default async function NewClassGroupPage() {
-  const courses = await getCourses();
+  const appCursos = await getAppCursos(); // Changed from courses to appCursos and getCourses to getAppCursos
 
   return (
     <>
@@ -30,7 +30,7 @@ export default async function NewClassGroupPage() {
           <CardTitle>Dados da Turma</CardTitle>
         </CardHeader>
         <CardContent>
-          <NewClassGroupForm courses={courses} />
+          <NewClassGroupForm appCursos={appCursos} /> {/* Changed prop name from courses to appCursos */}
         </CardContent>
       </Card>
     </>

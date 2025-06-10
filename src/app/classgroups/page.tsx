@@ -1,23 +1,23 @@
 
 import Link from 'next/link';
-import { PlusCircle, UsersRound, BookOpen } from 'lucide-react';
+import { PlusCircle, UsersRound, GraduationCap } from 'lucide-react'; // Changed BookOpen to GraduationCap
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { getClassGroups } from '@/lib/actions/classgroups';
-import { getCourses } from '@/lib/actions/courses';
-import type { ClassGroup, Course } from '@/types';
+import { getAppCursos } from '@/lib/actions/app_cursos'; // Changed from getCourses to getAppCursos
+import type { ClassGroup, AppCurso } from '@/types'; // Changed Course to AppCurso
 import { DeleteClassGroupButton } from '@/components/classgroups/DeleteClassGroupButton';
 import { EditClassGroupButton } from '@/components/classgroups/EditClassGroupButton';
 
 
 export default async function ClassGroupsPage() {
   const classGroups = await getClassGroups();
-  const courses = await getCourses();
+  const appCursos = await getAppCursos(); // Changed from courses and getCourses
 
-  const courseMap = new Map(courses.map((course: Course) => [course.id, course.name]));
+  const appCursoMap = new Map(appCursos.map((ac: AppCurso) => [ac.id, ac.name])); // Changed courseMap to appCursoMap, Course to AppCurso
 
   return (
     <>
@@ -54,7 +54,7 @@ export default async function ClassGroupsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Curso</TableHead>
+                  <TableHead>Curso (Programa)</TableHead>
                   <TableHead>Turno</TableHead>
                   <TableHead>Dias de Aula</TableHead>
                   <TableHead>Status</TableHead>
@@ -67,10 +67,10 @@ export default async function ClassGroupsPage() {
                   <TableRow key={cg.id}>
                     <TableCell className="font-medium">{cg.name}</TableCell>
                     <TableCell>
-                      {cg.courseId ? (
-                        <Link href={`/courses`} className="hover:underline flex items-center text-sm">
-                           <BookOpen className="mr-1 h-3 w-3" />
-                          {courseMap.get(cg.courseId) || 'Curso não encontrado'}
+                      {cg.appCursoId ? ( // Changed from courseId to appCursoId
+                        <Link href={`/app-cursos`} className="hover:underline flex items-center text-sm">
+                           <GraduationCap className="mr-1 h-3 w-3" /> {/* Changed BookOpen to GraduationCap */}
+                          {appCursoMap.get(cg.appCursoId) || 'Curso (Programa) não encontrado'}
                         </Link>
                       ) : (
                         <span className="text-muted-foreground text-xs">N/D</span>
