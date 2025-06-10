@@ -1,51 +1,14 @@
 
 import Link from 'next/link';
-import { PlusCircle, UsersRound, Edit, Trash2, CalendarDays } from 'lucide-react';
+import { PlusCircle, UsersRound, Edit, CalendarDays } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { getClassGroups, deleteClassGroup } from '@/lib/actions/classgroups';
+import { getClassGroups } from '@/lib/actions/classgroups';
 import type { ClassGroup } from '@/types';
-import { DeleteConfirmationDialog } from '@/components/shared/DeleteConfirmationDialog';
-import { toast } from '@/hooks/use-toast'; // Assuming useToast exists and works with server actions or client components
-
-// Client component to handle delete with confirmation
-function DeleteClassGroupButton({ classGroupId, className }: { classGroupId: string, className?: string }) {
-  'use client'; // Required for event handlers and state
-
-  const handleDelete = async () => {
-    const result = await deleteClassGroup(classGroupId);
-    if (result.success) {
-      toast({
-        title: "Sucesso!",
-        description: result.message,
-        variant: "default",
-      });
-    } else {
-      toast({
-        title: "Erro",
-        description: result.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <DeleteConfirmationDialog
-      onConfirm={handleDelete}
-      triggerButton={
-        <Button variant="ghost" size="icon" className={className}>
-          <Trash2 className="h-4 w-4" />
-          <span className="sr-only">Excluir Turma</span>
-        </Button>
-      }
-      dialogTitle="Excluir Turma?"
-      dialogDescription="Esta ação não pode ser desfeita. Todos os dados da turma serão removidos."
-    />
-  );
-}
+import { DeleteClassGroupButton } from '@/components/classgroups/DeleteClassGroupButton';
 
 
 export default async function ClassGroupsPage() {
