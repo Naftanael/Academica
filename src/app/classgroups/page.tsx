@@ -7,16 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { getClassGroups } from '@/lib/actions/classgroups';
-import { getCourses } from '@/lib/actions/courses'; // Import getCourses
+import { getCourses } from '@/lib/actions/courses';
 import type { ClassGroup, Course } from '@/types';
 import { DeleteClassGroupButton } from '@/components/classgroups/DeleteClassGroupButton';
+import { EditClassGroupButton } from '@/components/classgroups/EditClassGroupButton';
 
 
 export default async function ClassGroupsPage() {
   const classGroups = await getClassGroups();
-  const courses = await getCourses(); // Fetch courses
+  const courses = await getCourses();
 
-  // Create a map for quick course lookup
   const courseMap = new Map(courses.map((course: Course) => [course.id, course.name]));
 
   return (
@@ -93,14 +93,7 @@ export default async function ClassGroupsPage() {
                     <TableCell><Badge variant={cg.status === 'Em Andamento' ? 'default' : cg.status === 'Planejada' ? 'secondary' : 'outline'}>{cg.status}</Badge></TableCell>
                     <TableCell>{cg.year}</TableCell>
                     <TableCell className="text-right">
-                       {/* Edit button can be added later: 
-                       <Button variant="ghost" size="icon" asChild className="mr-2">
-                        <Link href={`/classgroups/${cg.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Editar Turma</span>
-                        </Link>
-                      </Button>
-                      */}
+                      <EditClassGroupButton classGroupId={cg.id} className="mr-2" />
                       <DeleteClassGroupButton classGroupId={cg.id} />
                     </TableCell>
                   </TableRow>
