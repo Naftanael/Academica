@@ -1,13 +1,13 @@
 
 import Link from 'next/link';
-import { PlusCircle, School, Edit } from 'lucide-react'; // Removed Trash2 as it's in DeleteClassroomButton
+import { PlusCircle, School, Edit } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import type { Classroom } from '@/types';
-import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton'; // Import the extracted component
+import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton';
 
 export default async function ClassroomsPage() {
   const classrooms = await getClassrooms();
@@ -57,14 +57,12 @@ export default async function ClassroomsPage() {
                     <TableCell className="font-medium">{room.name}</TableCell>
                     <TableCell>{room.capacity ?? 'N/A'}</TableCell>
                     <TableCell className="text-right">
-                      {/* 
                       <Button variant="ghost" size="icon" asChild className="mr-2">
                         <Link href={`/classrooms/${room.id}/edit`}>
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Editar Sala</span>
                         </Link>
                       </Button>
-                      */}
                       <DeleteClassroomButton classroomId={room.id} />
                     </TableCell>
                   </TableRow>
