@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { CLASS_GROUP_SHIFTS, CLASS_GROUP_STATUSES, DAYS_OF_WEEK } from '@/lib/constants';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassGroup, ClassGroupShift, ClassGroupStatus, DayOfWeek } from '@/types';
+import type { ClassGroup, ClassGroupShift, ClassGroupStatus, DayOfWeek, Course } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
 const classGroupFormSchema = z.object({
@@ -14,7 +14,7 @@ const classGroupFormSchema = z.object({
   classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   courseId: z.string({ required_error: "Selecione um curso." }).min(1, { message: "Selecione um curso." }),
-  // Fields not in the form but part of ClassGroup, will be defaulted
+  // Fields not in the form but part of ClassGroup, will be defaulted for create
   year: z.number().optional(),
   status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
   startDate: z.string().optional(),
@@ -68,6 +68,44 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     return { success: false, message: 'Erro ao criar turma. Verifique o console para mais detalhes.' };
   }
 }
+
+export async function updateClassGroup(id: string, values: ClassGroupFormValues) {
+  try {
+    const validatedValues = classGroupFormSchema.parse(values);
+    const classGroups = await readData<ClassGroup>('classgroups.json');
+    
+    const classGroupIndex = classGroups.findIndex(cg => cg.id === id);
+
+    if (classGroupIndex === -1) {
+      return { success: false, message: 'Turma não encontrada.' };
+    }
+
+    const existingClassGroup = classGroups[classGroupIndex];
+    
+    classGroups[classGroupIndex] = {
+      ...existingClassGroup,
+      name: validatedValues.name,
+      shift: validatedValues.shift as ClassGroupShift,
+      classDays: validatedValues.classDays as DayOfWeek[],
+      courseId: validatedValues.courseId,
+      // year, status, startDate, endDate, disciplines, assignedClassroomId are preserved
+    };
+
+    await writeData<ClassGroup>('classgroups.json', classGroups);
+
+    revalidatePath('/classgroups');
+    revalidatePath(`/classgroups/${id}/edit`);
+    return { success: true, message: 'Turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, message: 'Erro de validação.', errors: error.flatten().fieldErrors };
+    }
+    console.error('Failed to update class group:', error);
+    return { success: false, message: 'Erro ao atualizar turma.' };
+  }
+}
+
 
 export async function deleteClassGroup(id: string) {
   try {

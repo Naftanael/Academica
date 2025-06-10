@@ -6,7 +6,7 @@ import { UsersRound, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-// import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm'; // To be created later
+import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 
 interface EditClassGroupPageProps {
   params: { id: string };
@@ -14,7 +14,7 @@ interface EditClassGroupPageProps {
 
 export default async function EditClassGroupPage({ params }: EditClassGroupPageProps) {
   const classGroup = await getClassGroupById(params.id);
-  // const courses = await getCourses(); // Will be needed for the form
+  const courses = await getCourses();
 
   if (!classGroup) {
     return (
@@ -53,20 +53,13 @@ export default async function EditClassGroupPage({ params }: EditClassGroupPageP
           <CardTitle>Dados da Turma</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* 
-            Placeholder for the edit form.
-            When created, EditClassGroupForm will be similar to NewClassGroupForm
-            but pre-filled with classGroup data and will call an updateClassGroup action.
-            <EditClassGroupForm classGroup={classGroup} courses={courses} /> 
-          */}
-          <div className="p-6 text-center">
-            <p className="text-muted-foreground">
-              O formulário para editar a turma <span className="font-semibold">{classGroup.name}</span> (ID: {classGroup.id}) será implementado aqui.
-            </p>
-            <p className="mt-4 text-sm">
-              Ele será pré-preenchido com os dados da turma e permitirá a seleção de cursos.
-            </p>
-          </div>
+          {courses.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground">
+              <p>Nenhum curso cadastrado. Por favor, <Link href="/courses/new" className="underline hover:text-primary">cadastre um curso</Link> antes de editar uma turma.</p>
+            </div>
+          ) : (
+            <EditClassGroupForm classGroup={classGroup} courses={courses} />
+          )}
         </CardContent>
       </Card>
     </>
