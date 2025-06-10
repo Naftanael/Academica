@@ -10,14 +10,19 @@ export interface Classroom {
   isLab?: boolean; // Helper to identify labs easily
 }
 
-export interface Course {
+export interface Course { // Este é o tipo para "Disciplinas"
   id: string;
   name: string;
   workload: number; // Quantidade de aulas
 }
 
+export interface AppCurso { // Este é o novo tipo para "Cursos" (Programas de Estudo)
+  id: string;
+  name: string;
+}
+
 export interface ClassGroupDiscipline {
-  courseId: string;
+  courseId: string; // ID da Disciplina (do tipo Course)
   completed: boolean;
   startDate?: string; // ISO Date string
   endDate?: string; // ISO Date string
@@ -37,7 +42,8 @@ export interface ClassGroup {
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
   disciplines: ClassGroupDiscipline[];
-  courseId?: string; // ID do curso ao qual a turma pertence
+  courseId?: string; // ID da Disciplina (do tipo Course) à qual a turma está vinculada (se aplicável de forma geral, ou pode ser removido se turmas pertencem a AppCurso)
+  // TODO: Considerar se class groups devem pertencer a um AppCurso (programa) em vez de um Course (disciplina)
 }
 
 export interface LabReservation {
@@ -56,4 +62,3 @@ export interface DashboardStats {
   plannedClassGroups: number;
   totalClassrooms: number;
 }
-
