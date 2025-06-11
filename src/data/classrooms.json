@@ -1,3 +1,4 @@
+
 [
   {
     "id": "mbpld7sn-p7dm6f7",
@@ -16,6 +17,125 @@
   {
     "id": "mbql7c35-kmhyrzr",
     "name": "Sala 3",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-1-aaabbbccc",
+    "name": "Sala 1",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-2-aaabbbddd",
+    "name": "Sala 2",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-3-aaabbbeee",
+    "name": "Sala 3",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-4-aaabbbfff",
+    "name": "Sala 4",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-5-aaabbbggg",
+    "name": "Sala 5",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-6-aaabbbhhh",
+    "name": "Sala 6",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-7-aaabbbiii",
+    "name": "Sala 7",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-8-aaabbbjjj",
+    "name": "Sala 8",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-9-aaabbbkkk",
+    "name": "Sala 9",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-10-aaabbblll",
+    "name": "Sala 10",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-11-aaabbbmmm",
+    "name": "Sala 11",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-12-aaabbbnnn",
+    "name": "Sala 12",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-13-aaabbbooo",
+    "name": "Sala 13",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-14-aaabbbppp",
+    "name": "Sala 14",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-15-aaabbbqqq",
+    "name": "Sala 15",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-16-aaabbbrrr",
+    "name": "Sala 16",
+    "capacity": 30,
+    "resources": [],
+    "isLab": false
+  },
+  {
+    "id": "new-sala-17-aaabbbsss",
+    "name": "Sala 17",
     "capacity": 30,
     "resources": [],
     "isLab": false
