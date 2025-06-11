@@ -1,6 +1,5 @@
 
 import { getClassGroupById } from '@/lib/actions/classgroups';
-// import { getAppCursos } from '@/lib/actions/app_cursos'; // Removido - Módulo AppCursos não existe mais
 import PageHeader from '@/components/shared/PageHeader';
 import { UsersRound, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ interface EditClassGroupPageProps {
 
 export default async function EditClassGroupPage({ params }: EditClassGroupPageProps) {
   const classGroup = await getClassGroupById(params.id);
-  // const appCursos = await getAppCursos(); // Removido
 
   if (!classGroup) {
     return (
@@ -53,7 +51,6 @@ export default async function EditClassGroupPage({ params }: EditClassGroupPageP
           <CardTitle>Dados da Turma</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Lógica condicional baseada em appCursos removida, pois EditClassGroupForm não precisa mais de appCursos */}
           <EditClassGroupForm classGroup={classGroup} />
         </CardContent>
       </Card>
