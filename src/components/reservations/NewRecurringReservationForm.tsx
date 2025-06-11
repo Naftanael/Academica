@@ -209,12 +209,12 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   {classGroups.length === 0 && <SelectItem value="no-cg" disabled>Nenhuma turma cadastrada</SelectItem>}
                   {classGroups.map((cg) => (
                     <SelectItem key={cg.id} value={cg.id}>
-                      {cg.name} ({cg.shift}) - Dias: {cg.classDays.join(', ').substring(0,20)}...
+                      {cg.name} ({cg.shift})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>A turma que utilizará a sala. Os dias de aula desta turma serão usados para a reserva.</FormDescription>
+              <FormDescription>A turma que utilizará a sala. Os dias de aula desta turma serão usados para a reserva e destacados no calendário.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
