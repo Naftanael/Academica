@@ -10,7 +10,7 @@ import {
   CalendarDays,
   Landmark,
   ListChecks,
-  GraduationCap, 
+  // GraduationCap, // Removido pois /app-cursos foi excluído
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/classrooms', label: 'Salas de Aula', icon: School },
-  { href: '/app-cursos', label: 'Cursos', icon: GraduationCap }, // This is for programs of study
+  // { href: '/app-cursos', label: 'Cursos', icon: GraduationCap }, // Removido
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
   { href: '/reservations', label: 'Reservas', icon: ListChecks },
