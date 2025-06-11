@@ -1,10 +1,7 @@
-import type { Metadata } from 'next';
+
 import '../globals.css'; // Import global styles for Tailwind, etc.
 
-export const metadata: Metadata = {
-  title: 'Painel de Turmas - Academica',
-  description: 'Visualização de turmas e suas salas em tempo real.',
-};
+// metadata export has been removed to prevent conflicts and manage head tags manually below.
 
 export default function TvDisplayLayout({
   children,
@@ -14,6 +11,8 @@ export default function TvDisplayLayout({
   return (
     <html lang="pt-BR">
       <head>
+        <title>Painel de Turmas - Academica</title>
+        <meta name="description" content="Visualização de turmas e suas salas em tempo real." />
         <meta httpEquiv="refresh" content="300" /> {/* Auto-refresh every 5 minutes */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
