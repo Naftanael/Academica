@@ -10,8 +10,7 @@ import {
   CalendarDays,
   Landmark,
   ListChecks,
-  BookOpen,
-  GraduationCap, // Added icon for Cursos (AppCursos)
+  GraduationCap, 
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -22,13 +21,11 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/classrooms', label: 'Salas de Aula', icon: School },
-  { href: '/courses', label: 'Disciplinas', icon: BookOpen }, // This is for individual subjects/disciplines
   { href: '/app-cursos', label: 'Cursos', icon: GraduationCap }, // This is for programs of study
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
