@@ -12,6 +12,205 @@
     "year": 2025,
     "status": "Planejada",
     "startDate": "2025-06-10T13:46:51Z",
-    "endDate": "2025-07-10T13:46:51Z"
+    "endDate": "2025-07-10T13:46:51Z",
+    "assignedClassroomId": null
+  },
+  {
+    "id": "cg-2024-001",
+    "name": "FMC10",
+    "shift": "Manhã",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-1-aaabbbccc"
+  },
+  {
+    "id": "cg-2024-002",
+    "name": "FMC09",
+    "shift": "Tarde",
+    "classDays": ["Sábado"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-1-aaabbbccc"
+  },
+  {
+    "id": "cg-2024-003",
+    "name": "RAD19",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-1-aaabbbccc"
+  },
+  {
+    "id": "cg-2024-004",
+    "name": "FMC09",
+    "shift": "Noite",
+    "classDays": ["Terça", "Quinta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-1-aaabbbccc"
+  },
+  {
+    "id": "cg-2024-005",
+    "name": "ENF88",
+    "shift": "Manhã",
+    "classDays": ["Segunda", "Quarta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-2-aaabbbddd"
+  },
+  {
+    "id": "cg-2024-006",
+    "name": "ENF87",
+    "shift": "Tarde",
+    "classDays": ["Terça", "Quinta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-2-aaabbbddd"
+  },
+  {
+    "id": "cg-2024-007",
+    "name": "RAD21",
+    "shift": "Tarde",
+    "classDays": ["Sábado"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-2-aaabbbddd"
+  },
+  {
+    "id": "cg-2024-008",
+    "name": "RAD29",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Terça", "Quinta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-2-aaabbbddd"
+  },
+  {
+    "id": "cg-2024-009",
+    "name": "ENF57",
+    "shift": "Manhã",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-3-aaabbbeee"
+  },
+  {
+    "id": "cg-2024-010",
+    "name": "ENF55",
+    "shift": "Tarde",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-3-aaabbbeee"
+  },
+  {
+    "id": "cg-2024-011",
+    "name": "ADM20",
+    "shift": "Tarde",
+    "classDays": ["Sábado"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-3-aaabbbeee"
+  },
+  {
+    "id": "cg-2024-012",
+    "name": "ENF84",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Terça", "Quinta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-3-aaabbbeee"
+  },
+  {
+    "id": "cg-2024-013",
+    "name": "ENF74",
+    "shift": "Manhã",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-4-aaabbbfff"
+  },
+  {
+    "id": "cg-2024-014",
+    "name": "ADM21",
+    "shift": "Manhã",
+    "classDays": ["Terça", "Quinta", "Sábado"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-4-aaabbbfff"
+  },
+  {
+    "id": "cg-2024-015",
+    "name": "ENF66",
+    "shift": "Tarde",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-4-aaabbbfff"
+  },
+  {
+    "id": "cg-2024-016",
+    "name": "ENF54",
+    "shift": "Tarde",
+    "classDays": ["Sábado"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-4-aaabbbfff"
+  },
+  {
+    "id": "cg-2024-017",
+    "name": "ENF75",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-4-aaabbbfff"
+  },
+  {
+    "id": "cg-2024-018",
+    "name": "RAD21",
+    "shift": "Noite",
+    "classDays": ["Terça", "Quinta"],
+    "year": 2024,
+    "status": "Planejada",
+    "startDate": "2024-01-15T00:00:00Z",
+    "endDate": "2024-06-30T00:00:00Z",
+    "assignedClassroomId": "new-sala-4-aaabbbfff"
   }
 ]
