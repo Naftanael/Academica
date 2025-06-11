@@ -14,10 +14,7 @@ export interface Course { // Este é o tipo para "Disciplinas"
   id: string;
   name: string;
   workload: number; // Quantidade de aulas
-  // appCursoId?: string; // This field is effectively orphaned or unused if AppCurso module is gone
 }
-
-// ClassGroupDiscipline interface removed as ClassGroup no longer tracks disciplines internally.
 
 export type ClassGroupStatus = 'Planejada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
 export type ClassGroupShift = 'Manhã' | 'Tarde' | 'Noite';
@@ -32,18 +29,32 @@ export interface ClassGroup {
   endDate: string; // ISO Date string
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
-  // disciplines field removed for independence
 }
 
+// Represents ad-hoc, single instance lab/room bookings
 export interface LabReservation {
   id: string;
   classroomId: string; // ID of the Lab/Special Room
-  applicantName: string;
-  reservationDate: string; // ISO Date string
+  applicantName: string; // Could be professor name, department, etc.
+  reservationDate: string; // ISO Date string YYYY-MM-DD
   startTime: string; // HH:mm format
   endTime: string; // HH:mm format
   purpose: string;
 }
+
+// Represents recurring reservations made by a specific class group for a room
+export interface ClassroomRecurringReservation {
+  id: string;
+  classGroupId: string;
+  classroomId: string;
+  startDate: string; // ISO Date string YYYY-MM-DD
+  endDate: string; // ISO Date string YYYY-MM-DD
+  dayOfWeek: DayOfWeek;
+  startTime: string; // HH:mm format
+  endTime: string; // HH:mm format
+  purpose: string;
+}
+
 
 export interface DashboardStats {
   totalClassGroups: number;
