@@ -9,10 +9,18 @@ import { Badge } from '@/components/ui/badge';
 import { getRecurringReservations } from '@/lib/actions/recurring_reservations';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
-import type { ClassroomRecurringReservation, Classroom, ClassGroup } from '@/types';
+import type { ClassroomRecurringReservation, Classroom, ClassGroup, DayOfWeek } from '@/types';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DeleteRecurringReservationButton } from '@/components/reservations/DeleteRecurringReservationButton';
+
+interface EnrichedReservation extends ClassroomRecurringReservation {
+  classroomName: string;
+  classGroupName: string;
+  classGroupDays: DayOfWeek[];
+  formattedStartDate: string;
+  formattedEndDate: string;
+}
 
 export default async function ReservationsPage() {
   const reservations = await getRecurringReservations();
@@ -20,15 +28,19 @@ export default async function ReservationsPage() {
   const classGroups = await getClassGroups();
 
   const classroomMap = new Map(classrooms.map(c => [c.id, c.name]));
-  const classGroupMap = new Map(classGroups.map(cg => [cg.id, cg.name]));
+  const classGroupMap = new Map(classGroups.map(cg => [cg.id, { name: cg.name, classDays: cg.classDays }]));
 
-  const enrichedReservations = reservations.map(res => ({
-    ...res,
-    classroomName: classroomMap.get(res.classroomId) || 'Sala desconhecida',
-    classGroupName: classGroupMap.get(res.classGroupId) || 'Turma desconhecida',
-    formattedStartDate: format(parseISO(res.startDate), "dd/MM/yy", { locale: ptBR }),
-    formattedEndDate: format(parseISO(res.endDate), "dd/MM/yy", { locale: ptBR }),
-  }));
+  const enrichedReservations: EnrichedReservation[] = reservations.map(res => {
+    const classGroupDetails = classGroupMap.get(res.classGroupId);
+    return {
+      ...res,
+      classroomName: classroomMap.get(res.classroomId) || 'Sala desconhecida',
+      classGroupName: classGroupDetails?.name || 'Turma desconhecida',
+      classGroupDays: classGroupDetails?.classDays || [],
+      formattedStartDate: format(parseISO(res.startDate), "dd/MM/yy", { locale: ptBR }),
+      formattedEndDate: format(parseISO(res.endDate), "dd/MM/yy", { locale: ptBR }),
+    };
+  });
 
   return (
     <>
@@ -71,19 +83,31 @@ export default async function ReservationsPage() {
                   <TableHead>Propósito</TableHead>
                   <TableHead>Turma</TableHead>
                   <TableHead>Sala</TableHead>
-                  <TableHead>Dia</TableHead>
+                  <TableHead>Dias de Aula da Turma</TableHead>
                   <TableHead>Horário</TableHead>
                   <TableHead>Período</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {enrichedReservations.map((res: ClassroomRecurringReservation & { classroomName: string; classGroupName: string; formattedStartDate: string; formattedEndDate: string; }) => (
+                {enrichedReservations.map((res: EnrichedReservation) => (
                   <TableRow key={res.id}>
                     <TableCell className="font-medium">{res.purpose}</TableCell>
                     <TableCell>{res.classGroupName}</TableCell>
                     <TableCell>{res.classroomName}</TableCell>
-                    <TableCell><Badge variant="secondary">{res.dayOfWeek}</Badge></TableCell>
+                    <TableCell>
+                      {res.classGroupDays && res.classGroupDays.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {res.classGroupDays.map(day => (
+                            <Badge key={day} variant="secondary" className="text-xs">
+                              {day.substring(0,3)}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">N/D</span>
+                      )}
+                    </TableCell>
                     <TableCell>{res.startTime} - {res.endTime}</TableCell>
                     <TableCell>{res.formattedStartDate} - {res.formattedEndDate}</TableCell>
                     <TableCell className="text-right">

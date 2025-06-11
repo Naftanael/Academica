@@ -1,7 +1,7 @@
 
 import { z } from 'zod';
-import { DAYS_OF_WEEK } from '@/lib/constants';
-import type { DayOfWeek } from '@/types';
+// import { DAYS_OF_WEEK } from '@/lib/constants'; // No longer needed here
+// import type { DayOfWeek } from '@/types'; // No longer needed here
 import { isBefore, isEqual } from 'date-fns';
 
 const timeStringSchema = z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Formato de hora inválido. Use HH:MM.");
@@ -11,7 +11,7 @@ export const recurringReservationFormSchema = z.object({
   classroomId: z.string().min(1, "Selecione uma sala."),
   startDate: z.string().min(1, "Data de início é obrigatória."),
   endDate: z.string().min(1, "Data de fim é obrigatória."),
-  dayOfWeek: z.enum(DAYS_OF_WEEK as [DayOfWeek, ...DayOfWeek[]], { required_error: "Selecione um dia da semana." }),
+  // dayOfWeek: z.enum(DAYS_OF_WEEK as [DayOfWeek, ...DayOfWeek[]], { required_error: "Selecione um dia da semana." }), // Removed
   startTime: timeStringSchema,
   endTime: timeStringSchema,
   purpose: z.string().min(3, "O propósito deve ter pelo menos 3 caracteres.").max(100, "Propósito muito longo."),

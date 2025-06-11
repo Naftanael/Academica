@@ -3,7 +3,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassroomRecurringReservation, DayOfWeek } from '@/types';
+import type { ClassroomRecurringReservation } from '@/types'; // Removed DayOfWeek
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import { z } from 'zod'; // Keep z here for ZodError instance check
 
@@ -23,7 +23,7 @@ export async function createRecurringReservation(values: RecurringReservationFor
     const newReservation: ClassroomRecurringReservation = {
       id: generateId(),
       ...validatedValues,
-      dayOfWeek: validatedValues.dayOfWeek as DayOfWeek, // Ensure type
+      // dayOfWeek: validatedValues.dayOfWeek as DayOfWeek, // Removed: type already updated, field no longer in validatedValues
     };
 
     reservations.push(newReservation);

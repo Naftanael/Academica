@@ -34,8 +34,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { createRecurringReservation } from '@/lib/actions/recurring_reservations';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations'; // Updated import path
-import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
-import { DAYS_OF_WEEK } from '@/lib/constants';
+import type { ClassGroup, Classroom } from '@/types'; // Removed DayOfWeek
+// import { DAYS_OF_WEEK } from '@/lib/constants'; // No longer needed here
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 
@@ -57,7 +57,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
       classroomId: undefined,
       startDate: format(new Date(), 'yyyy-MM-dd'), // Store as YYYY-MM-DD string
       endDate: format(new Date(), 'yyyy-MM-dd'),   // Store as YYYY-MM-DD string
-      dayOfWeek: undefined,
+      // dayOfWeek: undefined, // Removed
       startTime: '08:00',
       endTime: '09:00',
       purpose: '',
@@ -271,6 +271,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
           />
         </div>
 
+        {/* DayOfWeek Field Removed
         <FormField
           control={form.control}
           name="dayOfWeek"
@@ -296,6 +297,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
             </FormItem>
           )}
         />
+        */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
