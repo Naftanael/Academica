@@ -1,12 +1,13 @@
 
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, DashboardStats, Classroom, Course } from '@/types';
+import type { ClassGroup, DashboardStats, Classroom } from '@/types'; // Removed Course type
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
-import { Progress } from "@/components/ui/progress";
+// Progress component might be unused now, but keeping for other potential uses.
+// import { Progress } from "@/components/ui/progress"; 
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -16,31 +17,18 @@ async function getDashboardData() {
 
   const currentDate = new Date();
 
-  const activeClassGroups = classGroups.filter(cg => cg.status === 'Em Andamento');
+  const activeClassGroupsData = classGroups.filter(cg => cg.status === 'Em Andamento');
   const plannedClassGroups = classGroups.filter(cg => cg.status === 'Planejada');
 
   const stats: DashboardStats = {
     totalClassGroups: classGroups.length,
-    activeClassGroups: activeClassGroups.length,
+    activeClassGroups: activeClassGroupsData.length,
     plannedClassGroups: plannedClassGroups.length,
     totalClassrooms: classrooms.length,
   };
 
   // Enhance active class groups with more details
-  const detailedActiveClassGroups = activeClassGroups.map(cg => {
-    const completedDisciplines = cg.disciplines.filter(d => d.completed).length;
-    const totalDisciplines = cg.disciplines.length;
-    const progress = totalDisciplines > 0 ? (completedDisciplines / totalDisciplines) * 100 : 0;
-    
-    let currentOrNextDiscipline: { name: string; } | null = null;
-    const firstPendingDisciplineCourseId = cg.disciplines.find(d => !d.completed)?.courseId;
-    if (firstPendingDisciplineCourseId) {
-        const course = courses.find(c => c.id === firstPendingDisciplineCourseId);
-        if (course) {
-            currentOrNextDiscipline = { name: course.name };
-        }
-    }
-
+  const detailedActiveClassGroups = activeClassGroupsData.map(cg => {
     const startDate = parseISO(cg.startDate);
     const endDate = parseISO(cg.endDate);
     const daysRemaining = differenceInDays(endDate, currentDate);
@@ -48,11 +36,7 @@ async function getDashboardData() {
 
     return {
       ...cg,
-      progress,
-      completedDisciplines,
-      totalDisciplines,
-      pendingDisciplines: totalDisciplines - completedDisciplines,
-      currentOrNextDiscipline,
+      // Removed discipline-related properties: progress, completedDisciplines, totalDisciplines, pendingDisciplines, currentOrNextDiscipline
       formattedStartDate: format(startDate, 'dd/MM/yyyy'),
       formattedEndDate: format(endDate, 'dd/MM/yyyy'),
       nearEnd,
@@ -62,15 +46,10 @@ async function getDashboardData() {
   return { stats, activeClassGroups: detailedActiveClassGroups, currentDate };
 }
 
-// Helper to get courses for discipline details, to be called inside getDashboardData
-let courses: Course[] = [];
-async function loadCourses() {
-    courses = await readData<Course>('courses.json');
-}
-
+// loadCourses function and 'courses' variable removed as they are no longer needed.
 
 export default async function DashboardPage() {
-  await loadCourses(); // load courses data to be available for getDashboardData
+  // await loadCourses(); // Removed
   const { stats, activeClassGroups, currentDate } = await getDashboardData();
 
   const statItems = [
@@ -122,26 +101,13 @@ export default async function DashboardPage() {
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Progresso</span>
-                      <span>{cg.completedDisciplines}/{cg.totalDisciplines} disciplinas</span>
-                    </div>
-                    <Progress value={cg.progress} className="h-2" />
-                  </div>
+                  {/* Removed Progress bar and discipline counts */}
                   <p className="text-sm">
                     <span className="font-medium">Período:</span> {cg.formattedStartDate} - {cg.formattedEndDate}
                   </p>
-                  {cg.currentOrNextDiscipline && (
-                    <p className="text-sm">
-                      <span className="font-medium">Próx. Disciplina:</span> {cg.currentOrNextDiscipline.name}
-                    </p>
-                  )}
-                  <p className="text-sm">
-                    <span className="font-medium">Disciplinas Pendentes:</span> {cg.pendingDisciplines}
-                  </p>
-                  <Link href={`/classgroups/${cg.id}`} className="text-sm text-primary hover:underline">
-                    Ver Detalhes da Turma
+                  {/* Removed Current/Next Discipline and Pending Disciplines */}
+                  <Link href={`/classgroups/${cg.id}`} className="text-sm text-primary hover:underline block mt-2">
+                    Ver Detalhes da Turma (em breve)
                   </Link>
                 </CardContent>
               </Card>

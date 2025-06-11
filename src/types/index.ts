@@ -14,22 +14,10 @@ export interface Course { // Este é o tipo para "Disciplinas"
   id: string;
   name: string;
   workload: number; // Quantidade de aulas
-  appCursoId?: string; // ID do AppCurso (Programa de Estudo) ao qual a disciplina estava vinculada
-                      // Este campo se tornará órfão após a remoção do módulo AppCurso.
+  // appCursoId?: string; // This field is effectively orphaned or unused if AppCurso module is gone
 }
 
-// AppCurso (Programa de Estudo) foi removido.
-// export interface AppCurso {
-//   id: string;
-//   name: string;
-// }
-
-export interface ClassGroupDiscipline {
-  courseId: string; // ID da Disciplina (do tipo Course)
-  completed: boolean;
-  startDate?: string; // ISO Date string
-  endDate?: string; // ISO Date string
-}
+// ClassGroupDiscipline interface removed as ClassGroup no longer tracks disciplines internally.
 
 export type ClassGroupStatus = 'Planejada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
 export type ClassGroupShift = 'Manhã' | 'Tarde' | 'Noite';
@@ -44,9 +32,7 @@ export interface ClassGroup {
   endDate: string; // ISO Date string
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
-  disciplines: ClassGroupDiscipline[];
-  appCursoId?: string; // ID do AppCurso (Programa de Estudo) ao qual a turma estava vinculada.
-                      // Este campo se tornará órfão após a remoção do módulo AppCurso.
+  // disciplines field removed for independence
 }
 
 export interface LabReservation {

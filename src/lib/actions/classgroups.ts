@@ -13,18 +13,12 @@ const classGroupFormSchema = z.object({
   shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { required_error: "Selecione um turno.", invalid_type_error: "Turno inválido." }),
   classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  appCursoId: z.string({ required_error: "Selecione um curso (programa)." }).min(1, { message: "Selecione um curso (programa)." }),
   // Fields not in the form but part of ClassGroup, will be defaulted for create
   year: z.number().optional(),
   status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  disciplines: z.array(z.object({
-    courseId: z.string(),
-    completed: z.boolean(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
-  })).optional(),
+  // disciplines field removed from schema
 });
 
 export type ClassGroupFormValues = z.infer<typeof classGroupFormSchema>;
@@ -45,12 +39,11 @@ export async function createClassGroup(values: ClassGroupFormValues) {
       name: validatedValues.name,
       shift: validatedValues.shift as ClassGroupShift,
       classDays: validatedValues.classDays as DayOfWeek[],
-      appCursoId: validatedValues.appCursoId,
       year: validatedValues.year || now.getFullYear(),
       status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
       startDate: validatedValues.startDate || formatISO(now),
       endDate: validatedValues.endDate || formatISO(addMonths(now, 1)),
-      disciplines: validatedValues.disciplines || [],
+      // disciplines field no longer part of ClassGroup
       assignedClassroomId: undefined,
     };
 
@@ -83,12 +76,12 @@ export async function updateClassGroup(id: string, values: ClassGroupFormValues)
     const existingClassGroup = classGroups[classGroupIndex];
     
     classGroups[classGroupIndex] = {
-      ...existingClassGroup,
+      ...existingClassGroup, // Spreads existing fields like id, year, status, startDate, endDate, assignedClassroomId
       name: validatedValues.name,
       shift: validatedValues.shift as ClassGroupShift,
       classDays: validatedValues.classDays as DayOfWeek[],
-      appCursoId: validatedValues.appCursoId,
-      // year, status, startDate, endDate, disciplines, assignedClassroomId are preserved
+      // year, status, startDate, endDate, assignedClassroomId are preserved if not directly in validatedValues
+      // disciplines field is no longer part of ClassGroup, so it's not carried over or updated.
     };
 
     await writeData<ClassGroup>('classgroups.json', classGroups);
