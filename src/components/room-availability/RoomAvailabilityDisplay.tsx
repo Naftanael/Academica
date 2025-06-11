@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, parseISO, isValid } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parseISO, isValid, differenceInDays, max as maxDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar as CalendarIcon, Search } from 'lucide-react';
 
@@ -32,7 +32,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
 
   const filterClassGroups = React.useCallback(() => {
     if (!startDate || !endDate) {
-      setDisplayedClassGroups([]); // Or show all if no date is set: initialClassGroups
+      setDisplayedClassGroups([]);
       return;
     }
 
@@ -42,8 +42,6 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       
       if (!isValid(cgStartDate) || !isValid(cgEndDate)) return false;
 
-      // Check for overlap:
-      // (GroupStart <= FilterEnd) and (GroupEnd >= FilterStart)
       return cgStartDate <= endDate && cgEndDate >= startDate;
     });
     setDisplayedClassGroups(filtered);
@@ -144,15 +142,46 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
             </TableHeader>
             <TableBody>
               {initialClassrooms.map((room: Classroom) => (
-                <TableRow key={room.id} className="hover:bg-muted/20">
+                <TableRow key={room.id} className="hover:bg-muted/20 transition-colors duration-150">
                   <TableCell className="font-medium sticky left-0 bg-card z-10 shadow-sm whitespace-nowrap">
                     {room.name}
                     <span className="text-xs text-muted-foreground ml-2">({room.capacity} lugares)</span>
                   </TableCell>
                   {DAYS_OF_WEEK.map(day => {
                     const scheduled = getScheduledGroups(room.id, day);
+                    let cellBgClass = 'bg-green-50 dark:bg-green-700/20'; // Default to "Livre" style
+
+                    if (scheduled.length > 0) {
+                      const endDates = scheduled
+                        .map(cg => parseISO(cg.endDate))
+                        .filter(date => isValid(date));
+                      
+                      if (endDates.length > 0) {
+                        const latestEndDate = maxDate(endDates);
+                        const daysRemaining = differenceInDays(latestEndDate, new Date());
+
+                        if (daysRemaining >= 0) {
+                          if (daysRemaining <= 7) {
+                            cellBgClass = 'bg-yellow-100 dark:bg-yellow-600/30'; 
+                          } else if (daysRemaining <= 30) {
+                            cellBgClass = 'bg-orange-100 dark:bg-orange-600/30';
+                          } else {
+                            cellBgClass = 'bg-red-100 dark:bg-red-600/30';
+                          }
+                        }
+                        // If daysRemaining < 0, it keeps the default "Livre" (green) style,
+                        // indicating the slot is now free from these past groups.
+                      }
+                    }
+
                     return (
-                      <TableCell key={day} className="text-center align-top p-2 h-[60px]"> {/* Min height for cells */}
+                      <TableCell 
+                        key={day} 
+                        className={cn(
+                          "text-center align-top p-2 h-[60px] transition-colors duration-150",
+                          cellBgClass
+                        )}
+                      >
                         {scheduled.length > 0 ? (
                           <div className="flex flex-col gap-1.5 items-center justify-center h-full">
                             {scheduled.map(cg => (
@@ -167,7 +196,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                             ))}
                           </div>
                         ) : (
-                          <span className="text-xs text-green-600 dark:text-green-400 flex items-center justify-center h-full">Livre</span>
+                          <span className="text-xs font-medium text-green-700 dark:text-green-300 flex items-center justify-center h-full">Livre</span>
                         )}
                       </TableCell>
                     );
@@ -181,4 +210,3 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     </div>
   );
 }
-
