@@ -10,7 +10,7 @@ import {
   CalendarDays,
   Landmark,
   ListChecks,
-  // GraduationCap, // Removido pois /app-cursos foi excluído
+  MonitorPlay, // Adicionado MonitorPlay
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -26,10 +26,10 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/classrooms', label: 'Salas de Aula', icon: School },
-  // { href: '/app-cursos', label: 'Cursos', icon: GraduationCap }, // Removido
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
   { href: '/reservations', label: 'Reservas', icon: ListChecks },
+  { href: '/tv-display', label: 'Painel TV', icon: MonitorPlay }, // Novo item adicionado
 ];
 
 export default function SidebarNav() {
