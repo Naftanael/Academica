@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
+// Removed z from here as schema is fully imported
 import { useRouter } from 'next/navigation';
 import { CalendarPlus, Save } from 'lucide-react';
 import { format } from 'date-fns';
@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+// Textarea import removed as it's not used
 import {
   Select,
   SelectContent,
@@ -32,7 +32,8 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { createRecurringReservation, recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/actions/recurring_reservations';
+import { createRecurringReservation } from '@/lib/actions/recurring_reservations';
+import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations'; // Updated import path
 import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -54,8 +55,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     defaultValues: {
       classGroupId: undefined,
       classroomId: undefined,
-      startDate: format(new Date(), 'yyyy-MM-dd'),
-      endDate: format(new Date(), 'yyyy-MM-dd'),
+      startDate: format(new Date(), 'yyyy-MM-dd'), // Store as YYYY-MM-DD string
+      endDate: format(new Date(), 'yyyy-MM-dd'),   // Store as YYYY-MM-DD string
       dayOfWeek: undefined,
       startTime: '08:00',
       endTime: '09:00',
@@ -66,11 +67,10 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
   async function onSubmit(values: RecurringReservationFormValues) {
     setIsPending(true);
     
-    // Ensure dates are in YYYY-MM-DD for the server action
+    // Dates are already in YYYY-MM-DD string format from the form defaultValues and Calendar onSelect.
+    // No further transformation needed here if Calendar always returns 'yyyy-MM-dd'.
     const submissionValues = {
         ...values,
-        startDate: format(new Date(values.startDate), 'yyyy-MM-dd'),
-        endDate: format(new Date(values.endDate), 'yyyy-MM-dd'),
     };
 
     const result = await createRecurringReservation(submissionValues);
@@ -199,7 +199,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                         )}
                       >
                         {field.value ? (
-                          format(new Date(field.value), "PPP", { locale: ptBR })
+                          format(new Date(field.value + "T00:00:00"), "PPP", { locale: ptBR }) // Ensure parsing as local date
                         ) : (
                           <span>Escolha uma data</span>
                         )}
@@ -210,7 +210,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
+                      selected={field.value ? new Date(field.value + "T00:00:00") : undefined} // Ensure parsing as local date
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       initialFocus
                       locale={ptBR}
@@ -240,7 +240,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                         )}
                       >
                         {field.value ? (
-                          format(new Date(field.value), "PPP", { locale: ptBR })
+                           format(new Date(field.value + "T00:00:00"), "PPP", { locale: ptBR }) // Ensure parsing as local date
                         ) : (
                           <span>Escolha uma data</span>
                         )}
@@ -251,11 +251,14 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
+                      selected={field.value ? new Date(field.value + "T00:00:00") : undefined} // Ensure parsing as local date
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
-                      disabled={(date) =>
-                        form.getValues("startDate") ? date < new Date(form.getValues("startDate")) : false
-                      }
+                      disabled={(date) => {
+                        const startDateVal = form.getValues("startDate");
+                        if (!startDateVal) return false;
+                        // Ensure comparison is with local dates
+                        return date < new Date(startDateVal + "T00:00:00"); 
+                      }}
                       initialFocus
                       locale={ptBR}
                     />
