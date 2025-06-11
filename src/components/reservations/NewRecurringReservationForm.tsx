@@ -4,10 +4,9 @@
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-// Removed z from here as schema is fully imported
 import { useRouter } from 'next/navigation';
 import { CalendarPlus, Save, CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +20,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-// Textarea import removed as it's not used
 import {
   Select,
   SelectContent,
@@ -34,41 +32,99 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { createRecurringReservation } from '@/lib/actions/recurring_reservations';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
-import type { ClassGroup, Classroom } from '@/types';
-// import { DAYS_OF_WEEK } from '@/lib/constants'; // No longer needed here
+import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
 import { cn } from '@/lib/utils';
-
 
 interface NewRecurringReservationFormProps {
   classGroups: ClassGroup[];
   classrooms: Classroom[];
 }
 
+const dayOfWeekMapping: Record<DayOfWeek, number> = {
+  'Domingo': 0,
+  'Segunda': 1,
+  'Terça': 2,
+  'Quarta': 3,
+  'Quinta': 4,
+  'Sexta': 5,
+  'Sábado': 6
+};
+
 export default function NewRecurringReservationForm({ classGroups, classrooms }: NewRecurringReservationFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, setIsPending] = React.useState(false);
+  const [selectedClassGroup, setSelectedClassGroup] = React.useState<ClassGroup | undefined>(undefined);
 
   const form = useForm<RecurringReservationFormValues>({
     resolver: zodResolver(recurringReservationFormSchema),
     defaultValues: {
       classGroupId: undefined,
       classroomId: undefined,
-      startDate: format(new Date(), 'yyyy-MM-dd'), // Store as YYYY-MM-DD string
-      endDate: format(new Date(), 'yyyy-MM-dd'),   // Store as YYYY-MM-DD string
-      // dayOfWeek: undefined, // Removed
+      startDate: format(new Date(), 'yyyy-MM-dd'),
+      endDate: format(new Date(), 'yyyy-MM-dd'),
       startTime: '08:00',
       endTime: '09:00',
       purpose: '',
     },
   });
 
+  const watchedClassGroupId = form.watch("classGroupId");
+  const watchedStartDate = form.watch("startDate");
+  const watchedEndDate = form.watch("endDate");
+
+  React.useEffect(() => {
+    if (watchedClassGroupId) {
+      setSelectedClassGroup(classGroups.find(cg => cg.id === watchedClassGroupId));
+    } else {
+      setSelectedClassGroup(undefined);
+    }
+  }, [watchedClassGroupId, classGroups]);
+
+  const classDayInRangeModifier = (date: Date): boolean => {
+    if (!selectedClassGroup || !selectedClassGroup.classDays.length || !watchedStartDate || !watchedEndDate) {
+      return false;
+    }
+
+    const rStart = parse(watchedStartDate, 'yyyy-MM-dd', new Date());
+    const rEnd = parse(watchedEndDate, 'yyyy-MM-dd', new Date());
+
+    if (!isValid(rStart) || !isValid(rEnd) || isBefore(rEnd, rStart)) {
+      return false;
+    }
+    
+    // Check if the current calendar date is within the selected reservation interval (inclusive)
+    const dateIsWithinInterval = 
+      (isAfter(date, rStart) || isEqual(date, rStart)) &&
+      (isBefore(date, rEnd) || isEqual(date, rEnd));
+
+    if (!dateIsWithinInterval) {
+        return false;
+    }
+
+    const dayNum = getDay(date); // 0 for Sunday, 1 for Monday, etc.
+    const numericalClassDays = selectedClassGroup.classDays.map(d => dayOfWeekMapping[d]);
+    
+    return numericalClassDays.includes(dayNum);
+  };
+
+  const modifiers = { 
+    isClassDayInRange: classDayInRangeModifier,
+  };
+
+  const modifiersStyles = {
+    isClassDayInRange: {
+      backgroundColor: 'hsl(var(--accent) / 0.3)', // Light orange background
+      color: 'hsl(var(--foreground))', // Keep text color normal
+      borderRadius: '0.25rem',
+    },
+  };
+
+
   async function onSubmit(values: RecurringReservationFormValues) {
     setIsPending(true);
     
-    const submissionValues = {
-        ...values,
-    };
+    const submissionValues = { ...values };
 
     const result = await createRecurringReservation(submissionValues);
     setIsPending(false);
@@ -104,6 +160,12 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     }
   }
 
+  const isEqual = (dateLeft: Date, dateRight: Date): boolean => {
+    return dateLeft.getFullYear() === dateRight.getFullYear() &&
+           dateLeft.getMonth() === dateRight.getMonth() &&
+           dateLeft.getDate() === dateRight.getDate();
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -130,7 +192,14 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
           render={({ field }) => (
             <FormItem>
               <FormLabel>Turma</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  const group = classGroups.find(cg => cg.id === value);
+                  setSelectedClassGroup(group);
+                }} 
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a turma" />
@@ -140,12 +209,12 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   {classGroups.length === 0 && <SelectItem value="no-cg" disabled>Nenhuma turma cadastrada</SelectItem>}
                   {classGroups.map((cg) => (
                     <SelectItem key={cg.id} value={cg.id}>
-                      {cg.name} ({cg.shift})
+                      {cg.name} ({cg.shift}) - Dias: {cg.classDays.join(', ').substring(0,20)}...
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>A turma que utilizará a sala.</FormDescription>
+              <FormDescription>A turma que utilizará a sala. Os dias de aula desta turma serão usados para a reserva.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -196,7 +265,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                         )}
                       >
                         {field.value ? (
-                          format(new Date(field.value + "T00:00:00"), "PPP", { locale: ptBR }) // Ensure parsing as local date
+                          format(parse(field.value, 'yyyy-MM-dd', new Date()), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
                         )}
@@ -207,10 +276,12 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value + "T00:00:00") : undefined} // Ensure parsing as local date
+                      selected={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       initialFocus
                       locale={ptBR}
+                      modifiers={modifiers}
+                      modifiersStyles={modifiersStyles}
                     />
                   </PopoverContent>
                 </Popover>
@@ -237,7 +308,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                         )}
                       >
                         {field.value ? (
-                           format(new Date(field.value + "T00:00:00"), "PPP", { locale: ptBR }) // Ensure parsing as local date
+                           format(parse(field.value, 'yyyy-MM-dd', new Date()), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
                         )}
@@ -248,18 +319,19 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value + "T00:00:00") : undefined} // Ensure parsing as local date
+                      selected={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       disabled={(date) => {
                         const startDateVal = form.getValues("startDate");
-                        // Ensure startDateVal is a valid date string before creating a Date object
-                        if (!startDateVal || !/^\d{4}-\d{2}-\d{2}$/.test(startDateVal)) return false;
-                        const localStartDate = new Date(startDateVal + "T00:00:00");
-                        if (isNaN(localStartDate.getTime())) return false;
-                        return date < localStartDate;
+                        if (!startDateVal) return false;
+                        const localStartDate = parse(startDateVal, 'yyyy-MM-dd', new Date());
+                        if (!isValid(localStartDate)) return false;
+                        return isBefore(date, localStartDate);
                       }}
                       initialFocus
                       locale={ptBR}
+                      modifiers={modifiers}
+                      modifiersStyles={modifiersStyles}
                     />
                   </PopoverContent>
                 </Popover>
@@ -269,8 +341,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
             )}
           />
         </div>
-
-        {/* DayOfWeek Field Removed */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
@@ -315,3 +385,4 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     </Form>
   );
 }
+
