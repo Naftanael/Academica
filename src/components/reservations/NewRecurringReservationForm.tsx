@@ -3,10 +3,10 @@
 
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 // Removed z from here as schema is fully imported
 import { useRouter } from 'next/navigation';
-import { CalendarPlus, Save } from 'lucide-react';
+import { CalendarPlus, Save, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -33,11 +33,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { createRecurringReservation } from '@/lib/actions/recurring_reservations';
-import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations'; // Updated import path
-import type { ClassGroup, Classroom } from '@/types'; // Removed DayOfWeek
+import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
+import type { ClassGroup, Classroom } from '@/types';
 // import { DAYS_OF_WEEK } from '@/lib/constants'; // No longer needed here
 import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
 
 
 interface NewRecurringReservationFormProps {
@@ -67,8 +66,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
   async function onSubmit(values: RecurringReservationFormValues) {
     setIsPending(true);
     
-    // Dates are already in YYYY-MM-DD string format from the form defaultValues and Calendar onSelect.
-    // No further transformation needed here if Calendar always returns 'yyyy-MM-dd'.
     const submissionValues = {
         ...values,
     };
@@ -255,9 +252,11 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       disabled={(date) => {
                         const startDateVal = form.getValues("startDate");
-                        if (!startDateVal) return false;
-                        // Ensure comparison is with local dates
-                        return date < new Date(startDateVal + "T00:00:00"); 
+                        // Ensure startDateVal is a valid date string before creating a Date object
+                        if (!startDateVal || !/^\d{4}-\d{2}-\d{2}$/.test(startDateVal)) return false;
+                        const localStartDate = new Date(startDateVal + "T00:00:00");
+                        if (isNaN(localStartDate.getTime())) return false;
+                        return date < localStartDate;
                       }}
                       initialFocus
                       locale={ptBR}
@@ -271,33 +270,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
           />
         </div>
 
-        {/* DayOfWeek Field Removed
-        <FormField
-          control={form.control}
-          name="dayOfWeek"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dia da Semana</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o dia da semana para a reserva" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {DAYS_OF_WEEK.map((day) => (
-                    <SelectItem key={day} value={day}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>O dia em que a reserva se repetirá semanalmente.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        */}
+        {/* DayOfWeek Field Removed */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
