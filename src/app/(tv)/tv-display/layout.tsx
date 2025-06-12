@@ -1,24 +1,27 @@
 
+import type { Metadata } from 'next';
 import '../../globals.css'; // Adjusted path for globals.css
+
+export const metadata: Metadata = {
+  title: 'Painel de Turmas - Academica',
+  description: 'Visualização de turmas e suas salas em tempo real.',
+};
 
 export default function TvDisplayLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // This layout is rendered *inside* the RootLayout's body and AppShell.
+  // It cannot define its own <html>, <head>, <body> tags.
+  // Head elements like title and description are handled by exporting `metadata`.
+  // The Inter font is loaded by the RootLayout.
+  // The meta refresh tag is omitted; if needed, it should be handled client-side in the page.
+
+  // Apply specific styling for the TV display content area.
   return (
-    <html lang="pt-BR">
-      <head>
-        <title>Painel de Turmas - Academica</title>
-        <meta name="description" content="Visualização de turmas e suas salas em tempo real." />
-        <meta httpEquiv="refresh" content="300" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased bg-gray-900 text-white">
-        {children}
-      </body>
-    </html>
+    <div className="font-body antialiased bg-gray-900 text-white min-h-screen flex flex-col">
+      {children}
+    </div>
   );
 }
