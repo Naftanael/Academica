@@ -19,7 +19,11 @@
     "id": "cg-2024-001",
     "name": "FMC10",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -30,7 +34,9 @@
     "id": "cg-2024-002",
     "name": "FMC09",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -41,7 +47,11 @@
     "id": "cg-2024-003",
     "name": "RAD19",
     "shift": "Noite",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -52,7 +62,11 @@
     "id": "cg-2024-004",
     "name": "FMC09",
     "shift": "Noite",
-    "classDays": ["Terça", "Quinta"],
+    "classDays": [
+      "Terça",
+      "Quinta",
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -63,7 +77,10 @@
     "id": "cg-2024-005",
     "name": "ENF88",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta"],
+    "classDays": [
+      "Segunda",
+      "Quarta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -74,7 +91,10 @@
     "id": "cg-2024-006",
     "name": "ENF87",
     "shift": "Tarde",
-    "classDays": ["Terça", "Quinta"],
+    "classDays": [
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -85,7 +105,9 @@
     "id": "cg-2024-007",
     "name": "RAD21",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -96,7 +118,11 @@
     "id": "cg-2024-008",
     "name": "RAD29",
     "shift": "Noite",
-    "classDays": ["Segunda", "Terça", "Quinta"],
+    "classDays": [
+      "Segunda",
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -107,7 +133,11 @@
     "id": "cg-2024-009",
     "name": "ENF57",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -118,7 +148,11 @@
     "id": "cg-2024-010",
     "name": "ENF55",
     "shift": "Tarde",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -129,7 +163,9 @@
     "id": "cg-2024-011",
     "name": "ADM20",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -140,7 +176,11 @@
     "id": "cg-2024-012",
     "name": "ENF84",
     "shift": "Noite",
-    "classDays": ["Segunda", "Terça", "Quinta"],
+    "classDays": [
+      "Segunda",
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -151,7 +191,11 @@
     "id": "cg-2024-013",
     "name": "ENF74",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -162,7 +206,11 @@
     "id": "cg-2024-014",
     "name": "ADM21",
     "shift": "Manhã",
-    "classDays": ["Terça", "Quinta", "Sábado"],
+    "classDays": [
+      "Terça",
+      "Quinta",
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -173,7 +221,11 @@
     "id": "cg-2024-015",
     "name": "ENF66",
     "shift": "Tarde",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -184,7 +236,9 @@
     "id": "cg-2024-016",
     "name": "ENF54",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -195,7 +249,11 @@
     "id": "cg-2024-017",
     "name": "ENF75",
     "shift": "Noite",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -206,7 +264,10 @@
     "id": "cg-2024-018",
     "name": "RAD21",
     "shift": "Noite",
-    "classDays": ["Terça", "Quinta"],
+    "classDays": [
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Planejada",
     "startDate": "2024-01-15T00:00:00Z",
@@ -217,7 +278,11 @@
     "id": "imgdata-001-enf85",
     "name": "ENF85",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Terça", "Quinta"],
+    "classDays": [
+      "Segunda",
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -228,7 +293,11 @@
     "id": "imgdata-002-enf81",
     "name": "ENF81",
     "shift": "Tarde",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -239,7 +308,9 @@
     "id": "imgdata-003-enf58",
     "name": "ENF58",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -250,7 +321,9 @@
     "id": "imgdata-004-enf84",
     "name": "ENF84",
     "shift": "Noite",
-    "classDays": ["Segunda"],
+    "classDays": [
+      "Segunda"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -261,7 +334,10 @@
     "id": "imgdata-005-adm20",
     "name": "ADM20",
     "shift": "Noite",
-    "classDays": ["Terça", "Quinta"],
+    "classDays": [
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -272,7 +348,11 @@
     "id": "imgdata-006-fmc08",
     "name": "FMC08",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -283,7 +363,9 @@
     "id": "imgdata-007-cdi07im",
     "name": "CDI07-I",
     "shift": "Manhã",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -294,7 +376,11 @@
     "id": "imgdata-008-enf62",
     "name": "ENF62",
     "shift": "Tarde",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -305,7 +391,9 @@
     "id": "imgdata-009-cdi07it",
     "name": "CDI07-I",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -316,7 +404,11 @@
     "id": "imgdata-010-enf68",
     "name": "ENF68",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -327,7 +419,9 @@
     "id": "imgdata-011-fmc11t",
     "name": "FMC11",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -338,7 +432,11 @@
     "id": "imgdata-012-enf56",
     "name": "ENF56",
     "shift": "Noite",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -349,7 +447,10 @@
     "id": "imgdata-013-fmc11n",
     "name": "FMC11",
     "shift": "Noite",
-    "classDays": ["Terça", "Quinta"],
+    "classDays": [
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -360,7 +461,11 @@
     "id": "imgdata-014-enf83",
     "name": "ENF83",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -371,7 +476,11 @@
     "id": "imgdata-015-enf73m",
     "name": "ENF73",
     "shift": "Manhã",
-    "classDays": ["Terça", "Quinta", "Sábado"],
+    "classDays": [
+      "Terça",
+      "Quinta",
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -382,7 +491,9 @@
     "id": "imgdata-016-enf72t",
     "name": "ENF72",
     "shift": "Tarde",
-    "classDays": ["Sábado"],
+    "classDays": [
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -393,7 +504,11 @@
     "id": "imgdata-017-enf82",
     "name": "ENF82",
     "shift": "Noite",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -404,7 +519,10 @@
     "id": "imgdata-018-enf72n",
     "name": "ENF72",
     "shift": "Noite",
-    "classDays": ["Terça", "Quinta"],
+    "classDays": [
+      "Terça",
+      "Quinta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -415,7 +533,11 @@
     "id": "imgdata-019-rad22",
     "name": "RAD22",
     "shift": "Manhã",
-    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "classDays": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
@@ -426,11 +548,171 @@
     "id": "imgdata-020-fmc05",
     "name": "FMC05",
     "shift": "Manhã",
-    "classDays": ["Terça", "Quinta", "Sábado"],
+    "classDays": [
+      "Terça",
+      "Quinta",
+      "Sábado"
+    ],
     "year": 2024,
     "status": "Em Andamento",
     "startDate": "2024-08-01T00:00:00Z",
     "endDate": "2024-12-20T00:00:00Z",
     "assignedClassroomId": "new-sala-9-aaabbbkkk"
+  },
+  {
+    "id": "imgdata2-001-fmc06",
+    "name": "FMC06",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-9-aaabbbkkk"
+  },
+  {
+    "id": "imgdata2-002-enf80",
+    "name": "ENF80",
+    "shift": "Manhã",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-10-aaabbblll"
+  },
+  {
+    "id": "imgdata2-003-enf76",
+    "name": "ENF76",
+    "shift": "Tarde",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-10-aaabbblll"
+  },
+  {
+    "id": "imgdata2-004-enf79-tarde",
+    "name": "ENF79",
+    "shift": "Tarde",
+    "classDays": ["Sábado"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-10-aaabbblll"
+  },
+  {
+    "id": "imgdata2-005-enf86",
+    "name": "ENF86",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-10-aaabbblll"
+  },
+  {
+    "id": "imgdata2-006-enf79-noite",
+    "name": "ENF79",
+    "shift": "Noite",
+    "classDays": ["Terça", "Quinta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-10-aaabbblll"
+  },
+  {
+    "id": "imgdata2-007-rad24",
+    "name": "RAD24",
+    "shift": "Manhã",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-11-aaabbbmmm"
+  },
+  {
+    "id": "imgdata2-008-adm13-tarde",
+    "name": "ADM13",
+    "shift": "Tarde",
+    "classDays": ["Sábado"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-11-aaabbbmmm"
+  },
+  {
+    "id": "imgdata2-009-rad18",
+    "name": "RAD18",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-11-aaabbbmmm"
+  },
+  {
+    "id": "imgdata2-010-adm13-noite",
+    "name": "ADM13",
+    "shift": "Noite",
+    "classDays": ["Terça", "Quinta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-11-aaabbbmmm"
+  },
+  {
+    "id": "imgdata2-011-fmc13",
+    "name": "FMC13",
+    "shift": "Manhã",
+    "classDays": ["Terça", "Quarta", "Quinta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-12-aaabbbnnn"
+  },
+  {
+    "id": "imgdata2-012-fmc12-tarde",
+    "name": "FMC12",
+    "shift": "Tarde",
+    "classDays": ["Sábado"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-12-aaabbbnnn"
+  },
+  {
+    "id": "imgdata2-013-rad30",
+    "name": "RAD30",
+    "shift": "Noite",
+    "classDays": ["Segunda", "Quarta", "Sexta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-12-aaabbbnnn"
+  },
+  {
+    "id": "imgdata2-014-fmc12-noite",
+    "name": "FMC12",
+    "shift": "Noite",
+    "classDays": ["Terça", "Quinta"],
+    "year": 2024,
+    "status": "Em Andamento",
+    "startDate": "2024-08-01T00:00:00Z",
+    "endDate": "2024-12-20T00:00:00Z",
+    "assignedClassroomId": "new-sala-12-aaabbbnnn"
   }
 ]
+
+    
