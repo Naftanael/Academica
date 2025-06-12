@@ -25,6 +25,28 @@ interface RoomAvailabilityDisplayProps {
   initialClassGroups: ClassGroup[];
 }
 
+// Helper function to get color classes based on course prefix
+const getCourseColorClasses = (groupName: string): string => {
+  const prefixMatch = groupName.match(/^([A-Z]+)/);
+  const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
+
+  switch (prefix) {
+    case 'ENF':
+      return 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-700/30 dark:text-sky-200 dark:border-sky-600';
+    case 'FMC':
+      return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-700/30 dark:text-amber-200 dark:border-amber-600';
+    case 'RAD':
+      return 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-700/30 dark:text-lime-200 dark:border-lime-600';
+    case 'ADM':
+      return 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-700/30 dark:text-purple-200 dark:border-purple-600';
+    case 'CDI':
+      return 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-700/30 dark:text-pink-200 dark:border-pink-600';
+    default:
+      return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700/30 dark:text-slate-200 dark:border-slate-600'; // Default/Secondary like
+  }
+};
+
+
 export default function RoomAvailabilityDisplay({ initialClassrooms, initialClassGroups }: RoomAvailabilityDisplayProps) {
   const [startDate, setStartDate] = useState<Date | undefined>(startOfMonth(new Date()));
   const [endDate, setEndDate] = useState<Date | undefined>(endOfMonth(new Date()));
@@ -67,7 +89,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     );
 
     if (groupsInCellToday.length === 0) {
-      return 'bg-green-50 dark:bg-green-800/30'; // Livre
+      return 'bg-green-50 dark:bg-green-800/20'; // Livre
     }
 
     const endDates = groupsInCellToday
@@ -75,22 +97,22 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       .filter(date => isValid(date));
     
     if (endDates.length === 0) { 
-      return 'bg-green-50 dark:bg-green-800/30';
+      return 'bg-green-50 dark:bg-green-800/20';
     }
 
     const latestEndDateInCell = maxDate(endDates);
     const daysRemaining = differenceInDays(latestEndDateInCell, new Date());
 
     if (daysRemaining < 0) { 
-      return 'bg-green-50 dark:bg-green-800/30';
+      return 'bg-green-50 dark:bg-green-800/20';
     }
     if (daysRemaining <= 7) {
-      return 'bg-yellow-100 dark:bg-yellow-700/40'; 
+      return 'bg-yellow-100 dark:bg-yellow-600/30'; 
     }
     if (daysRemaining <= 30) {
-      return 'bg-orange-100 dark:bg-orange-700/40'; 
+      return 'bg-orange-100 dark:bg-orange-600/30'; 
     }
-    return 'bg-red-100 dark:bg-red-700/40'; 
+    return 'bg-red-100 dark:bg-red-600/30'; 
   };
 
 
@@ -203,8 +225,10 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                                     {scheduledForShift.map(cg => (
                                       <Badge 
                                         key={cg.id} 
-                                        variant="secondary" 
-                                        className="text-xs px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight"
+                                        className={cn(
+                                          "text-xs px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border",
+                                          getCourseColorClasses(cg.name)
+                                        )}
                                         title={`${cg.name}`}
                                       >
                                         {cg.name}
@@ -230,4 +254,3 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     </div>
   );
 }
-
