@@ -30,21 +30,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { createClassGroup, type ClassGroupFormValues } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
-import type { AppCurso } from '@/types'; // Changed from Course to AppCurso
+// AppCurso type import removed as it's no longer used
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
   shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { required_error: "Selecione um turno.", invalid_type_error: "Turno inválido." }),
   classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  appCursoId: z.string({ required_error: "Selecione um curso (programa)." }).min(1, { message: "Selecione um curso (programa)." }), // Changed from courseId to appCursoId
+  // appCursoId field removed from schema
 });
 
-interface NewClassGroupFormProps {
-  appCursos: AppCurso[]; // Changed from courses: Course[] to appCursos: AppCurso[]
-}
+// Interface NewClassGroupFormProps removed as appCursos is no longer a prop
+// interface NewClassGroupFormProps {
+//   appCursos: AppCurso[];
+// }
 
-export default function NewClassGroupForm({ appCursos }: NewClassGroupFormProps) { // Changed prop name
+export default function NewClassGroupForm(/* { appCursos }: NewClassGroupFormProps */) { // appCursos prop removed
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, setIsPending] = React.useState(false);
@@ -55,13 +56,14 @@ export default function NewClassGroupForm({ appCursos }: NewClassGroupFormProps)
       name: '',
       shift: undefined,
       classDays: [],
-      appCursoId: undefined, // Changed from courseId to appCursoId
+      // appCursoId: undefined, // Removed
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsPending(true);
-    const result = await createClassGroup(values);
+    // The createClassGroup action now expects values that match the updated schema (without appCursoId)
+    const result = await createClassGroup(values as ClassGroupFormValues);
     setIsPending(false);
 
     if (result.success) {
@@ -114,38 +116,7 @@ export default function NewClassGroupForm({ appCursos }: NewClassGroupFormProps)
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="appCursoId" // Changed from courseId to appCursoId
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Curso (Programa)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o curso (programa) da turma" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {appCursos.length === 0 && (
-                    <SelectItem value="no-app-cursos" disabled>
-                      Nenhum curso (programa) cadastrado.
-                    </SelectItem>
-                  )}
-                  {appCursos.map((ac) => ( // Changed from course to ac (AppCurso)
-                    <SelectItem key={ac.id} value={ac.id}>
-                      {ac.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                O curso (programa de estudo) ao qual esta turma pertence.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* FormField for appCursoId removed */}
         <FormField
           control={form.control}
           name="shift"
