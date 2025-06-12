@@ -123,7 +123,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
                     <DoorOpen className="w-12 h-12 md:w-16 md:h-16 text-accent mr-4 shrink-0" />
                     <div>
                       <p className="text-base text-muted-foreground uppercase tracking-wider">Sala Atual</p>
-                      <p className="text-3xl md:text-4xl font-semibold text-accent truncate" title={item.classroomName}>
+                      <p className="text-3xl md:text-4xl font-semibold text-foreground truncate" title={item.classroomName}>
                         {item.classroomName}
                       </p>
                     </div>
