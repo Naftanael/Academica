@@ -169,7 +169,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
           <Table className="min-w-full">
             <TableHeader className="sticky top-0 z-20 bg-muted/80 dark:bg-muted backdrop-blur-sm">
               <TableRow>
-                <TableHead className="min-w-[150px] w-[150px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground">Sala</TableHead>
+                <TableHead className="min-w-[180px] w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground">Sala</TableHead>
                 {DAYS_OF_WEEK.map(day => (
                   <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground">{day}</TableHead>
                 ))}
@@ -178,7 +178,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
             <TableBody>
               {initialClassrooms.map((room: Classroom) => (
                 <TableRow key={room.id} className="hover:bg-muted/20 transition-colors duration-150">
-                  <TableCell className="font-medium sticky left-0 bg-card dark:bg-background z-10 shadow-sm whitespace-nowrap text-sm py-3 px-2">
+                  <TableCell className="font-medium sticky left-0 bg-card dark:bg-background z-10 shadow-sm whitespace-nowrap text-sm py-3 px-3">
                     {room.name}
                     <span className="block text-xs text-muted-foreground mt-0.5">({room.capacity} lugares)</span>
                   </TableCell>
