@@ -46,8 +46,8 @@ const getCourseColorClasses = (groupName: string): string => {
   }
 };
 
-// Helper to get day of month for header
-const getDayOfMonthForHeader = (targetDay: DayOfWeek, currentFilterStartDate: Date | undefined): string => {
+// Helper to get formatted date string for header
+const getColumnDateString = (targetDay: DayOfWeek, currentFilterStartDate: Date | undefined): string => {
   if (!currentFilterStartDate) return '';
 
   const mondayOfFilterWeek = startOfWeek(currentFilterStartDate, { weekStartsOn: 1 }); // 1 for Monday
@@ -59,7 +59,7 @@ const getDayOfMonthForHeader = (targetDay: DayOfWeek, currentFilterStartDate: Da
 
   const daysToAdd = targetDayIndexInOrder;
   const dateForColumn = addDays(mondayOfFilterWeek, daysToAdd);
-  return format(dateForColumn, 'd');
+  return format(dateForColumn, 'dd/MMM', { locale: ptBR });
 };
 
 
@@ -208,14 +208,14 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
               <TableRow>
                 <TableHead className="min-w-[180px] w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r px-3 py-3">Sala</TableHead>
                 {DAYS_OF_WEEK.map(day => {
-                  const dayOfMonth = getDayOfMonthForHeader(day, startDate);
+                  const columnDateStr = getColumnDateString(day, startDate);
                   return (
-                    <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r">
+                    <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r px-2 py-3">
                       {day}
-                      {dayOfMonth && (
+                      {columnDateStr && (
                         <>
                           <br />
-                          <span className="text-sm font-medium text-muted-foreground">({dayOfMonth})</span>
+                          <span className="text-xs font-medium text-muted-foreground">{columnDateStr}</span>
                         </>
                       )}
                     </TableHead>
