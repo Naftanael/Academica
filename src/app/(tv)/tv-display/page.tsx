@@ -2,8 +2,7 @@
 import { getClassGroups } from '@/lib/actions/classgroups';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import type { ClassGroup, Classroom, ClassGroupShift } from '@/types';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+// format from date-fns is no longer needed here for initial render
 import TvDisplayClient, { type TvDisplayInfo } from '@/components/tv-display/TvDisplayClient';
 
 function getCurrentShift(hour: number): ClassGroupShift {
@@ -20,7 +19,7 @@ export default async function TvDisplayPage() {
   const classGroups = await getClassGroups();
   const classrooms = await getClassrooms();
 
-  const now = new Date();
+  const now = new Date(); // Server's current time
   const currentHour = now.getHours();
   const currentShift = getCurrentShift(currentHour);
 
@@ -38,15 +37,13 @@ export default async function TvDisplayPage() {
     };
   });
 
-  const initialCurrentDateHeader = format(now, "EEEE, dd 'de' MMMM", { locale: ptBR });
-  const initialCurrentTime = format(now, "HH:mm", { locale: ptBR });
+  // initialCurrentDateHeader and initialCurrentTime are no longer passed
+  // TvDisplayClient will handle its own date/time initialization client-side
 
   return (
     <TvDisplayClient
       initialDisplayData={displayData}
-      initialCurrentDateHeader={initialCurrentDateHeader}
-      initialCurrentTime={initialCurrentTime}
+      // initialCurrentDateHeader and initialCurrentTime props removed
     />
   );
 }
-

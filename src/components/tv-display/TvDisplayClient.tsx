@@ -16,15 +16,17 @@ export interface TvDisplayInfo {
 
 interface TvDisplayClientProps {
   initialDisplayData: TvDisplayInfo[];
-  initialCurrentDateHeader: string;
-  initialCurrentTime: string;
+  // initialCurrentDateHeader and initialCurrentTime props removed
 }
 
-export default function TvDisplayClient({ initialDisplayData, initialCurrentDateHeader, initialCurrentTime }: TvDisplayClientProps) {
+const PLACEHOLDER_TIME = "--:--";
+const PLACEHOLDER_DATE = "Carregando data...";
+
+export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientProps) {
   const router = useRouter();
   const [displayData, setDisplayData] = React.useState<TvDisplayInfo[]>(initialDisplayData);
-  const [liveCurrentTime, setLiveCurrentTime] = React.useState<string>(initialCurrentTime);
-  const [liveCurrentDateHeader, setLiveCurrentDateHeader] = React.useState<string>(initialCurrentDateHeader);
+  const [liveCurrentTime, setLiveCurrentTime] = React.useState<string>(PLACEHOLDER_TIME);
+  const [liveCurrentDateHeader, setLiveCurrentDateHeader] = React.useState<string>(PLACEHOLDER_DATE);
 
   // Effect to refresh data every 10 seconds
   React.useEffect(() => {
@@ -37,16 +39,20 @@ export default function TvDisplayClient({ initialDisplayData, initialCurrentDate
 
   // Effect to update the live clock every second
   React.useEffect(() => {
-    const clockIntervalId = setInterval(() => {
+    const updateDateTime = () => {
       const now = new Date();
       setLiveCurrentTime(format(now, "HH:mm", { locale: ptBR }));
       setLiveCurrentDateHeader(format(now, "EEEE, dd 'de' MMMM", { locale: ptBR }));
-    }, 1000); // 1 second
+    };
+    
+    updateDateTime(); // Set initial time and date on client mount
+
+    const clockIntervalId = setInterval(updateDateTime, 1000); // 1 second
 
     return () => clearInterval(clockIntervalId);
   }, []);
 
-  // Effect to update displayData when initialDisplayData prop changes
+  // Effect to update displayData when initialDisplayData prop changes (due to router.refresh)
   React.useEffect(() => {
     setDisplayData(initialDisplayData);
   }, [initialDisplayData]);
@@ -118,7 +124,7 @@ export default function TvDisplayClient({ initialDisplayData, initialCurrentDate
         </main>
       )}
        <footer className="mt-12 text-center text-base md:text-lg text-gray-500">
-        Atualiza automaticamente a cada 10 segundos. Última atualização: {liveCurrentTime}.
+        Atualiza automaticamente a cada 10 segundos. {liveCurrentTime !== PLACEHOLDER_TIME ? `Última atualização: ${liveCurrentTime}.` : 'Aguardando atualização...'}
       </footer>
     </div>
   );
