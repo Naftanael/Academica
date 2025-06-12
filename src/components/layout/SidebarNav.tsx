@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import * as React from 'react'; // Added for useState, useEffect
 import {
   LayoutDashboard,
   School,
@@ -34,6 +35,12 @@ const navItems = [
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  const [currentYear, setCurrentYear] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    // This effect runs only on the client, after hydration
+    setCurrentYear(new Date().getFullYear());
+  }, []); // Empty dependency array ensures this runs once on mount
 
   return (
     <>
@@ -74,7 +81,7 @@ export default function SidebarNav() {
       </SidebarContent>
       <SidebarFooter className="p-4">
          <div className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/70">
-            © {new Date().getFullYear()} Academica
+            {currentYear !== null ? `© ${currentYear} Academica` : `© Academica`}
          </div>
       </SidebarFooter>
     </>
