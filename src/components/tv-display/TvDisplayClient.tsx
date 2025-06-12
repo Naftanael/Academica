@@ -52,7 +52,7 @@ export default function TvDisplayClient({ initialDisplayData, initialCurrentDate
   }, [initialDisplayData]);
 
   return (
-    <div className="min-h-screen w-full flex flex-col p-6 md:p-10">
+    <div className="flex-grow w-full flex flex-col p-6 md:p-10">
       <header className="mb-10 text-center">
         <div className="flex items-center justify-center mb-3">
           <MonitorPlay className="w-16 h-16 md:w-20 md:h-20 text-blue-400 mr-4" />
