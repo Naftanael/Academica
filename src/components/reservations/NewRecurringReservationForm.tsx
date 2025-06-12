@@ -50,6 +50,13 @@ const dayOfWeekMapping: Record<DayOfWeek, number> = {
   'Sábado': 6
 };
 
+// Moved isEqual outside the component as it's a pure utility function
+const isEqualDate = (dateLeft: Date, dateRight: Date): boolean => {
+  return dateLeft.getFullYear() === dateRight.getFullYear() &&
+         dateLeft.getMonth() === dateRight.getMonth() &&
+         dateLeft.getDate() === dateRight.getDate();
+};
+
 export default function NewRecurringReservationForm({ classGroups, classrooms }: NewRecurringReservationFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -81,7 +88,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     }
   }, [watchedClassGroupId, classGroups]);
 
-  const classDayInRangeModifier = (date: Date): boolean => {
+  const classDayInRangeModifier = React.useCallback((date: Date): boolean => {
     if (!selectedClassGroup || !selectedClassGroup.classDays.length || !watchedStartDate || !watchedEndDate) {
       return false;
     }
@@ -93,20 +100,19 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
       return false;
     }
     
-    // Check if the current calendar date is within the selected reservation interval (inclusive)
     const dateIsWithinInterval = 
-      (isAfter(date, rStart) || isEqual(date, rStart)) &&
-      (isBefore(date, rEnd) || isEqual(date, rEnd));
+      (isAfter(date, rStart) || isEqualDate(date, rStart)) &&
+      (isBefore(date, rEnd) || isEqualDate(date, rEnd));
 
     if (!dateIsWithinInterval) {
         return false;
     }
 
-    const dayNum = getDay(date); // 0 for Sunday, 1 for Monday, etc.
+    const dayNum = getDay(date); 
     const numericalClassDays = selectedClassGroup.classDays.map(d => dayOfWeekMapping[d]);
     
     return numericalClassDays.includes(dayNum);
-  };
+  }, [selectedClassGroup, watchedStartDate, watchedEndDate]);
 
   const modifiers = { 
     isClassDayInRange: classDayInRangeModifier,
@@ -114,8 +120,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
 
   const modifiersStyles = {
     isClassDayInRange: {
-      backgroundColor: 'hsl(var(--accent) / 0.3)', // Light orange background
-      color: 'hsl(var(--foreground))', // Keep text color normal
+      backgroundColor: 'hsl(var(--accent) / 0.3)', 
+      color: 'hsl(var(--foreground))', 
       borderRadius: '0.25rem',
     },
   };
@@ -160,12 +166,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     }
   }
 
-  const isEqual = (dateLeft: Date, dateRight: Date): boolean => {
-    return dateLeft.getFullYear() === dateRight.getFullYear() &&
-           dateLeft.getMonth() === dateRight.getMonth() &&
-           dateLeft.getDate() === dateRight.getDate();
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -195,8 +195,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
               <Select 
                 onValueChange={(value) => {
                   field.onChange(value);
-                  const group = classGroups.find(cg => cg.id === value);
-                  setSelectedClassGroup(group);
+                  // setSelectedClassGroup is handled by useEffect watching watchedClassGroupId
                 }} 
                 defaultValue={field.value}
               >
@@ -264,7 +263,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value ? (
+                        {field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? (
                           format(parse(field.value, 'yyyy-MM-dd', new Date()), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
@@ -276,7 +275,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
+                      selected={field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       initialFocus
                       locale={ptBR}
@@ -307,7 +306,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value ? (
+                        {field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? (
                            format(parse(field.value, 'yyyy-MM-dd', new Date()), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
@@ -319,14 +318,14 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
+                      selected={field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       disabled={(date) => {
                         const startDateVal = form.getValues("startDate");
                         if (!startDateVal) return false;
                         const localStartDate = parse(startDateVal, 'yyyy-MM-dd', new Date());
                         if (!isValid(localStartDate)) return false;
-                        return isBefore(date, localStartDate);
+                        return isBefore(date, localStartDate) && !isEqualDate(date, localStartDate);
                       }}
                       initialFocus
                       locale={ptBR}
@@ -385,4 +384,3 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     </Form>
   );
 }
-
