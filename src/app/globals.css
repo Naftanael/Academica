@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,95 +9,95 @@ body {
 
 @layer base {
   :root {
-    --background: 210 25% 96%; /* #f0f4f8 Light Gray */
-    --foreground: 222 47% 11%; /* Darker gray for text */
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 15%; /* #262626 Dark Gray */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 0 0% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 0 0% 15%;
 
-    --primary: 208 70% 53%; /* #3490dc Vibrant Blue */
+    --primary: 120 55% 30%; /* #286e28 Dark Green */
     --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 120 25% 90%; /* Light Greenish Gray */
+    --secondary-foreground: 0 0% 15%; /* Dark Gray */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 120 15% 95%; /* #f0f7f0 Very Light Green-Gray */
+    --muted-foreground: 120 10% 45%; /* #6b7d6b Mid Green-Gray */
 
-    --accent: 23 100% 60%; /* #ff8533 Warm Orange */
-    --accent-foreground: 0 0% 100%; /* White */
+    --accent: 88 60% 55%; /* #7FCC52 Lime Green */
+    --accent-foreground: 0 0% 15%; /* #262626 Dark Gray on Lime Green */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 208 70% 53%; /* #3490dc Vibrant Blue for focus rings */
+    --border: 120 10% 85%; /* #d4ded4 Very Light Green-Gray Border */
+    --input: 120 10% 85%;
+    --ring: 120 55% 30%; /* Dark Green for focus rings */
 
     --radius: 0.5rem;
 
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 120 70% 45%;
+    --chart-2: 88 65% 50%;
+    --chart-3: 120 50% 35%;
+    --chart-4: 88 50% 40%;
+    --chart-5: 120 60% 25%;
     
-    --sidebar-background: 220 15% 15%; /* Darker sidebar background */
-    --sidebar-foreground: 210 40% 98%; /* Light text for sidebar */
-    --sidebar-primary: 208 70% 53%; /* Vibrant Blue for active items */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 10% 25%; /* Hover/active background for sidebar items */
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 10% 30%;
-    --sidebar-ring: 208 70% 53%;
+    --sidebar-background: 120 55% 28%; /* Darker Green for sidebar */
+    --sidebar-foreground: 0 0% 100%; /* White */
+    --sidebar-primary: 88 60% 55%; /* Lime Green for active sidebar items */
+    --sidebar-primary-foreground: 0 0% 15%; /* Dark Gray text on active lime green */
+    --sidebar-accent: 120 55% 33%; /* Slightly Lighter Dark Green (for hover on sidebar items) */
+    --sidebar-accent-foreground: 0 0% 100%; /* White */
+    --sidebar-border: 120 55% 22%; /* Darker Green Border for sidebar */
+    --sidebar-ring: 88 60% 55%; /* Lime Green for focus ring in sidebar */
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 120 30% 10%; /* #121c12 Very Dark Green */
+    --foreground: 120 15% 90%; /* #e2e8e2 Light Green-Gray */
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card: 120 30% 12%; /* #152015 Slightly Lighter Dark Green */
+    --card-foreground: 120 15% 90%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 120 30% 12%;
+    --popover-foreground: 120 15% 90%;
 
-    --primary: 208 70% 53%; /* #3490dc */
-    --primary-foreground: 0 0% 100%;
+    --primary: 120 55% 40%; /* #3c923c Brighter Dark Green */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 217 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 120 25% 20%; /* #263326 Muted Dark Green */
+    --secondary-foreground: 120 15% 85%; /* #d7e0d7 Lighter Green-Gray */
 
-    --muted: 217 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 120 25% 18%; /* #222d22 Dark Muted Green */
+    --muted-foreground: 120 10% 55%; /* #849184 Mid Green-Gray */
 
-    --accent: 23 100% 60%; /* #ff8533 */
-    --accent-foreground: 0 0% 100%;
+    --accent: 88 60% 60%; /* #8ce25e Brighter Lime Green */
+    --accent-foreground: 0 0% 10%; /* #1a1a1a Very Dark Gray */
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 70% 50%; /* Adjusted for dark mode contrast */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 217 32.6% 17.5%;
-    --input: 217 32.6% 17.5%;
-    --ring: 208 70% 53%; /* #3490dc */
+    --border: 120 20% 30%; /* #3d4c3d Dark Greenish Border */
+    --input: 120 20% 30%;
+    --ring: 120 55% 45%; /* #47a747 Green for focus rings */
     
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 120 60% 55%;
+    --chart-2: 88 55% 60%;
+    --chart-3: 120 40% 45%;
+    --chart-4: 88 40% 50%;
+    --chart-5: 120 50% 35%;
 
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 208 70% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 32.6% 17.5%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 217 32.6% 20.5%;
-    --sidebar-ring: 208 70% 53%;
+    --sidebar-background: 120 30% 8%; /* Even Darker Green for dark sidebar */
+    --sidebar-foreground: 120 15% 90%; /* Light Green-Gray */
+    --sidebar-primary: 88 60% 60%; /* Brighter Lime Green for active */
+    --sidebar-primary-foreground: 0 0% 10%; /* Very Dark Gray */
+    --sidebar-accent: 120 30% 13%; /* Slightly Lighter Dark Green for hover */
+    --sidebar-accent-foreground: 120 15% 90%; /* Light Green-Gray */
+    --sidebar-border: 120 30% 6%; /* Very Dark Green Border */
+    --sidebar-ring: 88 60% 60%; /* Brighter Lime Green */
   }
 }
 
