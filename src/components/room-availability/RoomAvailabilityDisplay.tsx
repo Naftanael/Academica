@@ -169,16 +169,16 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
           <Table className="min-w-full">
             <TableHeader className="sticky top-0 z-20 bg-muted/80 dark:bg-muted backdrop-blur-sm">
               <TableRow>
-                <TableHead className="min-w-[180px] w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground">Sala</TableHead>
+                <TableHead className="min-w-[180px] w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r">Sala</TableHead>
                 {DAYS_OF_WEEK.map(day => (
-                  <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground">{day}</TableHead>
+                  <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r">{day}</TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
               {initialClassrooms.map((room: Classroom) => (
                 <TableRow key={room.id} className="hover:bg-muted/20 transition-colors duration-150">
-                  <TableCell className="font-medium sticky left-0 bg-card dark:bg-background z-10 shadow-sm whitespace-nowrap text-sm py-3 px-3">
+                  <TableCell className="font-medium sticky left-0 bg-card dark:bg-background z-10 shadow-sm whitespace-nowrap text-sm py-3 px-3 border-r">
                     {room.name}
                     <span className="block text-xs text-muted-foreground mt-0.5">({room.capacity} lugares)</span>
                   </TableCell>
@@ -188,7 +188,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                       <TableCell 
                         key={day} 
                         className={cn(
-                          "align-top p-2 transition-colors duration-150 h-[160px]", 
+                          "align-top p-2 transition-colors duration-150 h-[160px] border-r", 
                           cellBgClass
                         )}
                       >
