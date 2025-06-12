@@ -240,11 +240,11 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                           cellBgClass
                         )}
                       >
-                        <div className="flex flex-col space-y-1.5 h-full">
+                        <div className="flex flex-col space-y-1.5 h-full text-xs">
                           {PERIODS_OF_DAY.map(shift => {
                             const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
                             return (
-                              <div key={shift} className="text-xs">
+                              <div key={shift}>
                                 <p className="font-semibold text-foreground/90 mb-0.5">{shift}:</p>
                                 {scheduledForShift.length > 0 ? (
                                   <div className="flex flex-col gap-0.5 items-start">
@@ -262,7 +262,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                                     ))}
                                   </div>
                                 ) : (
-                                  <span className="text-green-700 dark:text-green-300 font-semibold">Livre</span>
+                                  <span className="text-sm text-green-700 dark:text-green-300 font-semibold">Livre</span>
                                 )}
                               </div>
                             );
