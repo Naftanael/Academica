@@ -76,18 +76,18 @@ export async function updateClassGroup(id: string, values: ClassGroupFormValues)
     const existingClassGroup = classGroups[classGroupIndex];
     
     classGroups[classGroupIndex] = {
-      ...existingClassGroup, // Spreads existing fields like id, year, status, startDate, endDate, assignedClassroomId
+      ...existingClassGroup, 
       name: validatedValues.name,
       shift: validatedValues.shift as ClassGroupShift,
       classDays: validatedValues.classDays as DayOfWeek[],
-      // year, status, startDate, endDate, assignedClassroomId are preserved if not directly in validatedValues
-      // disciplines field is no longer part of ClassGroup, so it's not carried over or updated.
     };
 
     await writeData<ClassGroup>('classgroups.json', classGroups);
 
     revalidatePath('/classgroups');
     revalidatePath(`/classgroups/${id}/edit`);
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display');
     return { success: true, message: 'Turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
 
   } catch (error) {
@@ -106,6 +106,8 @@ export async function deleteClassGroup(id: string) {
     classGroups = classGroups.filter(cg => cg.id !== id);
     await writeData<ClassGroup>('classgroups.json', classGroups);
     revalidatePath('/classgroups');
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display');
     return { success: true, message: 'Turma excluída com sucesso!' };
   } catch (error) {
     console.error('Failed to delete class group:', error);
@@ -116,4 +118,28 @@ export async function deleteClassGroup(id: string) {
 export async function getClassGroupById(id: string): Promise<ClassGroup | undefined> {
   const classGroups = await readData<ClassGroup>('classgroups.json');
   return classGroups.find(cg => cg.id === id);
+}
+
+export async function assignClassroomToClassGroup(classGroupId: string, newClassroomId: string | null) {
+  try {
+    const classGroups = await readData<ClassGroup>('classgroups.json');
+    const classGroupIndex = classGroups.findIndex(cg => cg.id === classGroupId);
+
+    if (classGroupIndex === -1) {
+      return { success: false, message: 'Turma não encontrada.' };
+    }
+
+    classGroups[classGroupIndex].assignedClassroomId = newClassroomId === null ? undefined : newClassroomId;
+
+    await writeData<ClassGroup>('classgroups.json', classGroups);
+
+    revalidatePath('/classgroups');
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display');
+    return { success: true, message: 'Sala da turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
+
+  } catch (error) {
+    console.error('Failed to assign classroom to class group:', error);
+    return { success: false, message: 'Erro ao atribuir sala à turma.' };
+  }
 }

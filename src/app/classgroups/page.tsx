@@ -1,19 +1,24 @@
 
 import Link from 'next/link';
-import { PlusCircle, UsersRound, GraduationCap } from 'lucide-react';
+import { PlusCircle, UsersRound, Home } from 'lucide-react'; // GraduationCap removed, Home added
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { getClassGroups } from '@/lib/actions/classgroups';
-import type { ClassGroup } from '@/types';
+import { getClassrooms } from '@/lib/actions/classrooms'; // Added
+import type { ClassGroup, Classroom } from '@/types'; // Classroom added
 import { DeleteClassGroupButton } from '@/components/classgroups/DeleteClassGroupButton';
 import { EditClassGroupButton } from '@/components/classgroups/EditClassGroupButton';
+import { ChangeClassroomDialog } from '@/components/classgroups/ChangeClassroomDialog'; // Added
 
 
 export default async function ClassGroupsPage() {
   const classGroups = await getClassGroups();
+  const classrooms = await getClassrooms(); // Added
+
+  const classroomMap = new Map(classrooms.map(room => [room.id, room.name])); // Added
 
   return (
     <>
@@ -54,11 +59,16 @@ export default async function ClassGroupsPage() {
                   <TableHead>Dias de Aula</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Ano</TableHead>
+                  <TableHead>Sala Atribuída</TableHead> {/* Added */}
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {classGroups.map((cg: ClassGroup) => (
+                {classGroups.map((cg: ClassGroup) => {
+                  const assignedClassroomName = cg.assignedClassroomId 
+                    ? classroomMap.get(cg.assignedClassroomId) || 'Desconhecida' 
+                    : 'Não atribuída';
+                  return (
                   <TableRow key={cg.id}>
                     <TableCell className="font-medium">{cg.name}</TableCell>
                     <TableCell>{cg.shift}</TableCell>
@@ -77,12 +87,28 @@ export default async function ClassGroupsPage() {
                     </TableCell>
                     <TableCell><Badge variant={cg.status === 'Em Andamento' ? 'default' : cg.status === 'Planejada' ? 'secondary' : 'outline'}>{cg.status}</Badge></TableCell>
                     <TableCell>{cg.year}</TableCell>
+                    <TableCell> {/* Sala Atribuída Cell */}
+                      <div className="flex items-center gap-2">
+                        <span>{assignedClassroomName}</span>
+                        <ChangeClassroomDialog 
+                          classGroup={cg} 
+                          availableClassrooms={classrooms}
+                          triggerButton={
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <Home className="h-3.5 w-3.5" />
+                              <span className="sr-only">Trocar Sala</span>
+                            </Button>
+                          }
+                        />
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <EditClassGroupButton classGroupId={cg.id} className="mr-2" />
                       <DeleteClassGroupButton classGroupId={cg.id} />
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           )}
