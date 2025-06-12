@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, parseISO, isValid, differenceInDays, max as maxDate } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parseISO, isValid, differenceInDays, max as maxDate, startOfWeek, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar as CalendarIcon, Search } from 'lucide-react';
 
@@ -42,8 +42,24 @@ const getCourseColorClasses = (groupName: string): string => {
     case 'CDI':
       return 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-700/30 dark:text-pink-200 dark:border-pink-600';
     default:
-      return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700/30 dark:text-slate-200 dark:border-slate-600'; // Default/Secondary like
+      return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700/30 dark:text-slate-200 dark:border-slate-600';
   }
+};
+
+// Helper to get day of month for header
+const getDayOfMonthForHeader = (targetDay: DayOfWeek, currentFilterStartDate: Date | undefined): string => {
+  if (!currentFilterStartDate) return '';
+
+  const mondayOfFilterWeek = startOfWeek(currentFilterStartDate, { weekStartsOn: 1 }); // 1 for Monday
+
+  const orderInDAYS_OF_WEEK: DayOfWeek[] = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+  const targetDayIndexInOrder = orderInDAYS_OF_WEEK.indexOf(targetDay);
+
+  if (targetDayIndexInOrder === -1) return ''; 
+
+  const daysToAdd = targetDayIndexInOrder;
+  const dateForColumn = addDays(mondayOfFilterWeek, daysToAdd);
+  return format(dateForColumn, 'd');
 };
 
 
@@ -64,7 +80,6 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       
       if (!isValid(cgStartDate) || !isValid(cgEndDate)) return false;
 
-      // Class group is active if its period overlaps with the selected filter period
       return cgStartDate <= endDate && cgEndDate >= startDate;
     });
     setDisplayedClassGroups(filtered);
@@ -89,7 +104,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     );
 
     if (groupsInCellToday.length === 0) {
-      return 'bg-green-50 dark:bg-green-800/20'; // Livre
+      return 'bg-green-50 dark:bg-green-800/20';
     }
 
     const endDates = groupsInCellToday
@@ -120,11 +135,11 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     <div>
       <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 border rounded-lg items-end bg-muted/50">
         <div className="flex-1">
-          <label htmlFor="startDate" className="block text-sm font-medium text-foreground mb-1">Data de Início</label>
+          <label htmlFor="startDateFilter" className="block text-sm font-medium text-foreground mb-1">Data de Início</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
-                id="startDate"
+                id="startDateFilter"
                 variant={"outline"}
                 className={cn(
                   "w-full justify-start text-left font-normal",
@@ -147,11 +162,11 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
           </Popover>
         </div>
         <div className="flex-1">
-          <label htmlFor="endDate" className="block text-sm font-medium text-foreground mb-1">Data de Fim</label>
+          <label htmlFor="endDateFilter" className="block text-sm font-medium text-foreground mb-1">Data de Fim</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
-                id="endDate"
+                id="endDateFilter"
                 variant={"outline"}
                 className={cn(
                   "w-full justify-start text-left font-normal",
@@ -191,10 +206,21 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
           <Table className="min-w-full">
             <TableHeader className="sticky top-0 z-20 bg-muted/80 dark:bg-muted backdrop-blur-sm">
               <TableRow>
-                <TableHead className="min-w-[180px] w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r">Sala</TableHead>
-                {DAYS_OF_WEEK.map(day => (
-                  <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r">{day}</TableHead>
-                ))}
+                <TableHead className="min-w-[180px] w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r px-3 py-3">Sala</TableHead>
+                {DAYS_OF_WEEK.map(day => {
+                  const dayOfMonth = getDayOfMonthForHeader(day, startDate);
+                  return (
+                    <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r">
+                      {day}
+                      {dayOfMonth && (
+                        <>
+                          <br />
+                          <span className="text-sm font-medium text-muted-foreground">({dayOfMonth})</span>
+                        </>
+                      )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -254,3 +280,4 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     </div>
   );
 }
+
