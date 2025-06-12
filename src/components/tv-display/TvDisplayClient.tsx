@@ -52,7 +52,7 @@ export default function TvDisplayClient({ initialDisplayData, initialCurrentDate
   }, [initialDisplayData]);
 
   return (
-    <div className="min-h-screen w-full flex flex-col p-6 md:p-10 selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen w-full flex flex-col p-6 md:p-10">
       <header className="mb-10 text-center">
         <div className="flex items-center justify-center mb-3">
           <MonitorPlay className="w-16 h-16 md:w-20 md:h-20 text-blue-400 mr-4" />
@@ -80,7 +80,7 @@ export default function TvDisplayClient({ initialDisplayData, initialCurrentDate
           {displayData.map(item => (
             <div
               key={item.id}
-              className="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between border border-gray-700 transition-transform duration-300 ease-in-out"
+              className="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between border border-gray-700"
             >
               <div>
                 <h2 className="text-4xl md:text-5xl font-bold text-blue-300 mb-4 truncate" title={item.groupName}>
