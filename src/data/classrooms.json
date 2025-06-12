@@ -1,12 +1,5 @@
 [
   {
-    "id": "mbql7c35-kmhyrzr",
-    "name": "Sala 3",
-    "capacity": 30,
-    "resources": [],
-    "isLab": false
-  },
-  {
     "id": "new-sala-1-aaabbbccc",
     "name": "Sala 1",
     "capacity": 30,
