@@ -74,23 +74,23 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       .map(cg => parseISO(cg.endDate))
       .filter(date => isValid(date));
     
-    if (endDates.length === 0) { // Should not happen if groupsInCellToday is not empty
+    if (endDates.length === 0) { 
       return 'bg-green-50 dark:bg-green-800/30';
     }
 
     const latestEndDateInCell = maxDate(endDates);
     const daysRemaining = differenceInDays(latestEndDateInCell, new Date());
 
-    if (daysRemaining < 0) { // All groups have finished
+    if (daysRemaining < 0) { 
       return 'bg-green-50 dark:bg-green-800/30';
     }
     if (daysRemaining <= 7) {
-      return 'bg-yellow-100 dark:bg-yellow-700/40'; // Libera em <= 7 dias
+      return 'bg-yellow-100 dark:bg-yellow-700/40'; 
     }
     if (daysRemaining <= 30) {
-      return 'bg-orange-100 dark:bg-orange-700/40'; // Libera entre 8 e 30 dias
+      return 'bg-orange-100 dark:bg-orange-700/40'; 
     }
-    return 'bg-red-100 dark:bg-red-700/40'; // Libera em > 30 dias
+    return 'bg-red-100 dark:bg-red-700/40'; 
   };
 
 
@@ -197,7 +197,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                             const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
                             return (
                               <div key={shift} className="text-xs">
-                                <p className="font-semibold text-foreground/80 mb-0.5">{shift}:</p>
+                                <p className="font-semibold text-foreground/90 mb-0.5">{shift}:</p>
                                 {scheduledForShift.length > 0 ? (
                                   <div className="flex flex-col gap-0.5 items-start">
                                     {scheduledForShift.map(cg => (
