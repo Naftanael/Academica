@@ -22,14 +22,15 @@ export default async function TvDisplayPage() {
     };
   });
 
-  // This date is for the header and is less frequently changing than the time.
-  // The client component will manage its own live clock.
-  const initialCurrentDateHeader = format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR });
+  const now = new Date();
+  const initialCurrentDateHeader = format(now, "EEEE, dd 'de' MMMM", { locale: ptBR });
+  const initialCurrentTime = format(now, "HH:mm", { locale: ptBR });
 
   return (
-    <TvDisplayClient 
-      initialDisplayData={displayData} 
-      initialCurrentDateHeader={initialCurrentDateHeader} 
+    <TvDisplayClient
+      initialDisplayData={displayData}
+      initialCurrentDateHeader={initialCurrentDateHeader}
+      initialCurrentTime={initialCurrentTime}
     />
   );
 }

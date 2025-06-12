@@ -17,12 +17,13 @@ export interface TvDisplayInfo {
 interface TvDisplayClientProps {
   initialDisplayData: TvDisplayInfo[];
   initialCurrentDateHeader: string;
+  initialCurrentTime: string;
 }
 
-export default function TvDisplayClient({ initialDisplayData, initialCurrentDateHeader }: TvDisplayClientProps) {
+export default function TvDisplayClient({ initialDisplayData, initialCurrentDateHeader, initialCurrentTime }: TvDisplayClientProps) {
   const router = useRouter();
   const [displayData, setDisplayData] = React.useState<TvDisplayInfo[]>(initialDisplayData);
-  const [liveCurrentTime, setLiveCurrentTime] = React.useState<string>(() => format(new Date(), "HH:mm", { locale: ptBR }));
+  const [liveCurrentTime, setLiveCurrentTime] = React.useState<string>(initialCurrentTime);
   const [liveCurrentDateHeader, setLiveCurrentDateHeader] = React.useState<string>(initialCurrentDateHeader);
 
   // Effect to refresh data every 10 seconds
