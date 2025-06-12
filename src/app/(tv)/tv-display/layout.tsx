@@ -12,15 +12,10 @@ export default function TvDisplayLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // This layout is rendered *inside* the RootLayout's body and AppShell.
-  // It cannot define its own <html>, <head>, <body> tags.
-  // Head elements like title and description are handled by exporting `metadata`.
-  // The Inter font is loaded by the RootLayout.
-  // The meta refresh tag is omitted; if needed, it should be handled client-side in the page.
-
   // Apply specific styling for the TV display content area.
+  // Uses theme variables for background and foreground.
   return (
-    <div className="font-body antialiased bg-gray-900 text-white min-h-screen flex flex-col">
+    <div className="font-body antialiased bg-background text-foreground min-h-screen flex flex-col">
       {children}
     </div>
   );

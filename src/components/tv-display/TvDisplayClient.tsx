@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { DoorOpen, MonitorPlay, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 export interface TvDisplayInfo {
   id: string;
@@ -16,11 +17,31 @@ export interface TvDisplayInfo {
 
 interface TvDisplayClientProps {
   initialDisplayData: TvDisplayInfo[];
-  // initialCurrentDateHeader and initialCurrentTime props removed
 }
 
 const PLACEHOLDER_TIME = "--:--";
 const PLACEHOLDER_DATE = "Carregando data...";
+
+// Helper function to get the left border color class based on course prefix
+const getCourseLeftBorderColorClass = (groupName: string): string => {
+  const prefixMatch = groupName.match(/^([A-Z]+)/);
+  const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
+
+  switch (prefix) {
+    case 'ENF':
+      return 'border-l-sky-400'; // Blueish
+    case 'FMC':
+      return 'border-l-amber-400'; // Orange/Amber
+    case 'RAD':
+      return 'border-l-lime-400'; // Lime Green
+    case 'ADM':
+      return 'border-l-purple-400'; // Purple
+    case 'CDI':
+      return 'border-l-pink-400'; // Pink
+    default:
+      return 'border-l-slate-400'; // Default gray
+  }
+};
 
 export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientProps) {
   const router = useRouter();
@@ -28,7 +49,6 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
   const [liveCurrentTime, setLiveCurrentTime] = React.useState<string>(PLACEHOLDER_TIME);
   const [liveCurrentDateHeader, setLiveCurrentDateHeader] = React.useState<string>(PLACEHOLDER_DATE);
 
-  // Effect to refresh data every 10 seconds
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       router.refresh();
@@ -37,7 +57,6 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     return () => clearInterval(intervalId);
   }, [router]);
 
-  // Effect to update the live clock every second
   React.useEffect(() => {
     const updateDateTime = () => {
       const now = new Date();
@@ -45,14 +64,13 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
       setLiveCurrentDateHeader(format(now, "EEEE, dd 'de' MMMM", { locale: ptBR }));
     };
     
-    updateDateTime(); // Set initial time and date on client mount
+    updateDateTime(); 
 
-    const clockIntervalId = setInterval(updateDateTime, 1000); // 1 second
+    const clockIntervalId = setInterval(updateDateTime, 1000); 
 
     return () => clearInterval(clockIntervalId);
   }, []);
 
-  // Effect to update displayData when initialDisplayData prop changes (due to router.refresh)
   React.useEffect(() => {
     setDisplayData(initialDisplayData);
   }, [initialDisplayData]);
@@ -61,23 +79,23 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     <div className="flex-grow w-full flex flex-col p-6 md:p-10">
       <header className="mb-10 text-center">
         <div className="flex items-center justify-center mb-3">
-          <MonitorPlay className="w-16 h-16 md:w-20 md:h-20 text-blue-400 mr-4" />
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white">
+          <MonitorPlay className="w-16 h-16 md:w-20 md:h-20 text-primary mr-4" />
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground">
             Painel de Turmas
           </h1>
         </div>
-        <p className="text-2xl md:text-3xl text-gray-300">
+        <p className="text-2xl md:text-3xl text-muted-foreground">
           {liveCurrentDateHeader} - <span className="font-semibold">{liveCurrentTime}</span>
         </p>
       </header>
 
       {displayData.length === 0 ? (
         <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
-          <AlertTriangle className="w-32 h-32 md:w-40 md:h-40 text-yellow-400 mb-8" />
-          <p className="text-4xl md:text-5xl font-semibold text-gray-200">
+          <AlertTriangle className="w-32 h-32 md:w-40 md:h-40 text-accent mb-8" />
+          <p className="text-4xl md:text-5xl font-semibold text-foreground">
             Nenhuma turma em andamento no momento.
           </p>
-          <p className="text-xl md:text-2xl text-gray-400 mt-4">
+          <p className="text-xl md:text-2xl text-muted-foreground mt-4">
             Verifique novamente mais tarde.
           </p>
         </div>
@@ -86,33 +104,36 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           {displayData.map(item => (
             <div
               key={item.id}
-              className="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between border border-gray-700"
+              className={cn(
+                "bg-card rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between border border-border border-l-[6px]",
+                getCourseLeftBorderColorClass(item.groupName)
+              )}
             >
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-blue-300 mb-4 truncate" title={item.groupName}>
+                <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 truncate" title={item.groupName}>
                   {item.groupName}
                 </h2>
-                <p className="text-xl md:text-2xl text-gray-400 mb-5">
-                  Turno: <span className="font-semibold text-gray-200">{item.shift}</span>
+                <p className="text-xl md:text-2xl text-muted-foreground mb-5">
+                  Turno: <span className="font-semibold text-foreground">{item.shift}</span>
                 </p>
               </div>
-              <div className="mt-auto pt-5 border-t border-gray-700">
+              <div className="mt-auto pt-5 border-t border-border">
                 {item.classroomName ? (
                   <div className="flex items-center">
-                    <DoorOpen className="w-12 h-12 md:w-16 md:h-16 text-green-400 mr-4 shrink-0" />
+                    <DoorOpen className="w-12 h-12 md:w-16 md:h-16 text-accent mr-4 shrink-0" />
                     <div>
-                      <p className="text-base text-gray-500 uppercase tracking-wider">Sala Atual</p>
-                      <p className="text-3xl md:text-4xl font-semibold text-green-300 truncate" title={item.classroomName}>
+                      <p className="text-base text-muted-foreground uppercase tracking-wider">Sala Atual</p>
+                      <p className="text-3xl md:text-4xl font-semibold text-accent truncate" title={item.classroomName}>
                         {item.classroomName}
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center">
-                     <AlertTriangle className="w-12 h-12 md:w-16 md:h-16 text-yellow-400 mr-4 shrink-0" />
+                     <AlertTriangle className="w-12 h-12 md:w-16 md:h-16 text-destructive mr-4 shrink-0" />
                      <div>
-                        <p className="text-base text-gray-500 uppercase tracking-wider">Sala</p>
-                        <p className="text-3xl md:text-4xl font-semibold text-yellow-300">
+                        <p className="text-base text-muted-foreground uppercase tracking-wider">Sala</p>
+                        <p className="text-3xl md:text-4xl font-semibold text-destructive">
                             Não definida
                         </p>
                      </div>
@@ -123,7 +144,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           ))}
         </main>
       )}
-       <footer className="mt-12 text-center text-base md:text-lg text-gray-500">
+       <footer className="mt-12 text-center text-base md:text-lg text-muted-foreground">
         Atualiza automaticamente a cada 10 segundos. {liveCurrentTime !== PLACEHOLDER_TIME ? `Última atualização: ${liveCurrentTime}.` : 'Aguardando atualização...'}
       </footer>
     </div>
