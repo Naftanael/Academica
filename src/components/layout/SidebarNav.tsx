@@ -10,7 +10,7 @@ import {
   CalendarDays,
   Landmark,
   ListChecks,
-  MonitorPlay, // Adicionado MonitorPlay
+  MonitorPlay,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -29,7 +29,7 @@ const navItems = [
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
   { href: '/reservations', label: 'Reservas', icon: ListChecks },
-  { href: '/tv-display', label: 'Painel TV', icon: MonitorPlay }, // Novo item adicionado
+  { href: '/tv-display', label: 'Painel TV', icon: MonitorPlay },
 ];
 
 export default function SidebarNav() {
