@@ -167,9 +167,9 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       ) : (
         <div className="overflow-x-auto border rounded-lg">
           <Table className="min-w-full">
-            <TableHeader className="bg-muted/50">
+            <TableHeader className="sticky top-0 z-20 bg-muted/80 dark:bg-muted backdrop-blur-sm">
               <TableRow>
-                <TableHead className="min-w-[150px] w-[150px] sticky left-0 bg-muted/80 dark:bg-muted z-10 shadow-sm text-sm font-semibold text-foreground">Sala</TableHead>
+                <TableHead className="min-w-[150px] w-[150px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground">Sala</TableHead>
                 {DAYS_OF_WEEK.map(day => (
                   <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground">{day}</TableHead>
                 ))}
@@ -188,7 +188,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                       <TableCell 
                         key={day} 
                         className={cn(
-                          "align-top p-2 transition-colors duration-150 h-[120px]", // Increased height
+                          "align-top p-2 transition-colors duration-150 h-[160px]", 
                           cellBgClass
                         )}
                       >
@@ -212,7 +212,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                                     ))}
                                   </div>
                                 ) : (
-                                  <span className="text-green-700 dark:text-green-400 font-medium opacity-90">Livre</span>
+                                  <span className="text-green-700 dark:text-green-300 font-semibold">Livre</span>
                                 )}
                               </div>
                             );
@@ -230,3 +230,4 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     </div>
   );
 }
+
