@@ -17,8 +17,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { Classroom, ClassGroup, DayOfWeek } from '@/types';
-import { DAYS_OF_WEEK } from '@/lib/constants';
+import type { Classroom, ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
+import { DAYS_OF_WEEK, PERIODS_OF_DAY } from '@/lib/constants';
 
 interface RoomAvailabilityDisplayProps {
   initialClassrooms: Classroom[];
@@ -42,6 +42,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       
       if (!isValid(cgStartDate) || !isValid(cgEndDate)) return false;
 
+      // Class group is active if its period overlaps with the selected filter period
       return cgStartDate <= endDate && cgEndDate >= startDate;
     });
     setDisplayedClassGroups(filtered);
@@ -52,12 +53,46 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
   }, [filterClassGroups]);
 
 
-  const getScheduledGroups = (classroomId: string, day: DayOfWeek): ClassGroup[] => {
+  const getScheduledGroupsForShift = (classroomId: string, day: DayOfWeek, shift: PeriodOfDay): ClassGroup[] => {
     return displayedClassGroups.filter(cg => 
       cg.assignedClassroomId === classroomId && 
-      cg.classDays.includes(day)
+      cg.classDays.includes(day) &&
+      cg.shift === shift
     );
   };
+
+  const getCellBackgroundColor = (classroomId: string, day: DayOfWeek): string => {
+    const groupsInCellToday = displayedClassGroups.filter(
+      cg => cg.assignedClassroomId === classroomId && cg.classDays.includes(day)
+    );
+
+    if (groupsInCellToday.length === 0) {
+      return 'bg-green-50 dark:bg-green-800/30'; // Livre
+    }
+
+    const endDates = groupsInCellToday
+      .map(cg => parseISO(cg.endDate))
+      .filter(date => isValid(date));
+    
+    if (endDates.length === 0) { // Should not happen if groupsInCellToday is not empty
+      return 'bg-green-50 dark:bg-green-800/30';
+    }
+
+    const latestEndDateInCell = maxDate(endDates);
+    const daysRemaining = differenceInDays(latestEndDateInCell, new Date());
+
+    if (daysRemaining < 0) { // All groups have finished
+      return 'bg-green-50 dark:bg-green-800/30';
+    }
+    if (daysRemaining <= 7) {
+      return 'bg-yellow-100 dark:bg-yellow-700/40'; // Libera em <= 7 dias
+    }
+    if (daysRemaining <= 30) {
+      return 'bg-orange-100 dark:bg-orange-700/40'; // Libera entre 8 e 30 dias
+    }
+    return 'bg-red-100 dark:bg-red-700/40'; // Libera em > 30 dias
+  };
+
 
   return (
     <div>
@@ -131,73 +166,58 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
          <p className="text-muted-foreground text-center py-4">Por favor, selecione um intervalo de datas e clique em Filtrar.</p>
       ) : (
         <div className="overflow-x-auto border rounded-lg">
-          <Table>
+          <Table className="min-w-full">
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead className="min-w-[180px] sticky left-0 bg-muted/50 z-10 shadow-sm">Sala</TableHead>
+                <TableHead className="min-w-[150px] w-[150px] sticky left-0 bg-muted/80 dark:bg-muted z-10 shadow-sm text-sm font-semibold text-foreground">Sala</TableHead>
                 {DAYS_OF_WEEK.map(day => (
-                  <TableHead key={day} className="min-w-[200px] text-center whitespace-nowrap">{day}</TableHead>
+                  <TableHead key={day} className="min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground">{day}</TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
               {initialClassrooms.map((room: Classroom) => (
                 <TableRow key={room.id} className="hover:bg-muted/20 transition-colors duration-150">
-                  <TableCell className="font-medium sticky left-0 bg-card z-10 shadow-sm whitespace-nowrap">
+                  <TableCell className="font-medium sticky left-0 bg-card dark:bg-background z-10 shadow-sm whitespace-nowrap text-sm py-3 px-2">
                     {room.name}
-                    <span className="text-xs text-muted-foreground ml-2">({room.capacity} lugares)</span>
+                    <span className="block text-xs text-muted-foreground mt-0.5">({room.capacity} lugares)</span>
                   </TableCell>
                   {DAYS_OF_WEEK.map(day => {
-                    const scheduled = getScheduledGroups(room.id, day);
-                    let cellBgClass = 'bg-green-50 dark:bg-green-700/20'; // Default to "Livre" style
-
-                    if (scheduled.length > 0) {
-                      const endDates = scheduled
-                        .map(cg => parseISO(cg.endDate))
-                        .filter(date => isValid(date));
-                      
-                      if (endDates.length > 0) {
-                        const latestEndDate = maxDate(endDates);
-                        const daysRemaining = differenceInDays(latestEndDate, new Date());
-
-                        if (daysRemaining >= 0) {
-                          if (daysRemaining <= 7) {
-                            cellBgClass = 'bg-yellow-100 dark:bg-yellow-600/30'; 
-                          } else if (daysRemaining <= 30) {
-                            cellBgClass = 'bg-orange-100 dark:bg-orange-600/30';
-                          } else {
-                            cellBgClass = 'bg-red-100 dark:bg-red-600/30';
-                          }
-                        }
-                        // If daysRemaining < 0, it keeps the default "Livre" (green) style,
-                        // indicating the slot is now free from these past groups.
-                      }
-                    }
-
+                    const cellBgClass = getCellBackgroundColor(room.id, day);
                     return (
                       <TableCell 
                         key={day} 
                         className={cn(
-                          "text-center align-top p-2 h-[60px] transition-colors duration-150",
+                          "align-top p-2 transition-colors duration-150 h-[120px]", // Increased height
                           cellBgClass
                         )}
                       >
-                        {scheduled.length > 0 ? (
-                          <div className="flex flex-col gap-1.5 items-center justify-center h-full">
-                            {scheduled.map(cg => (
-                              <Badge 
-                                key={cg.id} 
-                                variant="secondary" 
-                                className="text-xs px-2 py-1 w-full text-center block max-w-[180px] truncate"
-                                title={`${cg.name} (${cg.shift})`}
-                              >
-                                {cg.name} ({cg.shift})
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-xs font-medium text-green-700 dark:text-green-300 flex items-center justify-center h-full">Livre</span>
-                        )}
+                        <div className="flex flex-col space-y-1.5 h-full">
+                          {PERIODS_OF_DAY.map(shift => {
+                            const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
+                            return (
+                              <div key={shift} className="text-xs">
+                                <p className="font-semibold text-foreground/80 mb-0.5">{shift}:</p>
+                                {scheduledForShift.length > 0 ? (
+                                  <div className="flex flex-col gap-0.5 items-start">
+                                    {scheduledForShift.map(cg => (
+                                      <Badge 
+                                        key={cg.id} 
+                                        variant="secondary" 
+                                        className="text-xs px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight"
+                                        title={`${cg.name}`}
+                                      >
+                                        {cg.name}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-green-700 dark:text-green-400 font-medium opacity-90">Livre</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </TableCell>
                     );
                   })}
