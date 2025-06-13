@@ -17,6 +17,7 @@ export interface TvDisplayInfo {
 
 interface TvDisplayClientProps {
   initialDisplayData: TvDisplayInfo[];
+  // initialCurrentTime and initialCurrentDateHeader props removed
 }
 
 const PLACEHOLDER_TIME = "--:--";
@@ -55,10 +56,10 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
       setLiveCurrentDateHeader(format(now, "EEEE, dd 'de' MMMM", { locale: ptBR }));
     };
     
-    updateDateTime(); 
+    updateDateTime(); // Call immediately on client mount to set initial date/time
     const clockIntervalId = setInterval(updateDateTime, 1000); 
     return () => clearInterval(clockIntervalId);
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on mount
 
   React.useEffect(() => {
     const checkDataChanges = async () => {
