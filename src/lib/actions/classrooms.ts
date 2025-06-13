@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -49,12 +48,59 @@ export async function createClassroom(values: ClassroomFormValues) {
   }
 }
 
+export async function updateClassroom(id: string, values: Partial<ClassroomFormValues>) {
+  try {
+    // For updates, we might only get partial data, so parse against a partial schema if needed
+    // or ensure the form sends all relevant data. Here, we'll validate the parts we expect to change.
+    const updateSchema = classroomFormSchema.pick({ name: true, capacity: true }).partial(); // Allow partial updates for other fields if they were included
+    const validatedValues = updateSchema.parse(values);
+
+    const classrooms = await readData<Classroom>('classrooms.json');
+    const classroomIndex = classrooms.findIndex(c => c.id === id);
+
+    if (classroomIndex === -1) {
+      return { success: false, message: 'Sala não encontrada.' };
+    }
+
+    const existingClassroom = classrooms[classroomIndex];
+    
+    // Merge updates: only update fields that are present in validatedValues
+    const updatedClassroom: Classroom = {
+      ...existingClassroom,
+      ...(validatedValues.name && { name: validatedValues.name }),
+      ...(validatedValues.capacity !== undefined && { capacity: validatedValues.capacity }),
+      // resources and isLab are not part of this form's submission, so they are preserved
+    };
+
+    classrooms[classroomIndex] = updatedClassroom;
+    await writeData<Classroom>('classrooms.json', classrooms);
+
+    revalidatePath('/classrooms');
+    revalidatePath(`/classrooms/${id}/edit`);
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display'); // In case room name changes affect TV display
+    return { success: true, message: 'Sala de aula atualizada com sucesso!', data: updatedClassroom };
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, message: 'Erro de validação.', errors: error.flatten().fieldErrors };
+    }
+    console.error('Failed to update classroom:', error);
+    return { success: false, message: 'Erro ao atualizar sala de aula.' };
+  }
+}
+
+
 export async function deleteClassroom(id: string) {
   try {
     let classrooms = await readData<Classroom>('classrooms.json');
+    // Also ensure this classroom is not assigned to any class group
+    // For simplicity, this check is omitted here but would be important in a real app.
     classrooms = classrooms.filter(c => c.id !== id);
     await writeData<Classroom>('classrooms.json', classrooms);
     revalidatePath('/classrooms');
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display');
     return { success: true, message: 'Sala de aula excluída com sucesso!' };
   } catch (error) {
     console.error('Failed to delete classroom:', error);

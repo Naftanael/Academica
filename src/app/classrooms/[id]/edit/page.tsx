@@ -5,6 +5,7 @@ import { School, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import EditClassroomForm from '@/components/classrooms/EditClassroomForm'; // Import the new form component
 
 interface EditClassroomPageProps {
   params: { id: string };
@@ -50,14 +51,8 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
           <CardTitle className="font-headline text-xl">Dados da Sala</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="p-6 text-center">
-            <p className="text-muted-foreground">
-              O formulário para editar a sala <span className="font-semibold">{classroom.name}</span> (ID: {classroom.id}) será implementado aqui.
-            </p>
-            <p className="mt-4 text-sm">
-              Por enquanto, esta é uma página de espaço reservado.
-            </p>
-          </div>
+          {/* Replace placeholder with the actual form */}
+          <EditClassroomForm classroom={classroom} />
         </CardContent>
       </Card>
     </>
