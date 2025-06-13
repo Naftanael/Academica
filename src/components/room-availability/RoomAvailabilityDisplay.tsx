@@ -193,11 +193,6 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
             {endDate ? format(endDate, "PPP", { locale: ptBR }) : <span>Calculada automaticamente</span>}
           </Button>
         </div>
-        {/* Filter button might be redundant if date selection auto-filters */}
-        {/* <Button onClick={filterClassGroups} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
-          <Search className="mr-2 h-4 w-4" />
-          Filtrar
-        </Button> */}
       </div>
 
       {initialClassrooms.length === 0 ? (
@@ -250,7 +245,15 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                             const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
                             return (
                               <div key={shift} className="flex-1 p-1 rounded-sm min-h-[50px] flex flex-col justify-between border border-transparent hover:border-border/50">
-                                <p className="font-semibold text-foreground/90 mb-0.5 text-[11px] uppercase">{shift}:</p>
+                                <div
+                                  className={cn(
+                                    "h-2 w-full rounded-t-sm mb-1 shadow-inner", 
+                                    shift === 'Manhã' ? 'bg-sky-500' :
+                                    shift === 'Tarde' ? 'bg-orange-500' :
+                                    shift === 'Noite' ? 'bg-indigo-600' : ''
+                                  )}
+                                  title={shift}
+                                ></div>
                                 {scheduledForShift.length > 0 ? (
                                   <div className="flex flex-col gap-0.5 items-start flex-grow">
                                     {scheduledForShift.map(cg => (
