@@ -19,7 +19,7 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
         <PageHeader title="Sala não encontrada" icon={School} />
         <div className="max-w-2xl mx-auto text-center py-8">
           <p className="text-lg text-muted-foreground mb-6">A sala de aula que você está tentando editar não foi encontrada ou não existe.</p>
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="hover:bg-accent hover:text-accent-foreground">
             <Link href="/classrooms">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar para Lista de Salas
@@ -37,7 +37,7 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
         description="Modifique os dados da sala de aula abaixo."
         icon={School}
         actions={
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="hover:bg-accent hover:text-accent-foreground">
             <Link href="/classrooms">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar para Lista
@@ -45,9 +45,9 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
           </Button>
         }
       />
-      <Card className="max-w-2xl mx-auto shadow-lg">
+      <Card className="max-w-2xl mx-auto shadow-lg rounded-lg">
         <CardHeader>
-          <CardTitle className="font-headline">Dados da Sala</CardTitle>
+          <CardTitle className="font-headline text-xl">Dados da Sala</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-6 text-center">
@@ -57,10 +57,6 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
             <p className="mt-4 text-sm">
               Por enquanto, esta é uma página de espaço reservado.
             </p>
-            {/* 
-              Future implementation will include a form similar to 'src/app/classrooms/new/page.tsx',
-              pre-filled with classroom data and using an 'updateClassroom' server action.
-            */}
           </div>
         </CardContent>
       </Card>

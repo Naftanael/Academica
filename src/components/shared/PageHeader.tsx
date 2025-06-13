@@ -16,7 +16,7 @@ export default function PageHeader({ title, description, icon: Icon, actions }: 
           {Icon && <Icon className="w-8 h-8 text-primary hidden md:block" />}
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground font-headline">{title}</h1>
-            {description && <p className="text-muted-foreground mt-1">{description}</p>}
+            {description && <p className="text-muted-foreground mt-1 text-sm md:text-base">{description}</p>}
           </div>
         </div>
         {actions && <div className="flex-shrink-0">{actions}</div>}

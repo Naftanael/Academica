@@ -1,13 +1,11 @@
 
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, DashboardStats, Classroom } from '@/types'; // Removed Course type
+import type { ClassGroup, DashboardStats, Classroom } from '@/types'; 
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
-// Progress component might be unused now, but keeping for other potential uses.
-// import { Progress } from "@/components/ui/progress"; 
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -27,7 +25,6 @@ async function getDashboardData() {
     totalClassrooms: classrooms.length,
   };
 
-  // Enhance active class groups with more details
   const detailedActiveClassGroups = activeClassGroupsData.map(cg => {
     const startDate = parseISO(cg.startDate);
     const endDate = parseISO(cg.endDate);
@@ -36,7 +33,6 @@ async function getDashboardData() {
 
     return {
       ...cg,
-      // Removed discipline-related properties: progress, completedDisciplines, totalDisciplines, pendingDisciplines, currentOrNextDiscipline
       formattedStartDate: format(startDate, 'dd/MM/yyyy'),
       formattedEndDate: format(endDate, 'dd/MM/yyyy'),
       nearEnd,
@@ -46,17 +42,15 @@ async function getDashboardData() {
   return { stats, activeClassGroups: detailedActiveClassGroups, currentDate };
 }
 
-// loadCourses function and 'courses' variable removed as they are no longer needed.
 
 export default async function DashboardPage() {
-  // await loadCourses(); // Removed
   const { stats, activeClassGroups, currentDate } = await getDashboardData();
 
   const statItems = [
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-primary' },
-    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' }, // Consider a theme color
-    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-yellow-500' }, // Consider a theme color
-    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-accent' },
+    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' }, 
+    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-orange-500' }, 
+    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-blue-500' }, // Changed to blue for variety, theme accent can be used
   ];
 
   return (
@@ -67,53 +61,57 @@ export default async function DashboardPage() {
         icon={LayoutDashboard} 
       />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8"> {/* Adjusted lg:grid-cols-4 for better fit */}
         {statItems.map((item) => (
-          <Card key={item.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card key={item.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{item.title}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground font-headline">{item.title}</CardTitle>
               <item.icon className={`h-5 w-5 ${item.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{item.value}</div>
+              <div className="text-3xl font-bold text-foreground">{item.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-4 font-headline">Turmas em Andamento ({activeClassGroups.length})</h2>
-        {activeClassGroups.length === 0 ? (
-          <Card className="p-6 text-center text-muted-foreground shadow-lg">
-            Nenhuma turma em andamento no momento.
-          </Card>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {activeClassGroups.map((cg) => (
-              <Card key={cg.id} className={`shadow-lg hover:shadow-xl transition-shadow duration-300 ${cg.nearEnd ? 'border-2 border-destructive' : ''}`}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl font-semibold font-headline">{cg.name}</CardTitle>
-                    {cg.nearEnd && <Badge variant="destructive">Perto do Fim</Badge>}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {cg.shift} - {cg.year}
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {/* Removed Progress bar and discipline counts */}
-                  <p className="text-sm">
-                    <span className="font-medium">Período:</span> {cg.formattedStartDate} - {cg.formattedEndDate}
-                  </p>
-                  {/* Removed Current/Next Discipline and Pending Disciplines */}
-                  <Link href={`/classgroups/${cg.id}`} className="text-sm text-primary hover:underline block mt-2">
-                    Ver Detalhes da Turma (em breve)
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        <Card className="shadow-lg rounded-lg">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold font-headline">Turmas em Andamento ({activeClassGroups.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activeClassGroups.length === 0 ? (
+              <div className="p-6 text-center text-muted-foreground">
+                Nenhuma turma em andamento no momento.
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {activeClassGroups.map((cg) => (
+                  <Card key={cg.id} className={`shadow-md hover:shadow-lg transition-shadow duration-300 rounded-md ${cg.nearEnd ? 'border-2 border-destructive' : 'border-border'}`}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg font-semibold font-headline">{cg.name}</CardTitle>
+                        {cg.nearEnd && <Badge variant="destructive">Perto do Fim</Badge>}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {cg.shift} - {cg.year}
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm">
+                        <span className="font-medium">Período:</span> {cg.formattedStartDate} - {cg.formattedEndDate}
+                      </p>
+                      <Link href={`/classgroups/${cg.id}`} className="text-sm text-primary hover:underline block mt-2 font-medium">
+                        Ver Detalhes
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </section>
     </>
   );

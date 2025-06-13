@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import * as React from 'react'; // Added for useState, useEffect
+import * as React from 'react'; 
 import {
   LayoutDashboard,
   School,
   UsersRound,
   CalendarDays,
-  Landmark,
+  Landmark, // Using Landmark as a placeholder for the main Academica icon
   ListChecks,
   MonitorPlay,
 } from 'lucide-react';
@@ -38,24 +38,23 @@ export default function SidebarNav() {
   const [currentYear, setCurrentYear] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    // This effect runs only on the client, after hydration
     setCurrentYear(new Date().getFullYear());
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, []); 
 
   return (
     <>
-      <SidebarHeader className="p-4 flex items-center justify-between">
+      <SidebarHeader className="p-4 flex items-center justify-between border-b border-sidebar-border">
         <Link href="/" className="flex items-center gap-2">
-          <Landmark className="w-8 h-8 text-sidebar-primary" />
+          <Landmark className="w-7 h-7 text-sidebar-primary group-data-[collapsible=icon]:w-6 group-data-[collapsible=icon]:h-6 transition-all" />
           <h1 className="text-xl font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             Academica
           </h1>
         </Link>
-        <div className="md:hidden"> {/* Show trigger only on mobile */}
+        <div className="md:hidden"> 
             <SidebarTrigger />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="p-2">
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
@@ -63,15 +62,15 @@ export default function SidebarNav() {
                 asChild
                 isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
                 className={cn(
-                  'justify-start',
+                  'justify-start rounded-md text-sm font-medium', // Consistent styling
                   (pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)))
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                    : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground' // Active state uses sidebar-primary
+                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground' // Default and hover states
                 )}
                 tooltip={{ children: item.label, side: 'right' }}
               >
                 <Link href={item.href}>
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="h-4 w-4 mr-2 group-data-[collapsible=icon]:mr-0" />
                   <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                 </Link>
               </SidebarMenuButton>
@@ -79,7 +78,7 @@ export default function SidebarNav() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
          <div className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/70">
             {currentYear !== null ? `© ${currentYear} Academica` : `© Academica`}
          </div>

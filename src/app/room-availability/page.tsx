@@ -18,21 +18,21 @@ export default async function RoomAvailabilityPage() {
         description="Selecione um intervalo de datas para visualizar a ocupação das salas de aula."
         icon={CalendarDays}
       />
-      <Card className="shadow-lg">
+      <Card className="shadow-lg rounded-lg">
         <CardHeader>
-          <CardTitle className="font-headline">Filtro e Quadro de Ocupação Semanal</CardTitle>
+          <CardTitle className="font-headline text-xl">Filtro e Quadro de Ocupação Semanal</CardTitle>
         </CardHeader>
         <CardContent>
           {classrooms.length === 0 && classGroups.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              <School className="mx-auto h-12 w-12 mb-4" />
-              <p>Nenhuma sala de aula ou turma cadastrada.</p>
+              <School className="mx-auto h-12 w-12 mb-4 text-primary" />
+              <p className="text-lg">Nenhuma sala de aula ou turma cadastrada.</p>
               <p className="text-sm mt-2">Cadastre salas e turmas para visualizar a disponibilidade.</p>
             </div>
           ) : classrooms.length === 0 ? (
              <div className="text-center text-muted-foreground py-8">
-              <School className="mx-auto h-12 w-12 mb-4" />
-              <p>Nenhuma sala de aula cadastrada.</p>
+              <School className="mx-auto h-12 w-12 mb-4 text-primary" />
+              <p className="text-lg">Nenhuma sala de aula cadastrada.</p>
               <p className="text-sm mt-2">Cadastre salas para visualizar a disponibilidade.</p>
             </div>
           ) : (

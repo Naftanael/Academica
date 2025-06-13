@@ -42,7 +42,7 @@ export default function NewClassroomPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      capacity: undefined, // Using undefined to show placeholder
+      capacity: undefined, 
     },
   });
 
@@ -55,6 +55,7 @@ export default function NewClassroomPage() {
       toast({
         title: 'Sucesso!',
         description: result.message,
+        variant: 'default', // Explicitly set default variant for success
       });
       router.push('/classrooms');
     } else {
@@ -89,7 +90,7 @@ export default function NewClassroomPage() {
         description="Preencha os dados para cadastrar uma nova sala."
         icon={School}
         actions={
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="hover:bg-accent hover:text-accent-foreground">
             <Link href="/classrooms">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar para Lista
@@ -97,9 +98,9 @@ export default function NewClassroomPage() {
           </Button>
         }
       />
-      <Card className="max-w-2xl mx-auto shadow-lg">
+      <Card className="max-w-2xl mx-auto shadow-lg rounded-lg">
         <CardHeader>
-          <CardTitle className="font-headline">Dados da Sala</CardTitle>
+          <CardTitle className="font-headline text-xl">Dados da Sala</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -143,7 +144,7 @@ export default function NewClassroomPage() {
                 )}
               />
               <div className="flex justify-end">
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   {isPending ? "Salvando..." : (
                     <>
                       <PlusCircle className="mr-2 h-4 w-4" />

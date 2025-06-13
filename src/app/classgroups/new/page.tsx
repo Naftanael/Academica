@@ -5,10 +5,8 @@ import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm';
-// getAppCursos import removed as it's no longer used
 
 export default async function NewClassGroupPage() {
-  // const appCursos = await getAppCursos(); // appCursos fetching removed
 
   return (
     <>
@@ -17,7 +15,7 @@ export default async function NewClassGroupPage() {
         description="Preencha os dados para cadastrar uma nova turma."
         icon={UsersRound}
         actions={
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="hover:bg-accent hover:text-accent-foreground">
             <Link href="/classgroups">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar para Lista
@@ -25,12 +23,12 @@ export default async function NewClassGroupPage() {
           </Button>
         }
       />
-      <Card className="max-w-2xl mx-auto shadow-lg">
+      <Card className="max-w-2xl mx-auto shadow-lg rounded-lg">
         <CardHeader>
-          <CardTitle className="font-headline">Dados da Turma</CardTitle>
+          <CardTitle className="font-headline text-xl">Dados da Turma</CardTitle>
         </CardHeader>
         <CardContent>
-          <NewClassGroupForm /* appCursos prop removed */ />
+          <NewClassGroupForm />
         </CardContent>
       </Card>
     </>

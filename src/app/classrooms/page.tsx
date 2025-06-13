@@ -20,7 +20,7 @@ export default async function ClassroomsPage() {
         description="Gerencie as salas de aula da sua instituição."
         icon={School}
         actions={
-          <Button asChild>
+          <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <Link href="/classrooms/new">
               <PlusCircle className="mr-2 h-4 w-4" />
               Nova Sala
@@ -28,43 +28,45 @@ export default async function ClassroomsPage() {
           </Button>
         }
       />
-      <Card className="shadow-lg">
+      <Card className="shadow-lg rounded-lg">
         <CardHeader>
-          <CardTitle className="font-headline">Lista de Salas ({classrooms.length})</CardTitle>
+          <CardTitle className="font-headline text-xl">Lista de Salas ({classrooms.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {classrooms.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              <School className="mx-auto h-12 w-12 mb-4" />
-              <p>Nenhuma sala de aula cadastrada ainda.</p>
-              <Button asChild variant="link" className="mt-2">
+              <School className="mx-auto h-12 w-12 mb-4 text-primary" />
+              <p className="text-lg">Nenhuma sala de aula cadastrada ainda.</p>
+              <Button asChild variant="link" className="mt-2 text-primary">
                 <Link href="/classrooms/new">
                   Cadastrar primeira sala
                 </Link>
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Capacidade</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {classrooms.map((room: Classroom) => (
-                  <TableRow key={room.id}>
-                    <TableCell className="font-medium">{room.name}</TableCell>
-                    <TableCell>{room.capacity ?? 'N/A'}</TableCell>
-                    <TableCell className="text-right">
-                      <EditClassroomButton classroomId={room.id} className="mr-2" />
-                      <DeleteClassroomButton classroomId={room.id} />
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">Nome</TableHead>
+                    <TableHead className="font-semibold">Capacidade</TableHead>
+                    <TableHead className="text-right font-semibold">Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {classrooms.map((room: Classroom) => (
+                    <TableRow key={room.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium text-foreground">{room.name}</TableCell>
+                      <TableCell>{room.capacity ?? 'N/A'}</TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <EditClassroomButton classroomId={room.id} />
+                        <DeleteClassroomButton classroomId={room.id} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
