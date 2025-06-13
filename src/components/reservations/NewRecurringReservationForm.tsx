@@ -5,8 +5,8 @@ import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { CalendarPlus, Save, CalendarIcon } from 'lucide-react';
-import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter } from 'date-fns';
+import { CalendarPlus, Save, CalendarIcon as CalendarDateIcon } from 'lucide-react'; // Renamed to avoid conflict
+import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
@@ -57,11 +57,11 @@ const isEqualDate = (dateLeft: Date, dateRight: Date): boolean => {
          dateLeft.getDate() === dateRight.getDate();
 };
 
-const dateRangesOverlap = (startA: Date, endA: Date, startB: Date, endB: Date): boolean => {
+const dateRangesOverlapClient = (startA: Date, endA: Date, startB: Date, endB: Date): boolean => {
   return startA <= endB && endA >= startB;
 };
 
-const timeStringsOverlap = (startA: string, endA: string, startB: string, endB: string): boolean => {
+const timeStringsOverlapClient = (startA: string, endA: string, startB: string, endB: string): boolean => {
   return startA < endB && endA > startB;
 };
 
@@ -80,8 +80,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     defaultValues: {
       classGroupId: undefined,
       classroomId: undefined,
-      startDate: format(new Date(), 'yyyy-MM-dd'),
-      endDate: format(new Date(), 'yyyy-MM-dd'),
+      startDate: format(new Date(), 'yyyy-MM-dd'), // Ensure YYYY-MM-DD format
+      endDate: format(new Date(), 'yyyy-MM-dd'),   // Ensure YYYY-MM-DD format
       startTime: '08:00',
       endTime: '09:00',
       purpose: '',
@@ -89,8 +89,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
   });
 
   const watchedClassGroupId = form.watch("classGroupId");
-  const watchedStartDate = form.watch("startDate");
-  const watchedEndDate = form.watch("endDate");
+  const watchedStartDate = form.watch("startDate"); // Should be YYYY-MM-DD
+  const watchedEndDate = form.watch("endDate");   // Should be YYYY-MM-DD
   const watchedStartTime = form.watch("startTime");
   const watchedEndTime = form.watch("endTime");
 
@@ -112,8 +112,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
 
     const currentFormValues = {
         classGroupId: watchedClassGroupId,
-        startDate: watchedStartDate,
-        endDate: watchedEndDate,
+        startDate: watchedStartDate, // YYYY-MM-DD
+        endDate: watchedEndDate,     // YYYY-MM-DD
         startTime: watchedStartTime,
         endTime: watchedEndTime,
     };
@@ -127,8 +127,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     
     let newResStart: Date, newResEnd: Date;
     try {
-        newResStart = parse(currentFormValues.startDate, 'yyyy-MM-dd', new Date());
-        newResEnd = parse(currentFormValues.endDate, 'yyyy-MM-dd', new Date());
+        newResStart = parseISO(currentFormValues.startDate); // Use parseISO for YYYY-MM-DD
+        newResEnd = parseISO(currentFormValues.endDate);     // Use parseISO for YYYY-MM-DD
         if (!isValid(newResStart) || !isValid(newResEnd)) {
             setSuggestedClassrooms([]); return;
         }
@@ -147,14 +147,14 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
 
         let existingResStart: Date, existingResEnd: Date;
         try {
-            existingResStart = parse(existingRes.startDate, 'yyyy-MM-dd', new Date());
-            existingResEnd = parse(existingRes.endDate, 'yyyy-MM-dd', new Date());
+            existingResStart = parseISO(existingRes.startDate); // Use parseISO
+            existingResEnd = parseISO(existingRes.endDate);     // Use parseISO
              if (!isValid(existingResStart) || !isValid(existingResEnd)) continue;
         } catch (e) {
             continue;
         }
 
-        if (!dateRangesOverlap(newResStart, newResEnd, existingResStart, existingResEnd)) {
+        if (!dateRangesOverlapClient(newResStart, newResEnd, existingResStart, existingResEnd)) {
           continue;
         }
 
@@ -166,7 +166,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
         const commonClassDays = targetClassDays.filter(day => existingReservationClassDays.includes(day));
 
         if (commonClassDays.length > 0) {
-          if (timeStringsOverlap(currentFormValues.startTime, currentFormValues.endTime, existingRes.startTime, existingRes.endTime)) {
+          if (timeStringsOverlapClient(currentFormValues.startTime, currentFormValues.endTime, existingRes.startTime, existingRes.endTime)) {
             isConflicted = true;
             break; 
           }
@@ -187,8 +187,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
       return false;
     }
 
-    const rStart = parse(watchedStartDate, 'yyyy-MM-dd', new Date());
-    const rEnd = parse(watchedEndDate, 'yyyy-MM-dd', new Date());
+    const rStart = parseISO(watchedStartDate); // Use parseISO
+    const rEnd = parseISO(watchedEndDate);     // Use parseISO
 
     if (!isValid(rStart) || !isValid(rEnd) || isBefore(rEnd, rStart)) {
       return false;
@@ -224,9 +224,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
   async function onSubmit(values: RecurringReservationFormValues) {
     setIsPending(true);
     
-    const submissionValues = { ...values };
-
-    const result = await createRecurringReservation(submissionValues);
+    // Values are already in YYYY-MM-DD string format from the form
+    const result = await createRecurringReservation(values);
     setIsPending(false);
 
     if (result.success) {
@@ -235,6 +234,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
         description: result.message,
       });
       router.push('/reservations');
+      router.refresh(); // Ensure the page reloads data
     } else {
       if (result.errors) {
         Object.entries(result.errors).forEach(([field, errors]) => {
@@ -247,7 +247,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
         });
         toast({
           title: 'Erro de Validação',
-          description: "Por favor, corrija os campos destacados.",
+          description: result.message || "Por favor, corrija os campos destacados.",
           variant: 'destructive',
         });
       } else {
@@ -339,7 +339,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
           )}
         />
         
-        {/* Suggestions Display */}
         {attemptedSuggestions && suggestedClassrooms.length > 0 && (
           <div className="mt-4 p-3 border rounded-md bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700">
             <p className="text-sm font-medium text-green-700 dark:text-green-300 mb-2">
@@ -381,20 +380,20 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? (
-                          format(parse(field.value, 'yyyy-MM-dd', new Date()), "PPP", { locale: ptBR })
+                        {field.value && isValid(parseISO(field.value)) ? ( // Use parseISO
+                          format(parseISO(field.value), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
                         )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarDateIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
-                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                      selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
+                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')} // Format to YYYY-MM-DD
                       initialFocus
                       locale={ptBR}
                       modifiers={modifiers}
@@ -424,24 +423,24 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? (
-                           format(parse(field.value, 'yyyy-MM-dd', new Date()), "PPP", { locale: ptBR })
+                        {field.value && isValid(parseISO(field.value)) ? ( // Use parseISO
+                           format(parseISO(field.value), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
                         )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarDateIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value && isValid(parse(field.value, 'yyyy-MM-dd', new Date())) ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined}
-                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                      selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
+                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')} // Format to YYYY-MM-DD
                       disabled={(date) => {
                         const startDateVal = form.getValues("startDate");
                         if (!startDateVal) return false;
-                        const localStartDate = parse(startDateVal, 'yyyy-MM-dd', new Date());
+                        const localStartDate = parseISO(startDateVal); // Use parseISO
                         if (!isValid(localStartDate)) return false;
                         return isBefore(date, localStartDate) && !isEqualDate(date, localStartDate);
                       }}
@@ -489,7 +488,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
         </div>
         
         <div className="flex justify-end">
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
             {isPending ? "Salvando..." : (
               <>
                 <Save className="mr-2 h-4 w-4" />
@@ -502,4 +501,3 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     </Form>
   );
 }
-

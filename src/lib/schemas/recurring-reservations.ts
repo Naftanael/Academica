@@ -1,29 +1,29 @@
 
 import { z } from 'zod';
-// import { DAYS_OF_WEEK } from '@/lib/constants'; // No longer needed here
-// import type { DayOfWeek } from '@/types'; // No longer needed here
-import { isBefore, isEqual } from 'date-fns';
+import { parseISO, isBefore, isEqual } from 'date-fns'; // Using parseISO for robust date parsing
 
 const timeStringSchema = z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Formato de hora inválido. Use HH:MM.");
+const dateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido. Use YYYY-MM-DD.");
 
 export const recurringReservationFormSchema = z.object({
   classGroupId: z.string().min(1, "Selecione uma turma."),
   classroomId: z.string().min(1, "Selecione uma sala."),
-  startDate: z.string().min(1, "Data de início é obrigatória."),
-  endDate: z.string().min(1, "Data de fim é obrigatória."),
-  // dayOfWeek: z.enum(DAYS_OF_WEEK as [DayOfWeek, ...DayOfWeek[]], { required_error: "Selecione um dia da semana." }), // Removed
+  startDate: dateStringSchema.refine(val => !isNaN(parseISO(val).getTime()), {
+    message: "Data de início inválida.",
+  }),
+  endDate: dateStringSchema.refine(val => !isNaN(parseISO(val).getTime()), {
+    message: "Data de fim inválida.",
+  }),
   startTime: timeStringSchema,
   endTime: timeStringSchema,
   purpose: z.string().min(3, "O propósito deve ter pelo menos 3 caracteres.").max(100, "Propósito muito longo."),
 }).refine(data => {
-  // Ensure dates are valid before attempting to parse
   try {
-    const start = new Date(data.startDate);
-    const end = new Date(data.endDate);
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false; // Invalid date strings
+    const start = parseISO(data.startDate);
+    const end = parseISO(data.endDate);
     return isBefore(start, end) || isEqual(start, end);
   } catch (e) {
-    return false; // Error during date parsing
+    return false; 
   }
 }, {
   message: "A data de início deve ser anterior ou igual à data de fim.",
