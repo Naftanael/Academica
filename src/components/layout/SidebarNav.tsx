@@ -71,7 +71,7 @@ export default function SidebarNav() {
                 tooltip={{ children: item.label, side: 'right' }}
               >
                 <Link href={item.href}>
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className="h-4 w-4" />
                   <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                 </Link>
               </SidebarMenuButton>
