@@ -47,7 +47,7 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
       />
       <Card className="max-w-2xl mx-auto shadow-lg">
         <CardHeader>
-          <CardTitle>Dados da Sala</CardTitle>
+          <CardTitle className="font-headline">Dados da Sala</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-6 text-center">

@@ -20,7 +20,7 @@ export default async function RoomAvailabilityPage() {
       />
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Filtro e Quadro de Ocupação Semanal</CardTitle>
+          <CardTitle className="font-headline">Filtro e Quadro de Ocupação Semanal</CardTitle>
         </CardHeader>
         <CardContent>
           {classrooms.length === 0 && classGroups.length === 0 ? (

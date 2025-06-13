@@ -29,17 +29,17 @@ const getCourseLeftBorderColorClass = (groupName: string): string => {
 
   switch (prefix) {
     case 'ENF':
-      return 'border-l-sky-400'; // Blueish
+      return 'border-l-sky-500 dark:border-l-sky-400'; // Blueish
     case 'FMC':
-      return 'border-l-amber-400'; // Orange/Amber
+      return 'border-l-amber-500 dark:border-l-amber-400'; // Orange/Amber
     case 'RAD':
-      return 'border-l-lime-400'; // Lime Green
+      return 'border-l-lime-500 dark:border-l-lime-400'; // Lime Green
     case 'ADM':
-      return 'border-l-purple-400'; // Purple
+      return 'border-l-purple-500 dark:border-l-purple-400'; // Purple
     case 'CDI':
-      return 'border-l-pink-400'; // Pink
+      return 'border-l-pink-500 dark:border-l-pink-400'; // Pink
     default:
-      return 'border-l-slate-400'; // Default gray
+      return 'border-l-slate-500 dark:border-l-slate-400'; // Default gray
   }
 };
 
@@ -105,7 +105,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
             <div
               key={item.id}
               className={cn(
-                "bg-card rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between border border-border border-l-[6px]",
+                "bg-card rounded-xl shadow-2xl p-6 md:p-8 flex flex-col justify-between border border-border border-l-8", // Increased left border thickness
                 getCourseLeftBorderColorClass(item.groupName)
               )}
             >

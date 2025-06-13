@@ -37,7 +37,7 @@ export default async function ClassGroupsPage() {
       />
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Lista de Turmas ({classGroups.length})</CardTitle>
+          <CardTitle  className="font-headline">Lista de Turmas ({classGroups.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {classGroups.length === 0 ? (

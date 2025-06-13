@@ -48,7 +48,7 @@ export default async function EditClassGroupPage({ params }: EditClassGroupPageP
       />
       <Card className="max-w-2xl mx-auto shadow-lg">
         <CardHeader>
-          <CardTitle>Dados da Turma</CardTitle>
+          <CardTitle className="font-headline">Dados da Turma</CardTitle>
         </CardHeader>
         <CardContent>
           <EditClassGroupForm classGroup={classGroup} />

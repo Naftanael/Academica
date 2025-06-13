@@ -46,7 +46,7 @@ export default function SidebarNav() {
     <>
       <SidebarHeader className="p-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Landmark className="w-8 h-8 text-primary" />
+          <Landmark className="w-8 h-8 text-sidebar-primary" />
           <h1 className="text-xl font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             Academica
           </h1>

@@ -53,10 +53,10 @@ export default async function DashboardPage() {
   const { stats, activeClassGroups, currentDate } = await getDashboardData();
 
   const statItems = [
-    { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-blue-500' },
-    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' },
-    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-yellow-500' },
-    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-indigo-500' },
+    { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-primary' },
+    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' }, // Consider a theme color
+    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-yellow-500' }, // Consider a theme color
+    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-accent' },
   ];
 
   return (
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
       <section>
         <h2 className="text-2xl font-semibold mb-4 font-headline">Turmas em Andamento ({activeClassGroups.length})</h2>
         {activeClassGroups.length === 0 ? (
-          <Card className="p-6 text-center text-muted-foreground">
+          <Card className="p-6 text-center text-muted-foreground shadow-lg">
             Nenhuma turma em andamento no momento.
           </Card>
         ) : (
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
               <Card key={cg.id} className={`shadow-lg hover:shadow-xl transition-shadow duration-300 ${cg.nearEnd ? 'border-2 border-destructive' : ''}`}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl font-semibold">{cg.name}</CardTitle>
+                    <CardTitle className="text-xl font-semibold font-headline">{cg.name}</CardTitle>
                     {cg.nearEnd && <Badge variant="destructive">Perto do Fim</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">

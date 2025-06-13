@@ -59,7 +59,7 @@ export default async function ReservationsPage() {
       />
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Reservas Recorrentes ({enrichedReservations.length})</CardTitle>
+          <CardTitle className="font-headline">Reservas Recorrentes ({enrichedReservations.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {enrichedReservations.length === 0 ? (
@@ -128,7 +128,7 @@ export default async function ReservationsPage() {
       </Card>
        <Card className="shadow-lg mt-8">
         <CardHeader>
-          <CardTitle>Reservas Pontuais (Labs/Salas Especiais)</CardTitle>
+          <CardTitle className="font-headline">Reservas Pontuais (Labs/Salas Especiais)</CardTitle>
         </CardHeader>
         <CardContent>
            <div className="text-center text-muted-foreground py-12">

@@ -30,7 +30,7 @@ export default async function ClassroomsPage() {
       />
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Lista de Salas ({classrooms.length})</CardTitle>
+          <CardTitle className="font-headline">Lista de Salas ({classrooms.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {classrooms.length === 0 ? (

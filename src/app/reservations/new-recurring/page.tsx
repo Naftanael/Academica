@@ -33,7 +33,7 @@ export default async function NewRecurringReservationPage() {
       />
       <Card className="max-w-2xl mx-auto shadow-lg">
         <CardHeader>
-          <CardTitle>Detalhes da Reserva Recorrente</CardTitle>
+          <CardTitle className="font-headline">Detalhes da Reserva Recorrente</CardTitle>
         </CardHeader>
         <CardContent>
           <NewRecurringReservationFormClientLoader 
