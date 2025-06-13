@@ -75,7 +75,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
         <div className="flex items-center justify-center mb-3">
           <MonitorPlay className="w-16 h-16 md:w-20 md:h-20 text-primary mr-4" />
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground font-headline">
-            Painel de Turmas
+            Guia de Salas
           </h1>
         </div>
         <p className="text-2xl md:text-3xl text-muted-foreground">
