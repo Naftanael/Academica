@@ -9,33 +9,33 @@ body {
 
 @layer base {
   :root {
-    --background: 120 10% 97%; /* Was 0 0% 100% (White) -> Very Light Green-Gray */
-    --foreground: 0 0% 15%; /* #262626 Dark Gray - Stays the same */
+    --background: 120 10% 90%; /* Darkened Very Light Green-Gray */
+    --foreground: 0 0% 15%; 
 
-    --card: 120 10% 97%; /* Was 0 0% 100% -> Very Light Green-Gray */
+    --card: 120 10% 92%; /* Darkened Very Light Green-Gray, slightly lighter than bg */
     --card-foreground: 0 0% 15%;
 
-    --popover: 120 10% 97%; /* Was 0 0% 100% -> Very Light Green-Gray */
+    --popover: 120 10% 92%; /* Darkened Very Light Green-Gray */
     --popover-foreground: 0 0% 15%;
 
-    --primary: 120 55% 30%; /* #286e28 Dark Green */
-    --primary-foreground: 0 0% 100%; /* White */
+    --primary: 120 55% 30%; 
+    --primary-foreground: 0 0% 100%; 
 
-    --secondary: 120 25% 90%; /* Light Greenish Gray */
-    --secondary-foreground: 0 0% 15%; /* Dark Gray */
+    --secondary: 120 25% 88%; /* Adjusted Light Greenish Gray for new bg */
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 120 15% 92%; /* Was 120 15% 95% (#f0f7f0) -> Darker Light Green-Gray */
-    --muted-foreground: 120 10% 45%; /* #6b7d6b Mid Green-Gray */
+    --muted: 120 15% 85%; /* Darkened Light Green-Gray */
+    --muted-foreground: 120 10% 40%; /* Adjusted Mid Green-Gray for new muted */
 
-    --accent: 88 60% 55%; /* #7FCC52 Lime Green */
-    --accent-foreground: 0 0% 15%; /* #262626 Dark Gray on Lime Green */
+    --accent: 88 60% 55%; 
+    --accent-foreground: 0 0% 15%; 
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 120 10% 80%; /* Was 120 10% 85% (#d4ded4) -> Darker Border */
-    --input: 120 10% 80%; /* Was 120 10% 85% -> Darker Input */
-    --ring: 120 55% 30%; /* Dark Green for focus rings */
+    --border: 120 10% 75%; /* Darkened Border */
+    --input: 120 10% 75%; /* Darkened Input */
+    --ring: 120 55% 30%; 
 
     --radius: 0.5rem;
 
@@ -45,44 +45,44 @@ body {
     --chart-4: 88 50% 40%;
     --chart-5: 120 60% 25%;
     
-    --sidebar-background: 120 55% 28%; /* Darker Green for sidebar */
-    --sidebar-foreground: 0 0% 100%; /* White */
-    --sidebar-primary: 88 60% 55%; /* Lime Green for active sidebar items */
-    --sidebar-primary-foreground: 0 0% 15%; /* Dark Gray text on active lime green */
-    --sidebar-accent: 120 55% 33%; /* Slightly Lighter Dark Green (for hover on sidebar items) */
-    --sidebar-accent-foreground: 0 0% 100%; /* White */
-    --sidebar-border: 120 55% 22%; /* Darker Green Border for sidebar */
-    --sidebar-ring: 88 60% 55%; /* Lime Green for focus ring in sidebar */
+    --sidebar-background: 120 55% 28%; 
+    --sidebar-foreground: 0 0% 100%; 
+    --sidebar-primary: 88 60% 55%; 
+    --sidebar-primary-foreground: 0 0% 15%; 
+    --sidebar-accent: 120 55% 33%; 
+    --sidebar-accent-foreground: 0 0% 100%; 
+    --sidebar-border: 120 55% 22%; 
+    --sidebar-ring: 88 60% 55%; 
   }
 
   .dark {
-    --background: 120 30% 8%; /* Was 120 30% 10% (#121c12) -> Even Darker Green */
-    --foreground: 120 15% 90%; /* #e2e8e2 Light Green-Gray */
+    --background: 120 30% 5%; /* Even Darker Green */
+    --foreground: 120 15% 90%; 
 
-    --card: 120 30% 10%; /* Was 120 30% 12% (#152015) -> Darker Card */
+    --card: 120 30% 7%; /* Darker Card */
     --card-foreground: 120 15% 90%;
 
-    --popover: 120 30% 10%; /* Was 120 30% 12% -> Darker Popover */
+    --popover: 120 30% 7%; /* Darker Popover */
     --popover-foreground: 120 15% 90%;
 
-    --primary: 120 55% 40%; /* #3c923c Brighter Dark Green */
-    --primary-foreground: 0 0% 100%; /* White */
+    --primary: 120 55% 40%; 
+    --primary-foreground: 0 0% 100%; 
 
-    --secondary: 120 25% 20%; /* #263326 Muted Dark Green */
-    --secondary-foreground: 120 15% 85%; /* #d7e0d7 Lighter Green-Gray */
+    --secondary: 120 25% 18%; /* Adjusted Muted Dark Green for new bg */
+    --secondary-foreground: 120 15% 85%; 
 
-    --muted: 120 25% 15%; /* Was 120 25% 18% (#222d22) -> Darker Muted Green */
-    --muted-foreground: 120 10% 55%; /* #849184 Mid Green-Gray */
+    --muted: 120 25% 10%; /* Darker Muted Green */
+    --muted-foreground: 120 10% 50%; /* Adjusted Mid Green-Gray for new muted */
 
-    --accent: 88 60% 60%; /* #8ce25e Brighter Lime Green */
-    --accent-foreground: 0 0% 10%; /* #1a1a1a Very Dark Gray */
+    --accent: 88 60% 60%; 
+    --accent-foreground: 0 0% 10%; 
 
-    --destructive: 0 70% 50%; /* Adjusted for dark mode contrast */
+    --destructive: 0 70% 50%; 
     --destructive-foreground: 0 0% 98%;
 
-    --border: 120 20% 25%; /* Was 120 20% 30% (#3d4c3d) -> Darker Border */
-    --input: 120 20% 25%; /* Was 120 20% 30% -> Darker Input */
-    --ring: 120 55% 45%; /* #47a747 Green for focus rings */
+    --border: 120 20% 15%; /* Darker Border */
+    --input: 120 20% 15%; /* Darker Input */
+    --ring: 120 55% 45%; 
     
     --chart-1: 120 60% 55%;
     --chart-2: 88 55% 60%;
@@ -90,14 +90,14 @@ body {
     --chart-4: 88 40% 50%;
     --chart-5: 120 50% 35%;
 
-    --sidebar-background: 120 30% 6%; /* Was 120 30% 8% -> Even Darker Green for dark sidebar */
-    --sidebar-foreground: 120 15% 90%; /* Light Green-Gray */
-    --sidebar-primary: 88 60% 60%; /* Brighter Lime Green for active */
-    --sidebar-primary-foreground: 0 0% 10%; /* Very Dark Gray */
-    --sidebar-accent: 120 30% 13%; /* Slightly Lighter Dark Green for hover */
-    --sidebar-accent-foreground: 120 15% 90%; /* Light Green-Gray */
-    --sidebar-border: 120 30% 4%; /* Was 120 30% 6% -> Even Darker Green Border */
-    --sidebar-ring: 88 60% 60%; /* Brighter Lime Green */
+    --sidebar-background: 120 30% 4%; /* Even Darker Green for dark sidebar */
+    --sidebar-foreground: 120 15% 90%; 
+    --sidebar-primary: 88 60% 60%; 
+    --sidebar-primary-foreground: 0 0% 10%; 
+    --sidebar-accent: 120 30% 11%; /* Adjusted for new sidebar bg */
+    --sidebar-accent-foreground: 120 15% 90%; 
+    --sidebar-border: 120 30% 2%; /* Adjusted for new sidebar bg */
+    --sidebar-ring: 88 60% 60%; 
   }
 }
 
