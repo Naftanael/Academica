@@ -1,28 +1,19 @@
+
 'use server';
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
 import type { Classroom } from '@/types';
-
-const classroomFormSchema = z.object({
-  name: z.string().min(1, { message: "O nome da sala é obrigatório." })
-                 .min(3, { message: "O nome da sala deve ter pelo menos 3 caracteres." }),
-  capacity: z.coerce.number({invalid_type_error: "Capacidade deve ser um número."})
-                     .min(1, { message: "A capacidade deve ser pelo menos 1." }),
-  resources: z.array(z.string()).optional(),
-  isLab: z.boolean().optional(),
-});
-
-export type ClassroomFormValues = z.infer<typeof classroomFormSchema>;
+import { classroomCreateSchema, classroomEditSchema, type ClassroomCreateValues, type ClassroomEditFormValues } from '@/lib/schemas/classrooms';
 
 export async function getClassrooms(): Promise<Classroom[]> {
   return await readData<Classroom>('classrooms.json');
 }
 
-export async function createClassroom(values: ClassroomFormValues) {
+export async function createClassroom(values: ClassroomCreateValues) {
   try {
-    const validatedValues = classroomFormSchema.parse(values);
+    const validatedValues = classroomCreateSchema.parse(values);
     const classrooms = await readData<Classroom>('classrooms.json');
 
     const newClassroom: Classroom = {
@@ -48,12 +39,9 @@ export async function createClassroom(values: ClassroomFormValues) {
   }
 }
 
-export async function updateClassroom(id: string, values: Partial<ClassroomFormValues>) {
+export async function updateClassroom(id: string, values: ClassroomEditFormValues) {
   try {
-    // For updates, we might only get partial data, so parse against a partial schema if needed
-    // or ensure the form sends all relevant data. Here, we'll validate the parts we expect to change.
-    const updateSchema = classroomFormSchema.pick({ name: true, capacity: true }).partial(); // Allow partial updates for other fields if they were included
-    const validatedValues = updateSchema.parse(values);
+    const validatedValues = classroomEditSchema.parse(values);
 
     const classrooms = await readData<Classroom>('classrooms.json');
     const classroomIndex = classrooms.findIndex(c => c.id === id);
@@ -64,12 +52,11 @@ export async function updateClassroom(id: string, values: Partial<ClassroomFormV
 
     const existingClassroom = classrooms[classroomIndex];
     
-    // Merge updates: only update fields that are present in validatedValues
     const updatedClassroom: Classroom = {
       ...existingClassroom,
-      ...(validatedValues.name && { name: validatedValues.name }),
-      ...(validatedValues.capacity !== undefined && { capacity: validatedValues.capacity }),
-      // resources and isLab are not part of this form's submission, so they are preserved
+      name: validatedValues.name,
+      capacity: validatedValues.capacity,
+      // resources and isLab are preserved from existingClassroom
     };
 
     classrooms[classroomIndex] = updatedClassroom;
@@ -78,7 +65,7 @@ export async function updateClassroom(id: string, values: Partial<ClassroomFormV
     revalidatePath('/classrooms');
     revalidatePath(`/classrooms/${id}/edit`);
     revalidatePath('/room-availability');
-    revalidatePath('/tv-display'); // In case room name changes affect TV display
+    revalidatePath('/tv-display');
     return { success: true, message: 'Sala de aula atualizada com sucesso!', data: updatedClassroom };
 
   } catch (error) {
@@ -94,8 +81,6 @@ export async function updateClassroom(id: string, values: Partial<ClassroomFormV
 export async function deleteClassroom(id: string) {
   try {
     let classrooms = await readData<Classroom>('classrooms.json');
-    // Also ensure this classroom is not assigned to any class group
-    // For simplicity, this check is omitted here but would be important in a real app.
     classrooms = classrooms.filter(c => c.id !== id);
     await writeData<Classroom>('classrooms.json', classrooms);
     revalidatePath('/classrooms');

@@ -4,7 +4,6 @@
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, PlusCircle, School } from 'lucide-react';
@@ -23,14 +22,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { createClassroom, type ClassroomFormValues } from '@/lib/actions/classrooms';
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "O nome da sala é obrigatório." })
-                 .min(3, { message: "O nome da sala deve ter pelo menos 3 caracteres." }),
-  capacity: z.coerce.number({ invalid_type_error: "Capacidade deve ser um número." })
-                     .min(1, { message: "A capacidade deve ser pelo menos 1." }),
-});
+import { createClassroom } from '@/lib/actions/classrooms';
+import { classroomCreateSchema, type ClassroomCreateValues } from '@/lib/schemas/classrooms';
 
 
 export default function NewClassroomPage() {
@@ -38,31 +31,32 @@ export default function NewClassroomPage() {
   const { toast } = useToast();
   const [isPending, setIsPending] = React.useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ClassroomCreateValues>({
+    resolver: zodResolver(classroomCreateSchema),
     defaultValues: {
       name: '',
       capacity: undefined, 
+      // resources and isLab are optional and not form fields here, so they'll be undefined
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: ClassroomCreateValues) {
     setIsPending(true);
-    const result = await createClassroom(values as ClassroomFormValues);
+    const result = await createClassroom(values);
     setIsPending(false);
 
     if (result.success) {
       toast({
         title: 'Sucesso!',
         description: result.message,
-        variant: 'default', // Explicitly set default variant for success
+        variant: 'default',
       });
       router.push('/classrooms');
     } else {
       if (result.errors) {
         Object.entries(result.errors).forEach(([field, errors]) => {
           if (errors) {
-             form.setError(field as keyof z.infer<typeof formSchema>, {
+             form.setError(field as keyof ClassroomCreateValues, {
               type: 'manual',
               message: Array.isArray(errors) ? errors.join(', ') : String(errors),
             });

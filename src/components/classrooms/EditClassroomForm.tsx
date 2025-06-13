@@ -1,9 +1,9 @@
+
 'use client';
 
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Save } from 'lucide-react';
 
@@ -21,16 +21,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { updateClassroom } from '@/lib/actions/classrooms';
 import type { Classroom } from '@/types';
-
-// Schema for the fields being edited in this form
-const editClassroomFormSchema = z.object({
-  name: z.string().min(1, { message: "O nome da sala é obrigatório." })
-                 .min(3, { message: "O nome da sala deve ter pelo menos 3 caracteres." }),
-  capacity: z.coerce.number({ invalid_type_error: "Capacidade deve ser um número." })
-                     .min(1, { message: "A capacidade deve ser pelo menos 1." }),
-});
-
-type EditClassroomFormValues = z.infer<typeof editClassroomFormSchema>;
+import { classroomEditSchema, type ClassroomEditFormValues } from '@/lib/schemas/classrooms';
 
 interface EditClassroomFormProps {
   classroom: Classroom;
@@ -41,18 +32,16 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
   const { toast } = useToast();
   const [isPending, setIsPending] = React.useState(false);
 
-  const form = useForm<EditClassroomFormValues>({
-    resolver: zodResolver(editClassroomFormSchema),
+  const form = useForm<ClassroomEditFormValues>({
+    resolver: zodResolver(classroomEditSchema),
     defaultValues: {
       name: classroom.name,
       capacity: classroom.capacity ?? undefined,
     },
   });
 
-  async function onSubmit(values: EditClassroomFormValues) {
+  async function onSubmit(values: ClassroomEditFormValues) {
     setIsPending(true);
-    // The updateClassroom action expects Partial<ClassroomFormValues>
-    // but our form schema matches the necessary subset.
     const result = await updateClassroom(classroom.id, values);
     setIsPending(false);
 
@@ -62,12 +51,12 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
         description: result.message,
       });
       router.push('/classrooms');
-      router.refresh(); // Ensure data is re-fetched on the classrooms page
+      router.refresh(); 
     } else {
       if (result.errors) {
         Object.entries(result.errors).forEach(([field, errors]) => {
           if (errors) {
-            form.setError(field as keyof EditClassroomFormValues, {
+            form.setError(field as keyof ClassroomEditFormValues, {
               type: 'manual',
               message: Array.isArray(errors) ? errors.join(', ') : String(errors),
             });
@@ -75,7 +64,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
         });
         toast({
           title: 'Erro de Validação',
-          description: result.message || "Por favor, corrija os campos destacados.",
+          description: "Por favor, corrija os campos destacados.", // Adjusted message
           variant: 'destructive',
         });
       } else {
@@ -129,7 +118,6 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
             </FormItem>
           )}
         />
-        {/* Fields for 'resources' and 'isLab' are omitted for simplicity in this version */}
         <div className="flex justify-end">
           <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
             {isPending ? "Salvando..." : (
