@@ -22,13 +22,15 @@ interface TvDisplayClientProps {
 const PLACEHOLDER_TIME = "--:--";
 const PLACEHOLDER_DATE = "Carregando data...";
 
+interface DataStatus {
+  classGroupsMtime: number | null;
+  classroomsMtime: number | null;
+}
+
 const getCourseLeftBorderColorClass = (groupName: string): string => {
   const prefixMatch = groupName.match(/^([A-Z]+)/);
   const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
 
-  // Using theme-agnostic Tailwind colors or specific HSL if needed
-  // For simplicity, let's use some direct Tailwind colors for borders.
-  // These can be mapped to theme variables if more dynamic theming is needed.
   switch (prefix) {
     case 'ENF': return 'border-l-sky-500 dark:border-l-sky-400';
     case 'FMC': return 'border-l-amber-500 dark:border-l-amber-400';
@@ -44,14 +46,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
   const [displayData, setDisplayData] = React.useState<TvDisplayInfo[]>(initialDisplayData);
   const [liveCurrentTime, setLiveCurrentTime] = React.useState<string>(PLACEHOLDER_TIME);
   const [liveCurrentDateHeader, setLiveCurrentDateHeader] = React.useState<string>(PLACEHOLDER_DATE);
-
-  React.useEffect(() => {
-    const intervalId = setInterval(() => {
-      router.refresh();
-    }, 10000); 
-
-    return () => clearInterval(intervalId);
-  }, [router]);
+  const [lastDataStatus, setLastDataStatus] = React.useState<DataStatus | null>(null);
 
   React.useEffect(() => {
     const updateDateTime = () => {
@@ -64,6 +59,41 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     const clockIntervalId = setInterval(updateDateTime, 1000); 
     return () => clearInterval(clockIntervalId);
   }, []);
+
+  React.useEffect(() => {
+    const checkDataChanges = async () => {
+      try {
+        const response = await fetch('/api/data-status');
+        if (!response.ok) {
+          console.error('TV Display: Failed to fetch data status -', response.statusText);
+          // Fallback or error handling: maybe refresh less often or show an error
+          return;
+        }
+        const currentDataStatus: DataStatus = await response.json();
+
+        if (lastDataStatus) {
+          if (
+            currentDataStatus.classGroupsMtime !== lastDataStatus.classGroupsMtime ||
+            currentDataStatus.classroomsMtime !== lastDataStatus.classroomsMtime
+          ) {
+            router.refresh(); // Data has changed, refresh the page data
+          }
+        }
+        setLastDataStatus(currentDataStatus);
+      } catch (error) {
+        console.error('TV Display: Error fetching data status -', error);
+      }
+    };
+
+    // Initial check
+    checkDataChanges(); 
+
+    // Setup polling for data changes
+    const dataCheckIntervalId = setInterval(checkDataChanges, 10000); // Check for data changes every 10 seconds
+
+    return () => clearInterval(dataCheckIntervalId);
+  }, [router, lastDataStatus]);
+
 
   React.useEffect(() => {
     setDisplayData(initialDisplayData);
@@ -139,7 +169,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
         </main>
       )}
        <footer className="mt-12 text-center text-sm md:text-base text-muted-foreground">
-        Atualiza automaticamente a cada 10 segundos. {liveCurrentTime !== PLACEHOLDER_TIME ? `Última atualização: ${liveCurrentTime}.` : 'Aguardando atualização...'}
+        Verifica alterações nos dados periodicamente. {liveCurrentTime !== PLACEHOLDER_TIME ? `Horário atual: ${liveCurrentTime}.` : 'Aguardando...'}
       </footer>
     </div>
   );
