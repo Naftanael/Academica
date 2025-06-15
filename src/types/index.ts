@@ -31,17 +31,6 @@ export interface ClassGroup {
   classDays: DayOfWeek[];
 }
 
-// Represents ad-hoc, single instance lab/room bookings
-export interface LabReservation {
-  id: string;
-  classroomId: string; // ID of the Lab/Special Room
-  applicantName: string; // Could be professor name, department, etc.
-  reservationDate: string; // ISO Date string YYYY-MM-DD
-  startTime: string; // HH:mm format
-  endTime: string; // HH:mm format
-  purpose: string;
-}
-
 // Represents recurring reservations made by a specific class group for a room
 export interface ClassroomRecurringReservation {
   id: string;
@@ -49,8 +38,20 @@ export interface ClassroomRecurringReservation {
   classroomId: string;
   startDate: string; // ISO Date string YYYY-MM-DD
   endDate: string; // ISO Date string YYYY-MM-DD
-  shift: PeriodOfDay; // Replaces startTime and endTime
+  shift: PeriodOfDay; 
   purpose: string;
+}
+
+// Represents ad-hoc, single instance event/room bookings
+export interface EventReservation {
+  id: string;
+  classroomId: string;
+  title: string; // Name of the event
+  date: string; // ISO Date string YYYY-MM-DD
+  startTime: string; // HH:mm format
+  endTime: string; // HH:mm format
+  reservedBy: string; // Person or department reserving
+  details?: string; // Optional additional details
 }
 
 
@@ -60,4 +61,3 @@ export interface DashboardStats {
   plannedClassGroups: number;
   totalClassrooms: number;
 }
-
