@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import '../../globals.css'; // Adjusted path for globals.css
 
 export const metadata: Metadata = {
-  title: 'Guia de Salas - Academica', // Updated title
+  title: 'Guia de Salas - Academica',
   description: 'Visualização de turmas e suas salas em tempo real.',
 };
 
@@ -12,14 +12,13 @@ export default function TvDisplayLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Apply specific styling for the TV display content area.
-  // Uses theme variables for background and foreground.
-  // Forcing dark theme for high contrast on TVs
   return (
-    <div className="dark"> {/* Force dark theme */}
-      <div className="font-body antialiased bg-background text-foreground min-h-screen flex flex-col">
+    <div className="dark"> {/* Force dark theme for high contrast on TVs */}
+      <div className="font-body antialiased bg-background text-foreground min-h-screen flex flex-col selection:bg-primary/30 selection:text-primary-foreground">
         {children}
       </div>
     </div>
   );
 }
+
+    
