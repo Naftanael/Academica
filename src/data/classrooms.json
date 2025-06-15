@@ -1,4 +1,3 @@
-
 [
   {
     "id": "new-sala-1-aaabbbccc",
@@ -14,7 +13,7 @@
     "capacity": 30,
     "resources": [],
     "isLab": false,
-    "isUnderMaintenance": true
+    "isUnderMaintenance": false
   },
   {
     "id": "new-sala-3-aaabbbeee",

@@ -1,13 +1,21 @@
 
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, DashboardStats, Classroom } from '@/types'; 
+import type { ClassGroup, DashboardStats, Classroom, DayOfWeek } from '@/types'; 
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react';
+import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { DAYS_OF_WEEK } from '@/lib/constants';
+import ClassroomOccupancyChart from '@/components/dashboard/ClassroomOccupancyChart';
+
+interface DailyOccupancy {
+  day: string; // Abreviação, ex: "Seg"
+  day_full: string; // Nome completo, ex: "Segunda-feira"
+  turmas: number;
+}
 
 async function getDashboardData() {
   const classrooms = await readData<Classroom>('classrooms.json');
@@ -39,18 +47,50 @@ async function getDashboardData() {
     };
   });
 
-  return { stats, activeClassGroups: detailedActiveClassGroups, currentDate };
+  // Calculate daily classroom occupancy
+  const classroomMap = new Map(classrooms.map(room => [room.id, room]));
+  const dailyOccupancyCounts: { [key in DayOfWeek]: number } = {
+    'Segunda': 0,
+    'Terça': 0,
+    'Quarta': 0,
+    'Quinta': 0,
+    'Sexta': 0,
+    'Sábado': 0,
+    'Domingo': 0,
+  };
+
+  activeClassGroupsData.forEach(cg => {
+    if (cg.assignedClassroomId) {
+      const classroom = classroomMap.get(cg.assignedClassroomId);
+      // Count only if classroom exists and is not under maintenance
+      if (classroom && !classroom.isUnderMaintenance) {
+        cg.classDays.forEach(day => {
+          if (dailyOccupancyCounts[day] !== undefined) {
+            dailyOccupancyCounts[day]++;
+          }
+        });
+      }
+    }
+  });
+
+  const classroomOccupancyChartData: DailyOccupancy[] = DAYS_OF_WEEK.map(day => ({
+    day: day.substring(0, 3), // Abbreviated for XAxis label
+    day_full: day, // Full name for Tooltip
+    turmas: dailyOccupancyCounts[day],
+  }));
+
+  return { stats, activeClassGroups: detailedActiveClassGroups, currentDate, classroomOccupancyChartData };
 }
 
 
 export default async function DashboardPage() {
-  const { stats, activeClassGroups, currentDate } = await getDashboardData();
+  const { stats, activeClassGroups, currentDate, classroomOccupancyChartData } = await getDashboardData();
 
   const statItems = [
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-primary' },
     { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' }, 
     { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-orange-500' }, 
-    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-blue-500' }, // Changed to blue for variety, theme accent can be used
+    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-blue-500' },
   ];
 
   return (
@@ -61,7 +101,7 @@ export default async function DashboardPage() {
         icon={LayoutDashboard} 
       />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8"> {/* Adjusted lg:grid-cols-4 for better fit */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {statItems.map((item) => (
           <Card key={item.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -74,6 +114,10 @@ export default async function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      <section className="mb-8">
+        <ClassroomOccupancyChart data={classroomOccupancyChartData} />
+      </section>
 
       <section>
         <Card className="shadow-lg rounded-lg">
@@ -102,8 +146,8 @@ export default async function DashboardPage() {
                       <p className="text-sm">
                         <span className="font-medium">Período:</span> {cg.formattedStartDate} - {cg.formattedEndDate}
                       </p>
-                      <Link href={`/classgroups/${cg.id}`} className="text-sm text-primary hover:underline block mt-2 font-medium">
-                        Ver Detalhes
+                      <Link href={`/classgroups/${cg.id}/edit`} className="text-sm text-primary hover:underline block mt-2 font-medium">
+                        Ver Detalhes / Editar
                       </Link>
                     </CardContent>
                   </Card>
