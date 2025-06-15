@@ -1,5 +1,4 @@
 
-'use server';
 import { z } from 'zod';
 import { parseISO, isValid as isValidDate } from 'date-fns';
 
@@ -27,3 +26,4 @@ export const eventReservationFormSchema = z.object({
 });
 
 export type EventReservationFormValues = z.infer<typeof eventReservationFormSchema>;
+
