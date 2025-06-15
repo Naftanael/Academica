@@ -1,23 +1,50 @@
 
 import Link from 'next/link';
-import { PlusCircle, School } from 'lucide-react';
+import { PlusCircle, School, Users, CalendarDays, Clock } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { getClassrooms } from '@/lib/actions/classrooms';
-import type { Classroom } from '@/types';
+import { getClassGroups } from '@/lib/actions/classgroups';
+import type { Classroom, ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
 import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton';
 import { EditClassroomButton } from '@/components/classrooms/EditClassroomButton';
+import { DAYS_OF_WEEK } from '@/lib/constants'; // Assuming DAYS_OF_WEEK is in Portuguese here
+
+// Helper function to get current shift based on hour
+function getCurrentShift(hour: number): PeriodOfDay {
+  if (hour >= 6 && hour < 12) {
+    return 'Manhã';
+  } else if (hour >= 12 && hour < 18) {
+    return 'Tarde';
+  } else {
+    return 'Noite';
+  }
+}
+
+// Helper function to get current day name in Portuguese
+// Note: date.getDay() returns 0 for Sunday, 1 for Monday, etc.
+// DAYS_OF_WEEK constant is ['Segunda', 'Terça', ..., 'Domingo']
+const JS_DAYS_OF_WEEK_PT: DayOfWeek[] = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
 
 export default async function ClassroomsPage() {
   const classrooms = await getClassrooms();
+  const classGroups = await getClassGroups();
+
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentDayIndex = now.getDay(); // 0 for Sunday, 1 for Monday...
+  
+  const currentShift = getCurrentShift(currentHour);
+  const currentDayName = JS_DAYS_OF_WEEK_PT[currentDayIndex];
 
   return (
     <>
       <PageHeader
         title="Salas de Aula"
-        description="Gerencie as salas de aula da sua instituição."
+        description="Gerencie as salas de aula e veja sua ocupação atual."
         icon={School}
         actions={
           <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -28,48 +55,90 @@ export default async function ClassroomsPage() {
           </Button>
         }
       />
-      <Card className="shadow-lg rounded-lg">
-        <CardHeader>
-          <CardTitle className="font-headline text-xl">Lista de Salas ({classrooms.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {classrooms.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <School className="mx-auto h-12 w-12 mb-4 text-primary" />
-              <p className="text-lg">Nenhuma sala de aula cadastrada ainda.</p>
-              <Button asChild variant="link" className="mt-2 text-primary">
+      {classrooms.length === 0 ? (
+        <Card className="shadow-lg rounded-lg">
+          <CardContent>
+            <div className="text-center text-muted-foreground py-12">
+              <School className="mx-auto h-16 w-16 mb-6 text-primary" />
+              <h3 className="text-xl font-semibold mb-2 text-foreground">Nenhuma sala de aula cadastrada.</h3>
+              <p className="mb-6">
+                Comece cadastrando a primeira sala para sua instituição.
+              </p>
+              <Button asChild variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Link href="/classrooms/new">
-                  Cadastrar primeira sala
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Cadastrar Primeira Sala
                 </Link>
               </Button>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="font-semibold">Nome</TableHead>
-                    <TableHead className="font-semibold">Capacidade</TableHead>
-                    <TableHead className="text-right font-semibold">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {classrooms.map((room: Classroom) => (
-                    <TableRow key={room.id} className="hover:bg-muted/50">
-                      <TableCell className="font-medium text-foreground">{room.name}</TableCell>
-                      <TableCell>{room.capacity ?? 'N/A'}</TableCell>
-                      <TableCell className="text-right space-x-1">
-                        <EditClassroomButton classroomId={room.id} />
-                        <DeleteClassroomButton classroomId={room.id} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {classrooms.map((room: Classroom) => {
+            const occupyingGroup = classGroups.find(cg =>
+              cg.assignedClassroomId === room.id &&
+              cg.status === 'Em Andamento' &&
+              cg.classDays.includes(currentDayName as DayOfWeek) && // Ensure currentDayName is DayOfWeek
+              cg.shift === currentShift
+            );
+
+            return (
+              <Card key={room.id} className="shadow-lg rounded-lg flex flex-col">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-between items-start gap-2">
+                    <CardTitle className="font-headline text-xl text-foreground break-words">
+                      {room.name}
+                    </CardTitle>
+                    <div className="flex-shrink-0 space-x-1">
+                      <EditClassroomButton classroomId={room.id} className="h-8 w-8 hover:bg-accent" />
+                      <DeleteClassroomButton classroomId={room.id} className="h-8 w-8 hover:bg-destructive/10 text-destructive hover:text-destructive" />
+                    </div>
+                  </div>
+                  <CardDescription>
+                    Capacidade: {room.capacity ?? 'N/A'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <div className="border-t pt-4">
+                    {occupyingGroup ? (
+                      <div className="space-y-1.5">
+                        <Badge variant="destructive" className="text-xs mb-2">Ocupada Agora</Badge>
+                        <p className="text-sm text-foreground flex items-center">
+                          <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                          Turma: <span className="font-medium ml-1">{occupyingGroup.name}</span>
+                        </p>
+                        <p className="text-sm text-foreground flex items-center">
+                          <CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" />
+                           Hoje: <span className="font-medium ml-1">{currentDayName}</span>
+                        </p>
+                        <p className="text-sm text-foreground flex items-center">
+                          <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                          Turno: <span className="font-medium ml-1">{currentShift}</span>
+                        </p>
+                      </div>
+                    ) : (
+                       <div className="space-y-1.5">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-300 dark:bg-green-700/30 dark:text-green-200 dark:border-green-600 text-xs mb-2">
+                          Livre Agora
+                        </Badge>
+                         <p className="text-sm text-muted-foreground flex items-center">
+                          <CalendarDays className="mr-2 h-4 w-4" />
+                          Hoje: <span className="font-medium ml-1">{currentDayName}</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground flex items-center">
+                          <Clock className="mr-2 h-4 w-4" />
+                          Turno Atual: <span className="font-medium ml-1">{currentShift}</span>
+                        </p>
+                       </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }
