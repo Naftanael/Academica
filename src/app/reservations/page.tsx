@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { getRecurringReservations } from '@/lib/actions/recurring_reservations';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
-import type { ClassroomRecurringReservation, Classroom, ClassGroup, DayOfWeek } from '@/types';
+import type { ClassroomRecurringReservation, Classroom, ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DeleteRecurringReservationButton } from '@/components/reservations/DeleteRecurringReservationButton';
@@ -20,6 +20,7 @@ interface EnrichedReservation extends ClassroomRecurringReservation {
   classGroupDays: DayOfWeek[];
   formattedStartDate: string;
   formattedEndDate: string;
+  // shift is already part of ClassroomRecurringReservation
 }
 
 export default async function ReservationsPage() {
@@ -85,7 +86,7 @@ export default async function ReservationsPage() {
                     <TableHead className="font-semibold">Turma</TableHead>
                     <TableHead className="font-semibold">Sala</TableHead>
                     <TableHead className="font-semibold">Dias de Aula da Turma</TableHead>
-                    <TableHead className="font-semibold">Horário</TableHead>
+                    <TableHead className="font-semibold">Turno da Reserva</TableHead> {/* Changed from Horário */}
                     <TableHead className="font-semibold">Período</TableHead>
                     <TableHead className="text-right font-semibold">Ações</TableHead>
                   </TableRow>
@@ -109,7 +110,7 @@ export default async function ReservationsPage() {
                           <span className="text-muted-foreground text-xs">N/D</span>
                         )}
                       </TableCell>
-                      <TableCell>{res.startTime} - {res.endTime}</TableCell>
+                      <TableCell>{res.shift}</TableCell> {/* Display shift */}
                       <TableCell>{res.formattedStartDate} - {res.formattedEndDate}</TableCell>
                       <TableCell className="text-right space-x-1">
                         <DeleteRecurringReservationButton reservationId={res.id} />
@@ -139,3 +140,4 @@ export default async function ReservationsPage() {
     </>
   );
 }
+

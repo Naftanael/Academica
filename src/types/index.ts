@@ -49,9 +49,7 @@ export interface ClassroomRecurringReservation {
   classroomId: string;
   startDate: string; // ISO Date string YYYY-MM-DD
   endDate: string; // ISO Date string YYYY-MM-DD
-  // dayOfWeek: DayOfWeek; // Removed: reservation applies to all classDays of the ClassGroup
-  startTime: string; // HH:mm format
-  endTime: string; // HH:mm format
+  shift: PeriodOfDay; // Replaces startTime and endTime
   purpose: string;
 }
 
@@ -62,3 +60,4 @@ export interface DashboardStats {
   plannedClassGroups: number;
   totalClassrooms: number;
 }
+

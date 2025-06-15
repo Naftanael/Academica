@@ -3,7 +3,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassroomRecurringReservation, ClassGroup, Classroom, DayOfWeek } from '@/types';
+import type { ClassroomRecurringReservation, ClassGroup, Classroom, DayOfWeek, PeriodOfDay } from '@/types';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import { z } from 'zod';
 import { getClassGroups } from './classgroups';
@@ -19,10 +19,7 @@ const dateRangesOverlap = (startA: Date, endA: Date, startB: Date, endB: Date): 
   return startA <= endB && endA >= startB;
 };
 
-// Helper function to check if two time strings (HH:mm) overlap
-const timeStringsOverlap = (startA: string, endA: string, startB: string, endB: string): boolean => {
-  return startA < endB && endA > startB;
-};
+// timeStringsOverlap helper is no longer needed as we compare shifts directly.
 
 export async function createRecurringReservation(values: RecurringReservationFormValues) {
   try {
@@ -53,11 +50,15 @@ export async function createRecurringReservation(values: RecurringReservationFor
       if (!dateRangesOverlap(newResStartDate, newResEndDate, existingResStartDate, existingResEndDate)) {
         continue;
       }
+      
+      // 3. Check for same shift
+      if (existingRes.shift !== validatedValues.shift) {
+        continue;
+      }
 
-      // 3. Check for common class days and time overlap
+      // 4. Check for common class days (if same classroom, same shift, and overlapping dates)
       const existingResClassGroup = allClassGroups.find(cg => cg.id === existingRes.classGroupId);
       if (!existingResClassGroup) {
-        // This case should ideally not happen if data integrity is maintained
         console.warn(`Turma ${existingRes.classGroupId} da reserva existente ${existingRes.id} não encontrada. Pulando checagem de conflito para esta reserva.`);
         continue;
       }
@@ -66,7 +67,6 @@ export async function createRecurringReservation(values: RecurringReservationFor
       const commonClassDays = newReservationClassDays.filter(day => existingReservationClassDays.includes(day));
 
       if (commonClassDays.length > 0) {
-        if (timeStringsOverlap(validatedValues.startTime, validatedValues.endTime, existingRes.startTime, existingRes.endTime)) {
           // CONFLICT!
           const conflictingClassroomName = allClassrooms.find(c => c.id === validatedValues.classroomId)?.name || validatedValues.classroomId;
           const conflictingTurmaName = existingResClassGroup.name;
@@ -74,9 +74,8 @@ export async function createRecurringReservation(values: RecurringReservationFor
           
           return {
             success: false,
-            message: `Conflito de agendamento: A sala "${conflictingClassroomName}" já está reservada para a turma "${conflictingTurmaName}" nos dias de (${formattedCommonDays}) entre ${existingRes.startTime} e ${existingRes.endTime} durante o período de ${format(existingResStartDate, 'dd/MM/yyyy')} a ${format(existingResEndDate, 'dd/MM/yyyy')} ou parte dele.`,
+            message: `Conflito de agendamento: A sala "${conflictingClassroomName}" já está reservada para a turma "${conflictingTurmaName}" no turno da "${validatedValues.shift}" nos dias de (${formattedCommonDays}) durante o período de ${format(existingResStartDate, 'dd/MM/yyyy')} a ${format(existingResEndDate, 'dd/MM/yyyy')} ou parte dele.`,
           };
-        }
       }
     }
 
@@ -85,10 +84,9 @@ export async function createRecurringReservation(values: RecurringReservationFor
       id: generateId(),
       classGroupId: validatedValues.classGroupId,
       classroomId: validatedValues.classroomId,
-      startDate: validatedValues.startDate, // Store as YYYY-MM-DD string
-      endDate: validatedValues.endDate,     // Store as YYYY-MM-DD string
-      startTime: validatedValues.startTime,
-      endTime: validatedValues.endTime,
+      startDate: validatedValues.startDate, 
+      endDate: validatedValues.endDate,     
+      shift: validatedValues.shift as PeriodOfDay, // Add shift
       purpose: validatedValues.purpose,
     };
 
@@ -96,7 +94,7 @@ export async function createRecurringReservation(values: RecurringReservationFor
     await writeData('recurring_reservations.json', existingReservations);
 
     revalidatePath('/reservations');
-    revalidatePath('/room-availability'); // Revalidate availability page
+    revalidatePath('/room-availability'); 
     return { success: true, message: 'Reserva recorrente criada com sucesso!', data: newReservation };
 
   } catch (error) {
@@ -114,7 +112,7 @@ export async function deleteRecurringReservation(id: string) {
     reservations = reservations.filter(r => r.id !== id);
     await writeData('recurring_reservations.json', reservations);
     revalidatePath('/reservations');
-    revalidatePath('/room-availability'); // Revalidate availability page
+    revalidatePath('/room-availability'); 
     return { success: true, message: 'Reserva recorrente excluída com sucesso!' };
   } catch (error)
 {
@@ -122,3 +120,4 @@ export async function deleteRecurringReservation(id: string) {
     return { success: false, message: 'Erro ao excluir reserva recorrente.' };
   }
 }
+

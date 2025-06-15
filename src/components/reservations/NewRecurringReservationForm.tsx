@@ -5,7 +5,7 @@ import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { CalendarPlus, Save, CalendarIcon as CalendarDateIcon } from 'lucide-react'; // Renamed to avoid conflict
+import { CalendarPlus, Save, CalendarIcon as CalendarDateIcon } from 'lucide-react';
 import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -32,8 +32,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { createRecurringReservation } from '@/lib/actions/recurring_reservations';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
-import type { ClassGroup, Classroom, DayOfWeek, ClassroomRecurringReservation } from '@/types';
+import type { ClassGroup, Classroom, DayOfWeek, ClassroomRecurringReservation, PeriodOfDay } from '@/types';
 import { cn } from '@/lib/utils';
+import { CLASS_GROUP_SHIFTS } from '@/lib/constants';
 
 interface NewRecurringReservationFormProps {
   classGroups: ClassGroup[];
@@ -61,10 +62,7 @@ const dateRangesOverlapClient = (startA: Date, endA: Date, startB: Date, endB: D
   return startA <= endB && endA >= startB;
 };
 
-const timeStringsOverlapClient = (startA: string, endA: string, startB: string, endB: string): boolean => {
-  return startA < endB && endA > startB;
-};
-
+// timeStringsOverlapClient is no longer needed for suggestion logic, comparing shifts directly.
 
 export default function NewRecurringReservationForm({ classGroups, classrooms, allRecurringReservations }: NewRecurringReservationFormProps) {
   const router = useRouter();
@@ -80,19 +78,17 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     defaultValues: {
       classGroupId: undefined,
       classroomId: undefined,
-      startDate: format(new Date(), 'yyyy-MM-dd'), // Ensure YYYY-MM-DD format
-      endDate: format(new Date(), 'yyyy-MM-dd'),   // Ensure YYYY-MM-DD format
-      startTime: '08:00',
-      endTime: '09:00',
+      startDate: format(new Date(), 'yyyy-MM-dd'),
+      endDate: format(new Date(), 'yyyy-MM-dd'),
+      shift: undefined, // Default shift
       purpose: '',
     },
   });
 
   const watchedClassGroupId = form.watch("classGroupId");
-  const watchedStartDate = form.watch("startDate"); // Should be YYYY-MM-DD
-  const watchedEndDate = form.watch("endDate");   // Should be YYYY-MM-DD
-  const watchedStartTime = form.watch("startTime");
-  const watchedEndTime = form.watch("endTime");
+  const watchedStartDate = form.watch("startDate");
+  const watchedEndDate = form.watch("endDate");
+  const watchedShift = form.watch("shift"); // Watch shift instead of times
 
   React.useEffect(() => {
     if (watchedClassGroupId) {
@@ -103,7 +99,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
   }, [watchedClassGroupId, classGroups]);
 
   React.useEffect(() => {
-    if (!watchedClassGroupId || !watchedStartDate || !watchedEndDate || !watchedStartTime || !watchedEndTime) {
+    if (!watchedClassGroupId || !watchedStartDate || !watchedEndDate || !watchedShift) {
       setSuggestedClassrooms([]);
       setAttemptedSuggestions(false);
       return;
@@ -112,10 +108,9 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
 
     const currentFormValues = {
         classGroupId: watchedClassGroupId,
-        startDate: watchedStartDate, // YYYY-MM-DD
-        endDate: watchedEndDate,     // YYYY-MM-DD
-        startTime: watchedStartTime,
-        endTime: watchedEndTime,
+        startDate: watchedStartDate,
+        endDate: watchedEndDate,
+        shift: watchedShift, // Use shift
     };
 
     const targetClassGroup = classGroups.find(cg => cg.id === currentFormValues.classGroupId);
@@ -127,15 +122,14 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     
     let newResStart: Date, newResEnd: Date;
     try {
-        newResStart = parseISO(currentFormValues.startDate); // Use parseISO for YYYY-MM-DD
-        newResEnd = parseISO(currentFormValues.endDate);     // Use parseISO for YYYY-MM-DD
+        newResStart = parseISO(currentFormValues.startDate);
+        newResEnd = parseISO(currentFormValues.endDate);
         if (!isValid(newResStart) || !isValid(newResEnd)) {
             setSuggestedClassrooms([]); return;
         }
     } catch (e) {
         setSuggestedClassrooms([]); return;
     }
-
 
     const suggestions: Classroom[] = [];
     for (const classroom of classrooms) {
@@ -147,8 +141,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
 
         let existingResStart: Date, existingResEnd: Date;
         try {
-            existingResStart = parseISO(existingRes.startDate); // Use parseISO
-            existingResEnd = parseISO(existingRes.endDate);     // Use parseISO
+            existingResStart = parseISO(existingRes.startDate);
+            existingResEnd = parseISO(existingRes.endDate);
              if (!isValid(existingResStart) || !isValid(existingResEnd)) continue;
         } catch (e) {
             continue;
@@ -166,7 +160,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
         const commonClassDays = targetClassDays.filter(day => existingReservationClassDays.includes(day));
 
         if (commonClassDays.length > 0) {
-          if (timeStringsOverlapClient(currentFormValues.startTime, currentFormValues.endTime, existingRes.startTime, existingRes.endTime)) {
+          // Compare shifts directly for conflict in suggestion
+          if (currentFormValues.shift === existingRes.shift) {
             isConflicted = true;
             break; 
           }
@@ -179,7 +174,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     }
     setSuggestedClassrooms(suggestions);
 
-  }, [watchedClassGroupId, watchedStartDate, watchedEndDate, watchedStartTime, watchedEndTime, classrooms, classGroups, allRecurringReservations]);
+  }, [watchedClassGroupId, watchedStartDate, watchedEndDate, watchedShift, classrooms, classGroups, allRecurringReservations]);
 
 
   const classDayInRangeModifier = React.useCallback((date: Date): boolean => {
@@ -187,8 +182,8 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
       return false;
     }
 
-    const rStart = parseISO(watchedStartDate); // Use parseISO
-    const rEnd = parseISO(watchedEndDate);     // Use parseISO
+    const rStart = parseISO(watchedStartDate);
+    const rEnd = parseISO(watchedEndDate);
 
     if (!isValid(rStart) || !isValid(rEnd) || isBefore(rEnd, rStart)) {
       return false;
@@ -224,7 +219,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
   async function onSubmit(values: RecurringReservationFormValues) {
     setIsPending(true);
     
-    // Values are already in YYYY-MM-DD string format from the form
     const result = await createRecurringReservation(values);
     setIsPending(false);
 
@@ -234,7 +228,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
         description: result.message,
       });
       router.push('/reservations');
-      router.refresh(); // Ensure the page reloads data
+      router.refresh();
     } else {
       if (result.errors) {
         Object.entries(result.errors).forEach(([field, errors]) => {
@@ -353,10 +347,10 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
             </ul>
           </div>
         )}
-        {attemptedSuggestions && watchedClassGroupId && watchedStartDate && watchedEndDate && watchedStartTime && watchedEndTime && suggestedClassrooms.length === 0 && (
+        {attemptedSuggestions && watchedClassGroupId && watchedStartDate && watchedEndDate && watchedShift && suggestedClassrooms.length === 0 && (
          <div className="mt-4 p-3 border rounded-md bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Nenhuma sala diretamente sugerida como livre para todos os dias de aula da turma selecionada neste horário e período.
+              Nenhuma sala diretamente sugerida como livre para todos os dias de aula da turma selecionada neste turno e período.
               Verifique a disponibilidade manualmente ou prossiga (a validação final ocorrerá ao salvar).
             </p>
           </div>
@@ -380,7 +374,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value && isValid(parseISO(field.value)) ? ( // Use parseISO
+                        {field.value && isValid(parseISO(field.value)) ? (
                           format(parseISO(field.value), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
@@ -393,7 +387,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
                     <Calendar
                       mode="single"
                       selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
-                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')} // Format to YYYY-MM-DD
+                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       initialFocus
                       locale={ptBR}
                       modifiers={modifiers}
@@ -423,7 +417,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value && isValid(parseISO(field.value)) ? ( // Use parseISO
+                        {field.value && isValid(parseISO(field.value)) ? (
                            format(parseISO(field.value), "PPP", { locale: ptBR })
                         ) : (
                           <span>Escolha uma data</span>
@@ -436,11 +430,11 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
                     <Calendar
                       mode="single"
                       selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
-                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')} // Format to YYYY-MM-DD
+                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       disabled={(date) => {
                         const startDateVal = form.getValues("startDate");
                         if (!startDateVal) return false;
-                        const localStartDate = parseISO(startDateVal); // Use parseISO
+                        const localStartDate = parseISO(startDateVal);
                         if (!isValid(localStartDate)) return false;
                         return isBefore(date, localStartDate) && !isEqualDate(date, localStartDate);
                       }}
@@ -458,34 +452,31 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="startTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Hora de Início</FormLabel>
+        <FormField
+          control={form.control}
+          name="shift"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Turno da Reserva</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <Input type="time" {...field} />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o turno para a reserva" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="endTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Hora de Fim</FormLabel>
-                <FormControl>
-                  <Input type="time" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                <SelectContent>
+                  {CLASS_GROUP_SHIFTS.map((shiftOption) => (
+                    <SelectItem key={shiftOption} value={shiftOption}>
+                      {shiftOption}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>O turno em que a sala será reservada nos dias de aula da turma selecionada.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <div className="flex justify-end">
           <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -501,3 +492,4 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     </Form>
   );
 }
+

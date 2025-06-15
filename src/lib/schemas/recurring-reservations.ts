@@ -1,8 +1,8 @@
 
 import { z } from 'zod';
 import { parseISO, isBefore, isEqual } from 'date-fns'; // Using parseISO for robust date parsing
+import { CLASS_GROUP_SHIFTS } from '@/lib/constants'; // Import shifts for enum
 
-const timeStringSchema = z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Formato de hora inválido. Use HH:MM.");
 const dateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido. Use YYYY-MM-DD.");
 
 export const recurringReservationFormSchema = z.object({
@@ -14,8 +14,10 @@ export const recurringReservationFormSchema = z.object({
   endDate: dateStringSchema.refine(val => !isNaN(parseISO(val).getTime()), {
     message: "Data de fim inválida.",
   }),
-  startTime: timeStringSchema,
-  endTime: timeStringSchema,
+  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { // Use imported shifts
+    required_error: "Selecione um turno.",
+    invalid_type_error: "Turno inválido."
+  }),
   purpose: z.string().min(3, "O propósito deve ter pelo menos 3 caracteres.").max(100, "Propósito muito longo."),
 }).refine(data => {
   try {
@@ -28,9 +30,8 @@ export const recurringReservationFormSchema = z.object({
 }, {
   message: "A data de início deve ser anterior ou igual à data de fim.",
   path: ["endDate"],
-}).refine(data => data.startTime < data.endTime, {
-  message: "A hora de início deve ser anterior à hora de fim.",
-  path: ["endTime"],
 });
+// Removed refine for startTime < endTime as these fields are removed
 
 export type RecurringReservationFormValues = z.infer<typeof recurringReservationFormSchema>;
+
