@@ -32,17 +32,17 @@ const getCourseColorClasses = (groupName: string): string => {
 
   switch (prefix) {
     case 'ENF':
-      return 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-700/30 dark:text-sky-200 dark:border-sky-600';
+      return 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-700/30 dark:text-sky-200 dark:border-sky-600 hover:bg-sky-200 dark:hover:bg-sky-700/50';
     case 'FMC':
-      return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-700/30 dark:text-amber-200 dark:border-amber-600';
+      return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-700/30 dark:text-amber-200 dark:border-amber-600 hover:bg-amber-200 dark:hover:bg-amber-700/50';
     case 'RAD':
-      return 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-700/30 dark:text-lime-200 dark:border-lime-600';
+      return 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-700/30 dark:text-lime-200 dark:border-lime-600 hover:bg-lime-200 dark:hover:bg-lime-700/50';
     case 'ADM':
-      return 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-700/30 dark:text-purple-200 dark:border-purple-600';
+      return 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-700/30 dark:text-purple-200 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-700/50';
     case 'CDI':
-      return 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-700/30 dark:text-pink-200 dark:border-pink-600';
+      return 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-700/30 dark:text-pink-200 dark:border-pink-600 hover:bg-pink-200 dark:hover:bg-pink-700/50';
     default:
-      return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700/30 dark:text-slate-200 dark:border-slate-600';
+      return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700/30 dark:text-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700/50';
   }
 };
 
@@ -101,14 +101,13 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
   };
 
   // Determines the background of the entire TableCell based on classes ending soon in that day/room
-  const getCellBackgroundColor = (classroomId: string, day: DayOfWeek): string => {
+  const getCellOverallStateClass = (classroomId: string, day: DayOfWeek): string => {
     const groupsInCellToday = displayedClassGroups.filter(
       cg => cg.assignedClassroomId === classroomId && cg.classDays.includes(day) && cg.status === 'Em Andamento'
     );
 
     if (groupsInCellToday.length === 0) {
-      // If completely free for the day, use a neutral or slightly positive background
-      return 'bg-background dark:bg-background'; // Or a very light green
+      return 'bg-background dark:bg-background'; 
     }
 
     const endDates = groupsInCellToday
@@ -116,26 +115,25 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       .filter(date => isValid(date));
     
     if (endDates.length === 0) { 
-      return 'bg-background dark:bg-background';
+      return 'bg-muted/20 dark:bg-muted/10'; // Occupied, but no valid end dates (should not happen)
     }
 
     const latestEndDateInCell = maxDate(endDates);
     const today = new Date();
-    today.setHours(0,0,0,0); // Normalize today's date for comparison
+    today.setHours(0,0,0,0); 
 
     const daysRemaining = differenceInDays(latestEndDateInCell, today);
 
     if (daysRemaining < 0) { 
-      return 'bg-background dark:bg-background'; // Ended in the past, treat as neutral
+      return 'bg-background dark:bg-background'; 
     }
-    if (daysRemaining <= 7) { // Ending within a week
-      return 'bg-yellow-100 dark:bg-yellow-700/20'; 
+    if (daysRemaining <= 7) { 
+      return 'bg-yellow-100 dark:bg-yellow-900/30'; // Termina em breve (1 semana)
     }
-    if (daysRemaining <= 30) { // Ending within a month
-      return 'bg-orange-100 dark:bg-orange-700/20'; 
+    if (daysRemaining <= 30) { 
+      return 'bg-orange-100 dark:bg-orange-900/30'; // Termina em breve (1 mês)
     }
-    // Occupied but not ending soon
-    return 'bg-red-50 dark:bg-red-800/10'; 
+    return 'bg-muted/30 dark:bg-muted/20'; // Ocupado, mas não terminando em breve
   };
 
 
@@ -202,15 +200,15 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       ) : !startDate || !endDate ? (
          <p className="text-muted-foreground text-center py-4">Por favor, selecione um intervalo de datas.</p>
       ) : (
-        <div className="overflow-x-auto border rounded-lg shadow-md">
+        <div className="overflow-x-auto border rounded-lg shadow-md bg-card">
           <Table className="min-w-full table-fixed">
-            <TableHeader className="sticky top-0 z-20 bg-muted/80 dark:bg-muted backdrop-blur-sm">
+            <TableHeader className="sticky top-0 z-20 bg-muted/80 dark:bg-muted backdrop-blur-sm shadow-sm">
               <TableRow>
-                <TableHead className="w-[180px] min-w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r px-3 py-3">Sala</TableHead>
+                <TableHead className="w-[180px] min-w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r px-3 py-3 align-middle">Sala</TableHead>
                 {DAYS_OF_WEEK.map(day => {
                   const columnDateStr = getColumnDateString(day, startDate);
                   return (
-                    <TableHead key={day} className="w-[220px] min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r px-2 py-3">
+                    <TableHead key={day} className="w-[220px] min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r px-2 py-3 align-middle">
                       {day}
                       {columnDateStr && (
                         <>
@@ -225,32 +223,35 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
             </TableHeader>
             <TableBody>
               {initialClassrooms.map((room: Classroom) => (
-                <TableRow key={room.id} className="hover:bg-card/50 transition-colors duration-150">
+                <TableRow key={room.id} className="hover:bg-card/80 dark:hover:bg-muted/50 transition-colors duration-150">
                   <TableCell className="font-medium sticky left-0 bg-card dark:bg-muted z-10 shadow-sm whitespace-nowrap text-sm py-3 px-3 border-r align-top">
                     {room.name}
                     <span className="block text-xs text-muted-foreground mt-0.5">(Cap: {room.capacity ?? 'N/A'})</span>
                   </TableCell>
                   {DAYS_OF_WEEK.map(day => {
-                    const cellBgClass = getCellBackgroundColor(room.id, day);
+                    const cellBgClass = getCellOverallStateClass(room.id, day);
                     return (
                       <TableCell 
                         key={day} 
                         className={cn(
-                          "align-top p-1.5 transition-colors duration-150 h-[170px] border-r", // Increased height
+                          "align-top p-1 transition-colors duration-150 h-[170px] border-r", 
                           cellBgClass
                         )}
                       >
-                        <div className="flex flex-col space-y-1.5 h-full text-xs">
+                        <div className="flex flex-col space-y-1 h-full text-xs">
                           {PERIODS_OF_DAY.map(shift => {
                             const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
                             return (
-                              <div key={shift} className="flex-1 p-1 rounded-sm min-h-[50px] flex flex-col justify-between border border-transparent hover:border-border/50">
+                              <div 
+                                key={shift} 
+                                className="flex-1 p-1.5 rounded-md min-h-[50px] flex flex-col justify-between border border-border/30 hover:border-border/70 dark:border-border/20 dark:hover:border-border/50 transition-all bg-background/30 dark:bg-background/10 hover:bg-background/50 dark:hover:bg-background/30 shadow-sm hover:shadow-md"
+                              >
                                 <div
                                   className={cn(
-                                    "h-2 w-full rounded-t-sm mb-1 shadow-inner", 
-                                    shift === 'Manhã' ? 'bg-sky-500' :
-                                    shift === 'Tarde' ? 'bg-orange-500' :
-                                    shift === 'Noite' ? 'bg-indigo-600' : ''
+                                    "h-2 w-full rounded-t-sm mb-1.5 shadow-inner", 
+                                    shift === 'Manhã' ? 'bg-sky-500 dark:bg-sky-400' :
+                                    shift === 'Tarde' ? 'bg-orange-500 dark:bg-orange-400' :
+                                    shift === 'Noite' ? 'bg-indigo-600 dark:bg-indigo-500' : ''
                                   )}
                                   title={shift}
                                 ></div>
@@ -274,7 +275,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                                   <div className="flex-grow flex items-center justify-center">
                                     <Badge 
                                         variant="outline" 
-                                        className="text-[10px] px-1.5 py-0.5 bg-green-100 border-green-300 text-green-800 dark:bg-green-700/30 dark:text-green-200 dark:border-green-600 font-semibold"
+                                        className="text-[10px] px-1.5 py-0.5 bg-green-100 border-green-400 text-green-800 dark:bg-green-800/30 dark:text-green-200 dark:border-green-600/70 font-semibold"
                                     >
                                       Livre
                                     </Badge>
@@ -297,3 +298,5 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
   );
 }
 
+
+    
