@@ -10,8 +10,15 @@ import { getClassGroups } from '@/lib/actions/classgroups';
 import type { Classroom, ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
 import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton';
 import { EditClassroomButton } from '@/components/classrooms/EditClassroomButton';
-import { JS_DAYS_OF_WEEK_PT } from '@/lib/constants'; 
+import { JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants'; 
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 // Helper function to get current shift based on hour
 function getCurrentShift(hour: number): PeriodOfDay {
@@ -33,7 +40,7 @@ export default async function ClassroomsPage() {
   const currentDayIndex = now.getDay(); // 0 for Sunday, 1 for Monday...
   
   const currentShift = getCurrentShift(currentHour);
-  const currentDayName = JS_DAYS_OF_WEEK_PT[currentDayIndex];
+  const currentDayName = JS_DAYS_OF_WEEK_MAP_TO_PT[currentDayIndex];
 
   return (
     <>
