@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { PlusCircle, UsersRound, Home } from 'lucide-react'; 
+import { PlusCircle, UsersRound, Home, Wrench } from 'lucide-react'; 
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,13 +12,14 @@ import type { ClassGroup, Classroom } from '@/types';
 import { DeleteClassGroupButton } from '@/components/classgroups/DeleteClassGroupButton';
 import { EditClassGroupButton } from '@/components/classgroups/EditClassGroupButton';
 import { ChangeClassroomDialog } from '@/components/classgroups/ChangeClassroomDialog'; 
+import { cn } from '@/lib/utils';
 
 
 export default async function ClassGroupsPage() {
   const classGroups = await getClassGroups();
   const classrooms = await getClassrooms(); 
 
-  const classroomMap = new Map(classrooms.map(room => [room.id, room.name])); 
+  const classroomDetailsMap = new Map(classrooms.map(room => [room.id, {name: room.name, isUnderMaintenance: room.isUnderMaintenance || false }]));
 
   return (
     <>
@@ -66,9 +67,18 @@ export default async function ClassGroupsPage() {
                 </TableHeader>
                 <TableBody>
                   {classGroups.map((cg: ClassGroup) => {
-                    const assignedClassroomName = cg.assignedClassroomId 
-                      ? classroomMap.get(cg.assignedClassroomId) || 'Desconhecida' 
-                      : 'Não atribuída';
+                    let assignedClassroomDisplay = 'Não atribuída';
+                    let isRoomInMaintenance = false;
+                    if (cg.assignedClassroomId) {
+                      const roomDetails = classroomDetailsMap.get(cg.assignedClassroomId);
+                      if (roomDetails) {
+                        assignedClassroomDisplay = roomDetails.name;
+                        isRoomInMaintenance = roomDetails.isUnderMaintenance;
+                      } else {
+                        assignedClassroomDisplay = 'Desconhecida';
+                      }
+                    }
+                    
                     return (
                     <TableRow key={cg.id} className="hover:bg-muted/50">
                       <TableCell className="font-medium text-foreground">{cg.name}</TableCell>
@@ -91,33 +101,59 @@ export default async function ClassGroupsPage() {
                           variant={
                             cg.status === 'Em Andamento' ? 'default' : 
                             cg.status === 'Planejada' ? 'secondary' : 
-                            cg.status === 'Concluída' ? 'outline' : // Assuming 'outline' for Concluída
-                            'destructive' // Assuming 'destructive' for Cancelada
+                            cg.status === 'Concluída' ? 'outline' : 
+                            'destructive' 
                           }
-                          className={
-                            cg.status === 'Em Andamento' ? 'bg-green-500 text-white' : 
-                            cg.status === 'Planejada' ? 'bg-blue-500 text-white' :
-                            cg.status === 'Concluída' ? 'border-gray-500 text-gray-700' :
-                            cg.status === 'Cancelada' ? 'bg-red-500 text-white' : ''
-                          }
+                          className={cn(
+                            cg.status === 'Em Andamento' && 'bg-green-500 text-white dark:bg-green-600 dark:text-green-50', 
+                            cg.status === 'Planejada' && 'bg-blue-500 text-white dark:bg-blue-600 dark:text-blue-50',
+                            cg.status === 'Concluída' && 'border-gray-500 text-gray-700 dark:border-gray-400 dark:text-gray-300',
+                            cg.status === 'Cancelada' && 'bg-red-500 text-white dark:bg-red-600 dark:text-red-50'
+                          )}
                         >
                           {cg.status}
                         </Badge>
                       </TableCell>
                       <TableCell>{cg.year}</TableCell>
                       <TableCell> 
-                        <div className="flex items-center gap-2">
-                          <span>{assignedClassroomName}</span>
-                          <ChangeClassroomDialog 
-                            classGroup={cg} 
-                            availableClassrooms={classrooms}
-                            triggerButton={
-                              <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-accent">
-                                <Home className="h-3.5 w-3.5 text-primary" />
-                                <span className="sr-only">Trocar Sala</span>
-                              </Button>
-                            }
-                          />
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn(isRoomInMaintenance && "text-amber-600 dark:text-amber-400")}>{assignedClassroomDisplay}</span>
+                          {isRoomInMaintenance && (
+                            <TooltipProvider delayDuration={100}>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Wrench className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Sala em manutenção</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                           {!isRoomInMaintenance && cg.assignedClassroomId && (
+                             <ChangeClassroomDialog 
+                              classGroup={cg} 
+                              availableClassrooms={classrooms.filter(c => !c.isUnderMaintenance)} // Apenas salas não em manutenção
+                              triggerButton={
+                                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-accent">
+                                  <Home className="h-3.5 w-3.5 text-primary" />
+                                  <span className="sr-only">Trocar Sala</span>
+                                </Button>
+                              }
+                            />
+                           )}
+                           {!cg.assignedClassroomId && (
+                             <ChangeClassroomDialog 
+                              classGroup={cg} 
+                              availableClassrooms={classrooms.filter(c => !c.isUnderMaintenance)}
+                              triggerButton={
+                                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-accent">
+                                  <Home className="h-3.5 w-3.5 text-primary" />
+                                  <span className="sr-only">Atribuir Sala</span>
+                                </Button>
+                              }
+                            />
+                           )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right space-x-1">

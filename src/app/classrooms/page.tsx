@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { PlusCircle, School, Users, CalendarDays, Clock } from 'lucide-react';
+import { PlusCircle, School, Users, CalendarDays, Clock, Wrench } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,7 +10,8 @@ import { getClassGroups } from '@/lib/actions/classgroups';
 import type { Classroom, ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
 import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton';
 import { EditClassroomButton } from '@/components/classrooms/EditClassroomButton';
-import { DAYS_OF_WEEK } from '@/lib/constants'; // Assuming DAYS_OF_WEEK is in Portuguese here
+import { JS_DAYS_OF_WEEK_PT } from '@/lib/constants'; 
+import { cn } from '@/lib/utils';
 
 // Helper function to get current shift based on hour
 function getCurrentShift(hour: number): PeriodOfDay {
@@ -22,12 +23,6 @@ function getCurrentShift(hour: number): PeriodOfDay {
     return 'Noite';
   }
 }
-
-// Helper function to get current day name in Portuguese
-// Note: date.getDay() returns 0 for Sunday, 1 for Monday, etc.
-// DAYS_OF_WEEK constant is ['Segunda', 'Terça', ..., 'Domingo']
-const JS_DAYS_OF_WEEK_PT: DayOfWeek[] = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-
 
 export default async function ClassroomsPage() {
   const classrooms = await getClassrooms();
@@ -76,15 +71,15 @@ export default async function ClassroomsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {classrooms.map((room: Classroom) => {
-            const occupyingGroup = classGroups.find(cg =>
+            const occupyingGroup = !room.isUnderMaintenance ? classGroups.find(cg =>
               cg.assignedClassroomId === room.id &&
               cg.status === 'Em Andamento' &&
-              cg.classDays.includes(currentDayName as DayOfWeek) && // Ensure currentDayName is DayOfWeek
+              cg.classDays.includes(currentDayName as DayOfWeek) && 
               cg.shift === currentShift
-            );
+            ) : undefined;
 
             return (
-              <Card key={room.id} className="shadow-lg rounded-lg flex flex-col">
+              <Card key={room.id} className={cn("shadow-lg rounded-lg flex flex-col", room.isUnderMaintenance && "border-amber-500 border-2 bg-amber-50 dark:bg-amber-900/30")}>
                 <CardHeader className="pb-4">
                   <div className="flex justify-between items-start gap-2">
                     <CardTitle className="font-headline text-xl text-foreground break-words">
@@ -98,10 +93,23 @@ export default async function ClassroomsPage() {
                   <CardDescription>
                     Capacidade: {room.capacity ?? 'N/A'}
                   </CardDescription>
+                   {room.isUnderMaintenance && (
+                    <Badge variant="destructive" className="mt-2 bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600">
+                      <Wrench className="mr-2 h-3.5 w-3.5" />
+                      Em Manutenção
+                    </Badge>
+                  )}
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <div className="border-t pt-4">
-                    {occupyingGroup ? (
+                    {room.isUnderMaintenance ? (
+                       <div className="space-y-1.5">
+                        <p className="text-sm text-amber-700 dark:text-amber-300 font-medium flex items-center">
+                          <Wrench className="mr-2 h-4 w-4 " />
+                          Sala indisponível.
+                        </p>
+                      </div>
+                    ) : occupyingGroup ? (
                       <div className="space-y-1.5">
                         <Badge variant="destructive" className="text-xs mb-2">Ocupada Agora</Badge>
                         <p className="text-sm text-foreground flex items-center">

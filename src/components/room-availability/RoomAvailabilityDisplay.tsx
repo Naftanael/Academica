@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { format, startOfWeek, addDays, parseISO, isValid, differenceInDays, max as maxDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Wrench } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -57,7 +57,7 @@ const getColumnDateString = (targetDay: DayOfWeek, currentFilterStartDate: Date 
   return format(dateForColumn, 'dd/MMM', { locale: ptBR });
 };
 
-const getShiftBlockClass = (shift: PeriodOfDay): string => {
+const getShiftBgClass = (shift: PeriodOfDay): string => {
   switch (shift) {
     case 'Manhã':
       return 'bg-sky-100 dark:bg-sky-800/30 hover:bg-sky-200 dark:hover:bg-sky-700/40';
@@ -70,7 +70,10 @@ const getShiftBlockClass = (shift: PeriodOfDay): string => {
   }
 };
 
-const getCellContainerClass = (classroomId: string, day: DayOfWeek, displayedClassGroups: ClassGroup[]): string => {
+const getCellContainerClass = (classroomId: string, day: DayOfWeek, displayedClassGroups: ClassGroup[], roomIsUnderMaintenance: boolean): string => {
+    if (roomIsUnderMaintenance) {
+      return 'bg-amber-100/70 dark:bg-amber-900/40 opacity-70';
+    }
     const groupsInCellToday = displayedClassGroups.filter(
       cg => cg.assignedClassroomId === classroomId && cg.classDays.includes(day) && cg.status === 'Em Andamento'
     );
@@ -84,10 +87,9 @@ const getCellContainerClass = (classroomId: string, day: DayOfWeek, displayedCla
     today.setHours(0, 0, 0, 0);
     const daysRemaining = differenceInDays(latestEndDateInCell, today);
 
-    if (daysRemaining < 0) return 'bg-background dark:bg-card'; // Turma já terminou (passado)
-    if (daysRemaining <= 7) return 'bg-yellow-100/50 dark:bg-yellow-900/20'; // Perto do fim
-    // if (daysRemaining <= 30) return 'bg-orange-100/50 dark:bg-orange-900/20'; // No futuro, mas não tão perto
-    return 'bg-muted/30 dark:bg-muted/20'; // Ocupado
+    if (daysRemaining < 0) return 'bg-background dark:bg-card';
+    if (daysRemaining <= 7) return 'bg-yellow-100/50 dark:bg-yellow-900/20';
+    return 'bg-muted/30 dark:bg-muted/20'; 
 };
 
 
@@ -105,11 +107,19 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       const cgStartDate = parseISO(cg.startDate);
       const cgEndDate = parseISO(cg.endDate);
       if (!isValid(cgStartDate) || !isValid(cgEndDate)) return false;
-      // Check if class group's period overlaps with the selected week
+      
+      // Ensure the classroom for this class group is not under maintenance
+      if (cg.assignedClassroomId) {
+        const classroom = initialClassrooms.find(c => c.id === cg.assignedClassroomId);
+        if (classroom && classroom.isUnderMaintenance) {
+          return false;
+        }
+      }
+
       return cgStartDate <= endDate && cgEndDate >= startDate && cg.status === 'Em Andamento';
     });
     setDisplayedClassGroups(filtered);
-  }, [startDate, endDate, initialClassGroups]);
+  }, [startDate, endDate, initialClassGroups, initialClassrooms]);
 
   useEffect(() => {
     filterClassGroups();
@@ -182,8 +192,10 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
 
         {initialClassrooms.length === 0 ? (
           <p className="text-muted-foreground text-center py-4">Nenhuma sala cadastrada.</p>
+        ) : displayedClassGroups.length === 0 && initialClassrooms.every(c => c.isUnderMaintenance) && (startDate && endDate) ? (
+          <p className="text-muted-foreground text-center py-4">Todas as salas estão em manutenção ou nenhuma turma ativa encontrada para o período.</p>
         ) : displayedClassGroups.length === 0 && (startDate && endDate) ? (
-          <p className="text-muted-foreground text-center py-4">Nenhuma turma ativa encontrada para o período selecionado.</p>
+           <p className="text-muted-foreground text-center py-4">Nenhuma turma ativa encontrada para o período selecionado em salas disponíveis.</p>
         ) : !startDate || !endDate ? (
           <p className="text-muted-foreground text-center py-4">Por favor, selecione um intervalo de datas.</p>
         ) : (
@@ -196,7 +208,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                     const columnDateStr = getColumnDateString(day, startDate);
                     return (
                       <TableHead key={day} className="w-[200px] min-w-[200px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r px-2 py-3 align-middle">
-                        {day.substring(0,3)} {/* Abreviatura do dia */}
+                        {day.substring(0,3)}
                         {columnDateStr && (
                           <>
                             <br />
@@ -211,83 +223,95 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
               <TableBody>
                 {initialClassrooms.map((room: Classroom) => (
                   <TableRow key={room.id} className="hover:bg-muted/20 dark:hover:bg-muted/50 transition-colors duration-150">
-                    <TableCell className="font-medium sticky left-0 bg-card dark:bg-muted z-10 shadow-sm whitespace-nowrap text-sm py-3 px-3 border-r align-top">
+                    <TableCell className={cn("font-medium sticky left-0 bg-card dark:bg-muted z-10 shadow-sm whitespace-nowrap text-sm py-3 px-3 border-r align-top", room.isUnderMaintenance && "bg-amber-50 dark:bg-amber-900/50")}>
                       {room.name}
                       <span className="block text-xs text-muted-foreground mt-0.5">(Cap: {room.capacity ?? 'N/A'})</span>
+                      {room.isUnderMaintenance && (
+                        <Badge variant="outline" className="mt-1.5 text-xs bg-amber-100 border-amber-400 text-amber-700 dark:bg-amber-700/30 dark:text-amber-200 dark:border-amber-600">
+                          <Wrench className="mr-1.5 h-3 w-3" />
+                          Manutenção
+                        </Badge>
+                      )}
                     </TableCell>
                     {DAYS_OF_WEEK.map(day => {
-                      const cellBgClass = getCellContainerClass(room.id, day, displayedClassGroups);
+                      const cellBgClass = getCellContainerClass(room.id, day, displayedClassGroups, room.isUnderMaintenance ?? false);
                       return (
                         <TableCell
                           key={day}
                           className={cn(
-                            "align-top p-0.5 transition-colors duration-150 h-[180px] border-r", // Aumentei a altura da célula
+                            "align-top p-0.5 transition-colors duration-150 h-[180px] border-r relative",
                             cellBgClass
                           )}
                         >
-                          <div className="flex flex-col space-y-0.5 h-full text-xs">
-                            {PERIODS_OF_DAY.map(shift => {
-                              const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
-                              const shiftBgClass = getShiftBlockClass(shift);
-                              return (
-                                <Tooltip key={shift} delayDuration={150}>
-                                  <TooltipTrigger asChild>
-                                    <div
-                                      className={cn(
-                                        "flex-1 p-1.5 rounded-sm border border-border/30 shadow-sm transition-all flex flex-col items-center justify-center min-h-[55px]", // min-h aumentado
-                                        shiftBgClass,
-                                        scheduledForShift.length > 0 ? "justify-start pt-1" : "justify-center" // Alinha ao topo se ocupado
-                                      )}
-                                    >
+                          {room.isUnderMaintenance ? (
+                            <div className="absolute inset-0 flex items-center justify-center bg-amber-100/50 dark:bg-amber-800/40 backdrop-blur-xs">
+                              <Wrench className="h-8 w-8 text-amber-500 dark:text-amber-400" />
+                            </div>
+                          ) : (
+                            <div className="flex flex-col space-y-0.5 h-full text-xs">
+                              {PERIODS_OF_DAY.map(shift => {
+                                const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
+                                const shiftBgActualClass = getShiftBgClass(shift);
+                                return (
+                                  <Tooltip key={shift} delayDuration={150}>
+                                    <TooltipTrigger asChild>
+                                      <div
+                                        className={cn(
+                                          "flex-1 p-1.5 rounded-sm border border-border/30 shadow-sm transition-all flex flex-col items-center justify-center min-h-[55px]", 
+                                          shiftBgActualClass,
+                                          scheduledForShift.length > 0 ? "justify-start pt-1" : "justify-center"
+                                        )}
+                                      >
+                                        {scheduledForShift.length > 0 ? (
+                                          <div className="flex flex-col gap-0.5 items-center justify-start w-full">
+                                            {scheduledForShift.slice(0, 2).map(cg => (
+                                              <Badge
+                                                key={cg.id}
+                                                variant="secondary"
+                                                className={cn(
+                                                  "text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs",
+                                                  getCourseColorClasses(cg.name)
+                                                )}
+                                                title={`${cg.name} (${cg.shift})`}
+                                              >
+                                                {cg.name}
+                                              </Badge>
+                                            ))}
+                                            {scheduledForShift.length > 2 && (
+                                              <Badge variant="outline" className="text-[9px] px-1 mt-0.5 w-full text-center bg-muted/50">
+                                                +{scheduledForShift.length - 2} turma(s)
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[10px] px-2 py-1 bg-green-100 border-green-400 text-green-800 dark:bg-green-800/40 dark:text-green-200 dark:border-green-600/70 font-semibold shadow-xs"
+                                          >
+                                            Livre
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="bg-background text-foreground border shadow-lg rounded-md p-2 text-xs max-w-xs">
+                                      <p className="font-semibold mb-1">{shift}</p>
                                       {scheduledForShift.length > 0 ? (
-                                        <div className="flex flex-col gap-0.5 items-center justify-start w-full">
-                                          {scheduledForShift.slice(0, 2).map(cg => ( // Limita a 2 badges visíveis, mais podem ser vistos no tooltip
-                                            <Badge
-                                              key={cg.id}
-                                              variant="secondary"
-                                              className={cn(
-                                                "text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs",
-                                                getCourseColorClasses(cg.name)
-                                              )}
-                                              title={`${cg.name} (${cg.shift})`}
-                                            >
+                                        <ul className="list-disc list-inside space-y-0.5">
+                                          {scheduledForShift.map(cg => (
+                                            <li key={cg.id} className={getCourseColorClasses(cg.name).replace(/bg-(\w+)-(\d+)/, 'text-$1-800 dark:text-$1-200').replace('border-transparent', '')}>
                                               {cg.name}
-                                            </Badge>
+                                            </li>
                                           ))}
-                                          {scheduledForShift.length > 2 && (
-                                            <Badge variant="outline" className="text-[9px] px-1 mt-0.5 w-full text-center bg-muted/50">
-                                              +{scheduledForShift.length - 2} turma(s)
-                                            </Badge>
-                                          )}
-                                        </div>
+                                        </ul>
                                       ) : (
-                                        <Badge
-                                          variant="outline"
-                                          className="text-[10px] px-2 py-1 bg-green-100 border-green-400 text-green-800 dark:bg-green-800/40 dark:text-green-200 dark:border-green-600/70 font-semibold shadow-xs"
-                                        >
-                                          Livre
-                                        </Badge>
+                                        <p>Este turno está livre.</p>
                                       )}
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="bg-background text-foreground border shadow-lg rounded-md p-2 text-xs max-w-xs">
-                                    <p className="font-semibold mb-1">{shift}</p>
-                                    {scheduledForShift.length > 0 ? (
-                                      <ul className="list-disc list-inside space-y-0.5">
-                                        {scheduledForShift.map(cg => (
-                                          <li key={cg.id} className={getCourseColorClasses(cg.name).replace(/bg-(\w+)-(\d+)/, 'text-$1-800 dark:text-$1-200').replace('border-transparent', '')}>
-                                            {cg.name}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    ) : (
-                                      <p>Este turno está livre.</p>
-                                    )}
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })}
-                          </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                );
+                              })}
+                            </div>
+                          )}
                         </TableCell>
                       );
                     })}
@@ -298,10 +322,9 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
           </div>
         )}
         <p className="text-xs text-muted-foreground mt-6">
-            Nota: Este quadro reflete a ocupação padrão com base nos dias de aula e turnos das turmas "Em Andamento" no período selecionado. Reservas pontuais não estão incluídas.
+            Nota: Este quadro reflete a ocupação padrão com base nos dias de aula e turnos das turmas "Em Andamento" no período selecionado. Reservas pontuais e salas em manutenção podem afetar a disponibilidade real.
         </p>
       </div>
     </TooltipProvider>
   );
 }
-    

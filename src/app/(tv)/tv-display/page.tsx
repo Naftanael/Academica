@@ -16,34 +16,40 @@ function getCurrentShift(hour: number): ClassGroupShift {
 }
 
 export default async function TvDisplayPage() {
-  const classGroups = await getClassGroups();
-  const classrooms = await getClassrooms();
+  const allClassGroups = await getClassGroups();
+  const allClassrooms = await getClassrooms();
 
-  const now = new Date(); // Server's current time
+  const now = new Date();
   const currentHour = now.getHours();
   const currentShift = getCurrentShift(currentHour);
 
-  const activeClassGroups = classGroups.filter(cg => {
-    return cg.status === 'Em Andamento' && cg.shift === currentShift;
+  // Filter out class groups whose assigned classroom is under maintenance
+  const activeClassGroups = allClassGroups.filter(cg => {
+    if (cg.status !== 'Em Andamento' || cg.shift !== currentShift) {
+      return false;
+    }
+    if (cg.assignedClassroomId) {
+      const assignedRoom = allClassrooms.find(room => room.id === cg.assignedClassroomId);
+      if (assignedRoom && assignedRoom.isUnderMaintenance) {
+        return false; // Do not include if room is under maintenance
+      }
+    }
+    return true;
   });
 
   const displayData: TvDisplayInfo[] = activeClassGroups.map(group => {
-    const classroom = classrooms.find(room => room.id === group.assignedClassroomId);
+    const classroom = allClassrooms.find(room => room.id === group.assignedClassroomId);
     return {
       id: group.id,
       groupName: group.name,
       shift: group.shift,
-      classroomName: classroom ? classroom.name : null,
+      classroomName: classroom ? classroom.name : null, // If classroom is under maintenance, it would have been filtered already
     };
   });
-
-  // initialCurrentDateHeader and initialCurrentTime are no longer passed
-  // TvDisplayClient will handle its own date/time initialization client-side
 
   return (
     <TvDisplayClient
       initialDisplayData={displayData}
-      // initialCurrentDateHeader and initialCurrentTime props removed
     />
   );
 }

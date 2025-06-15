@@ -22,6 +22,7 @@ export async function createClassroom(values: ClassroomCreateValues) {
       capacity: validatedValues.capacity,
       resources: validatedValues.resources || [],
       isLab: validatedValues.isLab || false,
+      isUnderMaintenance: validatedValues.isUnderMaintenance ?? false,
     };
 
     classrooms.push(newClassroom);
@@ -56,7 +57,7 @@ export async function updateClassroom(id: string, values: ClassroomEditFormValue
       ...existingClassroom,
       name: validatedValues.name,
       capacity: validatedValues.capacity,
-      // resources and isLab are preserved from existingClassroom
+      isUnderMaintenance: validatedValues.isUnderMaintenance ?? existingClassroom.isUnderMaintenance ?? false,
     };
 
     classrooms[classroomIndex] = updatedClassroom;
@@ -81,6 +82,13 @@ export async function updateClassroom(id: string, values: ClassroomEditFormValue
 export async function deleteClassroom(id: string) {
   try {
     let classrooms = await readData<Classroom>('classrooms.json');
+    // Additionally, ensure no class groups are assigned to this classroom
+    let classGroups = await readData<ClassGroup>('classgroups.json');
+    const isAssigned = classGroups.some(cg => cg.assignedClassroomId === id);
+    if (isAssigned) {
+      return { success: false, message: 'Não é possível excluir a sala. Ela está atribuída a uma ou mais turmas.' };
+    }
+    
     classrooms = classrooms.filter(c => c.id !== id);
     await writeData<Classroom>('classrooms.json', classrooms);
     revalidatePath('/classrooms');
