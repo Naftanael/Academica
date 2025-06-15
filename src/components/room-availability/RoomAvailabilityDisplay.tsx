@@ -3,9 +3,9 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, parseISO, isValid, differenceInDays, max as maxDate, startOfWeek, addDays } from 'date-fns';
+import { format, startOfWeek, addDays, parseISO, isValid, differenceInDays, max as maxDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon, Search } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -57,18 +57,39 @@ const getColumnDateString = (targetDay: DayOfWeek, currentFilterStartDate: Date 
   return format(dateForColumn, 'dd/MMM', { locale: ptBR });
 };
 
-const getShiftColorClass = (shift: PeriodOfDay): string => {
+const getShiftBlockClass = (shift: PeriodOfDay): string => {
   switch (shift) {
     case 'Manhã':
-      return 'bg-sky-200/70 dark:bg-sky-700/40 hover:bg-sky-300/70 dark:hover:bg-sky-600/40';
+      return 'bg-sky-100 dark:bg-sky-800/30 hover:bg-sky-200 dark:hover:bg-sky-700/40';
     case 'Tarde':
-      return 'bg-orange-200/70 dark:bg-orange-700/40 hover:bg-orange-300/70 dark:hover:bg-orange-600/40';
+      return 'bg-orange-100 dark:bg-orange-800/30 hover:bg-orange-200 dark:hover:bg-orange-700/40';
     case 'Noite':
-      return 'bg-indigo-200/70 dark:bg-indigo-700/40 hover:bg-indigo-300/70 dark:hover:bg-indigo-600/40';
+      return 'bg-indigo-100 dark:bg-indigo-800/30 hover:bg-indigo-200 dark:hover:bg-indigo-700/40';
     default:
-      return 'bg-muted/50 dark:bg-muted/30';
+      return 'bg-muted/30 dark:bg-muted/20';
   }
 };
+
+const getCellContainerClass = (classroomId: string, day: DayOfWeek, displayedClassGroups: ClassGroup[]): string => {
+    const groupsInCellToday = displayedClassGroups.filter(
+      cg => cg.assignedClassroomId === classroomId && cg.classDays.includes(day) && cg.status === 'Em Andamento'
+    );
+    if (groupsInCellToday.length === 0) return 'bg-background dark:bg-card';
+
+    const endDates = groupsInCellToday.map(cg => parseISO(cg.endDate)).filter(date => isValid(date));
+    if (endDates.length === 0) return 'bg-muted/20 dark:bg-muted/10';
+
+    const latestEndDateInCell = maxDate(endDates);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysRemaining = differenceInDays(latestEndDateInCell, today);
+
+    if (daysRemaining < 0) return 'bg-background dark:bg-card'; // Turma já terminou (passado)
+    if (daysRemaining <= 7) return 'bg-yellow-100/50 dark:bg-yellow-900/20'; // Perto do fim
+    // if (daysRemaining <= 30) return 'bg-orange-100/50 dark:bg-orange-900/20'; // No futuro, mas não tão perto
+    return 'bg-muted/30 dark:bg-muted/20'; // Ocupado
+};
+
 
 export default function RoomAvailabilityDisplay({ initialClassrooms, initialClassGroups }: RoomAvailabilityDisplayProps) {
   const [startDate, setStartDate] = useState<Date | undefined>(startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -84,7 +105,8 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       const cgStartDate = parseISO(cg.startDate);
       const cgEndDate = parseISO(cg.endDate);
       if (!isValid(cgStartDate) || !isValid(cgEndDate)) return false;
-      return cgStartDate <= endDate && cgEndDate >= startDate;
+      // Check if class group's period overlaps with the selected week
+      return cgStartDate <= endDate && cgEndDate >= startDate && cg.status === 'Em Andamento';
     });
     setDisplayedClassGroups(filtered);
   }, [startDate, endDate, initialClassGroups]);
@@ -97,29 +119,8 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     return displayedClassGroups.filter(cg =>
       cg.assignedClassroomId === classroomId &&
       cg.classDays.includes(day) &&
-      cg.shift === shift &&
-      cg.status === 'Em Andamento'
+      cg.shift === shift
     );
-  };
-
-  const getCellOverallStateClass = (classroomId: string, day: DayOfWeek): string => {
-    const groupsInCellToday = displayedClassGroups.filter(
-      cg => cg.assignedClassroomId === classroomId && cg.classDays.includes(day) && cg.status === 'Em Andamento'
-    );
-    if (groupsInCellToday.length === 0) return 'bg-background dark:bg-card'; 
-
-    const endDates = groupsInCellToday.map(cg => parseISO(cg.endDate)).filter(date => isValid(date));
-    if (endDates.length === 0) return 'bg-muted/20 dark:bg-muted/10';
-
-    const latestEndDateInCell = maxDate(endDates);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const daysRemaining = differenceInDays(latestEndDateInCell, today);
-
-    if (daysRemaining < 0) return 'bg-background dark:bg-card'; 
-    if (daysRemaining <= 7) return 'bg-yellow-100/70 dark:bg-yellow-900/20';
-    if (daysRemaining <= 30) return 'bg-orange-100/70 dark:bg-orange-900/20';
-    return 'bg-muted/30 dark:bg-muted/20'; 
   };
 
   return (
@@ -188,18 +189,18 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
         ) : (
           <div className="overflow-x-auto border rounded-lg shadow-md bg-card">
             <Table className="min-w-full table-fixed">
-              <TableHeader className="sticky top-0 z-20 bg-muted/80 dark:bg-muted backdrop-blur-sm shadow-sm">
+              <TableHeader className="sticky top-0 z-20 bg-muted/95 dark:bg-muted backdrop-blur-sm shadow-sm">
                 <TableRow>
-                  <TableHead className="w-[180px] min-w-[180px] sticky top-0 left-0 bg-muted/80 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r px-3 py-3 align-middle">Sala</TableHead>
+                  <TableHead className="w-[160px] min-w-[160px] sticky top-0 left-0 bg-muted/95 dark:bg-muted z-30 shadow-sm text-sm font-semibold text-foreground border-r px-3 py-3 align-middle">Sala</TableHead>
                   {DAYS_OF_WEEK.map(day => {
                     const columnDateStr = getColumnDateString(day, startDate);
                     return (
-                      <TableHead key={day} className="w-[220px] min-w-[220px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r px-2 py-3 align-middle">
-                        {day}
+                      <TableHead key={day} className="w-[200px] min-w-[200px] text-center whitespace-nowrap text-sm font-semibold text-foreground border-r px-2 py-3 align-middle">
+                        {day.substring(0,3)} {/* Abreviatura do dia */}
                         {columnDateStr && (
                           <>
                             <br />
-                            <span className="text-xs font-medium text-muted-foreground">{columnDateStr}</span>
+                            <span className="text-xs font-normal text-muted-foreground">{columnDateStr}</span>
                           </>
                         )}
                       </TableHead>
@@ -209,43 +210,43 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
               </TableHeader>
               <TableBody>
                 {initialClassrooms.map((room: Classroom) => (
-                  <TableRow key={room.id} className="hover:bg-card/80 dark:hover:bg-muted/50 transition-colors duration-150">
+                  <TableRow key={room.id} className="hover:bg-muted/20 dark:hover:bg-muted/50 transition-colors duration-150">
                     <TableCell className="font-medium sticky left-0 bg-card dark:bg-muted z-10 shadow-sm whitespace-nowrap text-sm py-3 px-3 border-r align-top">
                       {room.name}
                       <span className="block text-xs text-muted-foreground mt-0.5">(Cap: {room.capacity ?? 'N/A'})</span>
                     </TableCell>
                     {DAYS_OF_WEEK.map(day => {
-                      const cellBgClass = getCellOverallStateClass(room.id, day);
+                      const cellBgClass = getCellContainerClass(room.id, day, displayedClassGroups);
                       return (
                         <TableCell
                           key={day}
                           className={cn(
-                            "align-top p-1 transition-colors duration-150 h-[170px] border-r", 
+                            "align-top p-0.5 transition-colors duration-150 h-[180px] border-r", // Aumentei a altura da célula
                             cellBgClass
                           )}
                         >
-                          <div className="flex flex-col space-y-1 h-full text-xs">
+                          <div className="flex flex-col space-y-0.5 h-full text-xs">
                             {PERIODS_OF_DAY.map(shift => {
                               const scheduledForShift = getScheduledGroupsForShift(room.id, day, shift);
-                              const shiftColor = getShiftColorClass(shift);
+                              const shiftBgClass = getShiftBlockClass(shift);
                               return (
-                                <Tooltip key={shift} delayDuration={100}>
+                                <Tooltip key={shift} delayDuration={150}>
                                   <TooltipTrigger asChild>
                                     <div
-                                      title={shift} // HTML native tooltip for basic info
                                       className={cn(
-                                        "flex-1 p-2 rounded-md border border-border/50 dark:border-border/30 shadow-sm transition-all flex flex-col items-center justify-center min-h-[50px]",
-                                        shiftColor
+                                        "flex-1 p-1.5 rounded-sm border border-border/30 shadow-sm transition-all flex flex-col items-center justify-center min-h-[55px]", // min-h aumentado
+                                        shiftBgClass,
+                                        scheduledForShift.length > 0 ? "justify-start pt-1" : "justify-center" // Alinha ao topo se ocupado
                                       )}
                                     >
                                       {scheduledForShift.length > 0 ? (
-                                        <div className="flex flex-col gap-0.5 items-start justify-center w-full">
-                                          {scheduledForShift.map(cg => (
+                                        <div className="flex flex-col gap-0.5 items-center justify-start w-full">
+                                          {scheduledForShift.slice(0, 2).map(cg => ( // Limita a 2 badges visíveis, mais podem ser vistos no tooltip
                                             <Badge
                                               key={cg.id}
                                               variant="secondary"
                                               className={cn(
-                                                "text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium",
+                                                "text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs",
                                                 getCourseColorClasses(cg.name)
                                               )}
                                               title={`${cg.name} (${cg.shift})`}
@@ -253,19 +254,35 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                                               {cg.name}
                                             </Badge>
                                           ))}
+                                          {scheduledForShift.length > 2 && (
+                                            <Badge variant="outline" className="text-[9px] px-1 mt-0.5 w-full text-center bg-muted/50">
+                                              +{scheduledForShift.length - 2} turma(s)
+                                            </Badge>
+                                          )}
                                         </div>
                                       ) : (
                                         <Badge
                                           variant="outline"
-                                          className="text-[10px] px-1.5 py-0.5 bg-green-100 border-green-400 text-green-800 dark:bg-green-800/30 dark:text-green-200 dark:border-green-600/70 font-semibold"
+                                          className="text-[10px] px-2 py-1 bg-green-100 border-green-400 text-green-800 dark:bg-green-800/40 dark:text-green-200 dark:border-green-600/70 font-semibold shadow-xs"
                                         >
                                           Livre
                                         </Badge>
                                       )}
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent side="top" className="bg-background text-foreground border shadow-lg rounded-md p-2 text-xs">
-                                    <p>{shift}</p>
+                                  <TooltipContent side="top" className="bg-background text-foreground border shadow-lg rounded-md p-2 text-xs max-w-xs">
+                                    <p className="font-semibold mb-1">{shift}</p>
+                                    {scheduledForShift.length > 0 ? (
+                                      <ul className="list-disc list-inside space-y-0.5">
+                                        {scheduledForShift.map(cg => (
+                                          <li key={cg.id} className={getCourseColorClasses(cg.name).replace(/bg-(\w+)-(\d+)/, 'text-$1-800 dark:text-$1-200').replace('border-transparent', '')}>
+                                            {cg.name}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p>Este turno está livre.</p>
+                                    )}
                                   </TooltipContent>
                                 </Tooltip>
                               );
@@ -281,12 +298,10 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
           </div>
         )}
         <p className="text-xs text-muted-foreground mt-6">
-            Nota: Este quadro reflete a ocupação padrão com base nos dias de aula e turnos das turmas ativas no período selecionado. Reservas pontuais não estão incluídas.
+            Nota: Este quadro reflete a ocupação padrão com base nos dias de aula e turnos das turmas "Em Andamento" no período selecionado. Reservas pontuais não estão incluídas.
         </p>
       </div>
     </TooltipProvider>
   );
 }
-    
-
     
