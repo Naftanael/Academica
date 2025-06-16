@@ -101,10 +101,17 @@ export default async function ClassroomsPage() {
                     Capacidade: {room.capacity ?? 'N/A'}
                   </CardDescription>
                    {room.isUnderMaintenance && (
-                    <Badge variant="destructive" className="mt-2 bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600">
-                      <Wrench className="mr-2 h-3.5 w-3.5" />
-                      Em Manutenção
-                    </Badge>
+                    <>
+                      <Badge variant="destructive" className="mt-2 bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600">
+                        <Wrench className="mr-2 h-3.5 w-3.5" />
+                        Em Manutenção
+                      </Badge>
+                      {room.maintenanceReason && (
+                        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1.5">
+                          Motivo: {room.maintenanceReason}
+                        </p>
+                      )}
+                    </>
                   )}
                 </CardHeader>
                 <CardContent className="flex-grow">

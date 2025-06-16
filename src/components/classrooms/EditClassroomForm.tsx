@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { updateClassroom } from '@/lib/actions/classrooms';
@@ -39,8 +40,11 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
       name: classroom.name,
       capacity: classroom.capacity ?? undefined,
       isUnderMaintenance: classroom.isUnderMaintenance ?? false,
+      maintenanceReason: classroom.maintenanceReason ?? '',
     },
   });
+
+  const isUnderMaintenance = form.watch('isUnderMaintenance');
 
   async function onSubmit(values: ClassroomEditFormValues) {
     setIsPending(true);
@@ -144,6 +148,26 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
             </FormItem>
           )}
         />
+        {isUnderMaintenance && (
+          <FormField
+            control={form.control}
+            name="maintenanceReason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Motivo da Manutenção (Opcional)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Ex: Ar condicionado quebrado, pintura, etc."
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Descreva brevemente o motivo pelo qual a sala está em manutenção.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          )}
         <div className="flex justify-end">
           <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
             {isPending ? "Salvando..." : (

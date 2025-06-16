@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { Classroom } from '@/types';
+import type { Classroom, ClassGroup } from '@/types'; // Import ClassGroup
 import { classroomCreateSchema, classroomEditSchema, type ClassroomCreateValues, type ClassroomEditFormValues } from '@/lib/schemas/classrooms';
 
 export async function getClassrooms(): Promise<Classroom[]> {
@@ -23,6 +23,7 @@ export async function createClassroom(values: ClassroomCreateValues) {
       resources: validatedValues.resources || [],
       isLab: validatedValues.isLab || false,
       isUnderMaintenance: validatedValues.isUnderMaintenance ?? false,
+      maintenanceReason: validatedValues.isUnderMaintenance ? (validatedValues.maintenanceReason || '') : '',
     };
 
     classrooms.push(newClassroom);
@@ -58,6 +59,7 @@ export async function updateClassroom(id: string, values: ClassroomEditFormValue
       name: validatedValues.name,
       capacity: validatedValues.capacity,
       isUnderMaintenance: validatedValues.isUnderMaintenance ?? existingClassroom.isUnderMaintenance ?? false,
+      maintenanceReason: validatedValues.isUnderMaintenance ? (validatedValues.maintenanceReason || '') : '',
     };
 
     classrooms[classroomIndex] = updatedClassroom;

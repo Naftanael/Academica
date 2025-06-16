@@ -9,6 +9,7 @@ export interface Classroom {
   resources: string[];
   isLab?: boolean; // Helper to identify labs easily
   isUnderMaintenance?: boolean; // Indica se a sala está em manutenção
+  maintenanceReason?: string; // Motivo da manutenção
 }
 
 export interface Course { // Este é o tipo para "Disciplinas"
