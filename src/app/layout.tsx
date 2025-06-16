@@ -1,6 +1,5 @@
 'use client';
 
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -9,7 +8,6 @@ import { usePathname } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-// Metadata export foi removida daqui porque este é um Client Component.
 // Metadados devem ser exportados de Server Components (ex: page.tsx ou layouts específicos).
 
 export default function RootLayout({
