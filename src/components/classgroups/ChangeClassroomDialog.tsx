@@ -45,7 +45,7 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
   const [isOpen, setIsOpen] = React.useState(false);
 
   const currentClassroomDetails = classGroup.assignedClassroomId
-    ? classrooms.find(c => c.id === classGroup.assignedClassroomId) // Find from all classrooms
+    ? availableClassrooms.find(c => c.id === classGroup.assignedClassroomId) // Find from all classrooms
     : null;
 
   const currentClassroomName = currentClassroomDetails?.name || (classGroup.assignedClassroomId ? 'Desconhecida' : 'Não atribuída');
