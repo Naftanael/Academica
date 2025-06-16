@@ -25,10 +25,16 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { assignClassroomToClassGroup } from '@/lib/actions/classgroups';
 import type { ClassGroup, Classroom } from '@/types';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ChangeClassroomDialogProps {
   classGroup: ClassGroup;
-  availableClassrooms: Classroom[]; // Should already be filtered for non-maintenance rooms by parent
+  availableClassrooms: Classroom[];
   triggerButton?: React.ReactNode;
 }
 
@@ -38,11 +44,8 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
   const [isPending, setIsPending] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
 
-  // Note: availableClassrooms is expected to be pre-filtered by the parent component
-  // to exclude rooms under maintenance IF that's the desired behavior for selection.
-  // Here, we just use what's passed.
   const currentClassroomDetails = classGroup.assignedClassroomId
-    ? availableClassrooms.find(c => c.id === classGroup.assignedClassroomId)
+    ? classrooms.find(c => c.id === classGroup.assignedClassroomId) // Find from all classrooms
     : null;
 
   const currentClassroomName = currentClassroomDetails?.name || (classGroup.assignedClassroomId ? 'Desconhecida' : 'Não atribuída');
@@ -59,7 +62,7 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
         title: 'Sucesso!',
         description: `Sala ${selectedClassroomId ? (availableClassrooms.find(c=>c.id === selectedClassroomId)?.name || 'selecionada') : 'removida'} atribuída à turma ${classGroup.name}.`,
       });
-      setIsOpen(false); 
+      setIsOpen(false);
     } else {
       toast({
         title: 'Erro',
@@ -87,6 +90,7 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
+      <TooltipProvider>
         <DialogHeader>
           <DialogTitle>Alterar Sala da Turma: {classGroup.name}</DialogTitle>
           <DialogDescription>
@@ -110,10 +114,24 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
               <SelectContent>
                 <SelectItem value="none">Nenhuma (Remover atribuição)</SelectItem>
                 {availableClassrooms.map((classroom) => (
-                  <SelectItem key={classroom.id} value={classroom.id} disabled={classroom.isUnderMaintenance}>
+                  <SelectItem 
+                    key={classroom.id} 
+                    value={classroom.id} 
+                    disabled={classroom.isUnderMaintenance && classroom.id !== classGroup.assignedClassroomId} // Disable if in maintenance, unless it's the currently assigned one
+                  >
                     <div className="flex items-center justify-between w-full">
                       <span>{classroom.name} (Cap: {classroom.capacity ?? 'N/A'})</span>
-                      {classroom.isUnderMaintenance && <Wrench className="h-4 w-4 text-amber-500 ml-2" />}
+                      {classroom.isUnderMaintenance && (
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger onClick={(e) => e.stopPropagation()}>
+                             <Wrench className="h-4 w-4 text-amber-500 ml-2" />
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-xs bg-popover text-popover-foreground p-2 border shadow-md rounded-md">
+                            <p className="font-semibold mb-1">Em Manutenção</p>
+                            {classroom.maintenanceReason && <p className="text-xs">{classroom.maintenanceReason}</p>}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
                   </SelectItem>
                 ))}
@@ -133,10 +151,14 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
           <DialogClose asChild>
             <Button variant="outline" disabled={isPending}>Cancelar</Button>
           </DialogClose>
-          <Button 
-            type="button" 
-            onClick={handleSubmit} 
-            disabled={isPending || (selectedClassroomId !== null && (availableClassrooms.find(c => c.id === selectedClassroomId)?.isUnderMaintenance ?? false))}
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isPending || (
+              selectedClassroomId !== null &&
+              selectedClassroomId !== classGroup.assignedClassroomId && // Allow saving if it's the current room (even if in maintenance)
+              (availableClassrooms.find(c => c.id === selectedClassroomId)?.isUnderMaintenance ?? false)
+            )}
           >
             {isPending ? 'Salvando...' : (
               <>
@@ -145,6 +167,7 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
             )}
           </Button>
         </DialogFooter>
+        </TooltipProvider>
       </DialogContent>
     </Dialog>
   );
