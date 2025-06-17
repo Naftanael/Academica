@@ -9,8 +9,8 @@ body {
 
 @layer base {
   :root {
-    /* Green Palette - Light Mode */
-    --background: 0 0% 100%; /* White */
+    /* Academica Palette - Light Mode (as per PRD) */
+    --background: 210 27% 95%; /* Light gray #f0f4f8 */
     --foreground: 0 0% 10%; /* Dark Gray/Black for text */
 
     --card: 0 0% 100%; /* White */
@@ -19,7 +19,7 @@ body {
     --popover: 0 0% 100%; /* White */
     --popover-foreground: 0 0% 10%;
 
-    --primary: 145 58% 40%; /* Vibrant Green (e.g., #279959) */
+    --primary: 207 68% 53%; /* Vibrant blue #3490dc */
     --primary-foreground: 0 0% 100%; /* White for text on primary */
 
     --secondary: 210 20% 94%; /* Very Light Gray */
@@ -28,7 +28,7 @@ body {
     --muted: 210 20% 96%; /* Very Light Gray, slightly lighter */
     --muted-foreground: 210 10% 45%; /* Medium Gray */
 
-    --accent: 135 60% 50%; /* Lighter/Brighter Green (e.g., #40bf80) */
+    --accent: 23 100% 60%; /* Warm orange #ff8533 */
     --accent-foreground: 0 0% 10%; /* Dark text on accent */
 
     --destructive: 0 84.2% 60.2%; /* Standard Red */
@@ -36,40 +36,40 @@ body {
 
     --border: 210 15% 88%; /* Light Gray Border */
     --input: 210 20% 96%;  /* Very Light Gray for input backgrounds */
-    --ring: 145 58% 40%;  /* Primary Green for focus rings */
+    --ring: 207 68% 53%;  /* Primary Blue for focus rings */
 
     --radius: 0.5rem; /* Modern rounded corners */
 
-    /* Chart Colors - Derived from green primary and accent */
-    --chart-1: 145 58% 40%; /* Primary Green */
-    --chart-2: 135 60% 50%;  /* Accent Green */
-    --chart-3: 145 58% 30%; /* Darker Primary Green */
-    --chart-4: 135 60% 40%;  /* Darker Accent Green */
-    --chart-5: 145 58% 50%; /* Lighter Primary Green */
+    /* Chart Colors - Derived from primary and accent */
+    --chart-1: 207 68% 53%; /* Primary Blue */
+    --chart-2: 23 100% 60%;  /* Accent Orange */
+    --chart-3: 207 68% 43%; /* Darker Primary Blue */
+    --chart-4: 23 100% 50%;  /* Darker Accent Orange */
+    --chart-5: 207 68% 63%; /* Lighter Primary Blue */
     
     /* Sidebar Colors - Light Mode */
-    --sidebar-background: 0 0% 100%; /* White, consistent with card/page background */
+    --sidebar-background: 0 0% 100%; /* White, consistent with card */
     --sidebar-foreground: 0 0% 15%;   /* Dark text for sidebar */
-    --sidebar-primary: 145 58% 40%;      /* Primary green for active/hover */
+    --sidebar-primary: 207 68% 53%;      /* Primary blue for active/hover */
     --sidebar-primary-foreground: 0 0% 100%; 
-    --sidebar-accent: 145 50% 95%;         /* Very light green for hover background */
-    --sidebar-accent-foreground: 145 58% 30%; /* Darker green text on hover */
+    --sidebar-accent: 207 60% 95%;         /* Very light blue for hover background */
+    --sidebar-accent-foreground: 207 68% 30%; /* Darker blue text on hover */
     --sidebar-border: 210 15% 88%;      /* Light gray border, consistent with app border */
-    --sidebar-ring: 145 58% 40%;      /* Primary green for focus */
+    --sidebar-ring: 207 68% 53%;      /* Primary blue for focus */
   }
 
   .dark {
-    /* Green Palette - Dark Mode */
-    --background: 0 0% 8%; /* Very Dark Gray/Almost Black */
+    /* Academica Palette - Dark Mode (derived) */
+    --background: 210 10% 12%; /* Dark cool gray */
     --foreground: 0 0% 95%;   /* Light Gray/White text */
 
-    --card: 0 0% 12%; /* Slightly lighter than background for cards */
+    --card: 210 10% 15%; /* Slightly lighter than background for cards */
     --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 12%; 
+    --popover: 210 10% 15%; 
     --popover-foreground: 0 0% 95%;
 
-    --primary: 145 58% 48%; /* Slightly brighter green for dark mode */
+    --primary: 207 65% 65%; /* Slightly brighter/lighter blue for dark mode */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 0 0% 20%; 
@@ -78,7 +78,7 @@ body {
     --muted: 0 0% 18%; 
     --muted-foreground: 0 0% 65%; 
 
-    --accent: 135 60% 55%; /* Brighter accent green for dark mode */
+    --accent: 23 100% 65%; /* Brighter/lighter accent orange for dark mode */
     --accent-foreground: 0 0% 10%; /* Dark text for contrast */
 
     --destructive: 0 70% 55%;
@@ -86,24 +86,24 @@ body {
 
     --border: 0 0% 25%; 
     --input: 0 0% 20%;  
-    --ring: 145 58% 48%;  
+    --ring: 207 65% 65%;  
     
     /* Chart Colors - Dark Mode */
-    --chart-1: 145 58% 48%;
-    --chart-2: 135 60% 55%;
-    --chart-3: 145 58% 38%;
-    --chart-4: 135 60% 45%;
-    --chart-5: 145 58% 58%;
+    --chart-1: 207 65% 65%;
+    --chart-2: 23 100% 65%;
+    --chart-3: 207 65% 55%;
+    --chart-4: 23 100% 55%;
+    --chart-5: 207 65% 75%;
 
     /* Sidebar Colors - Dark Mode */
-    --sidebar-background: 0 0% 8%; /* Matches app dark background */
+    --sidebar-background: 210 10% 12%; /* Matches app dark background */
     --sidebar-foreground: 0 0% 95%;   
-    --sidebar-primary: 145 58% 48%;      /* Primary green (dark mode version) */
+    --sidebar-primary: 207 65% 65%;      /* Primary blue (dark mode version) */
     --sidebar-primary-foreground: 0 0% 98%; 
-    --sidebar-accent: 145 30% 15%;        /* Darker green-ish gray for hover background */
+    --sidebar-accent: 207 40% 20%;        /* Darker blue-ish gray for hover background */
     --sidebar-accent-foreground: 0 0% 95%; 
     --sidebar-border: 0 0% 25%;     /* Matches app dark border */
-    --sidebar-ring: 145 58% 48%;      /* Primary green (dark mode version) */
+    --sidebar-ring: 207 65% 65%;      /* Primary blue (dark mode version) */
   }
 }
 
