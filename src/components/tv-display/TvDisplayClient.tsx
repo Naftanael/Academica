@@ -100,7 +100,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           currentDataStatus.classGroupsMtime !== lastDataStatus.classGroupsMtime ||
           currentDataStatus.classroomsMtime !== lastDataStatus.classroomsMtime
         ) {
-          router.refresh();
+          router.refresh(); // This will re-trigger SSR and provide new initialDisplayData
         }
       }
       setLastDataStatus(currentDataStatus);
@@ -112,22 +112,26 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
   }, [router, lastDataStatus]);
 
   React.useEffect(() => {
-    checkDataChanges();
+    // Initial data status check and setup interval
+    checkDataChanges(); // Perform an initial check
     const dataCheckIntervalId = setInterval(checkDataChanges, DATA_CHECK_INTERVAL);
     return () => clearInterval(dataCheckIntervalId);
   }, [checkDataChanges]);
 
   React.useEffect(() => {
+    // Handle initialDisplayData and localStorage
     if (initialDisplayData && initialDisplayData.length > 0) {
       setDisplayData(initialDisplayData);
       saveToLocalStorage(initialDisplayData);
-      setUsingLocalStorageData(false);
+      setUsingLocalStorageData(false); // Fresh data from server
     } else {
+      // initialDisplayData is empty or undefined, try localStorage
       const cachedData = loadFromLocalStorage();
       if (cachedData && cachedData.length > 0) {
         setDisplayData(cachedData);
-        setUsingLocalStorageData(true);
+        setUsingLocalStorageData(true); // Using cached data
       } else {
+        // No initial data and no cached data
         setDisplayData([]);
         setUsingLocalStorageData(false);
       }
@@ -225,3 +229,4 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     </div>
   );
 }
+
