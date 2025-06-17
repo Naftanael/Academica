@@ -31,6 +31,26 @@ interface DataStatus {
   classroomsMtime: number | null;
 }
 
+const getCourseLeftBorderColorClass = (groupName: string): string => {
+  const prefixMatch = groupName.match(/^([A-Z]+)/);
+  const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
+
+  switch (prefix) {
+    case 'RAD': // Radiologia - Amarelo
+      return 'border-l-yellow-500';
+    case 'FMC': // Farmácia - Roxo
+      return 'border-l-purple-500';
+    case 'ADM': // Administração - Azul
+      return 'border-l-blue-500';
+    case 'CDI': // Cuidador de Idosos - Rosa
+      return 'border-l-pink-500';
+    case 'ENF': // Enfermagem - Azul Céu
+      return 'border-l-sky-500';
+    default: // Outros cursos - Cor primária (verde)
+      return 'border-l-primary';
+  }
+};
+
 export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientProps) {
   const router = useRouter();
   const [displayData, setDisplayData] = React.useState<TvDisplayInfo[]>(initialDisplayData);
@@ -181,7 +201,8 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
             <div
               key={item.id}
               className={cn(
-                "bg-card rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px] border-l-primary"
+                "bg-card rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px]",
+                getCourseLeftBorderColorClass(item.groupName)
               )}
             >
               <div className="flex-grow">
