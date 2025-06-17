@@ -23,9 +23,13 @@ export async function readData<T>(filename: string): Promise<T[]> {
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
-      // File doesn't exist. Create it with an empty array.
-      // writeData will ensure the dataDir exists.
-      await writeData<T>(filename, []);
+      // File doesn't exist. Attempt to create it with an empty array.
+      try {
+        await writeData<T>(filename, []);
+      } catch (writeError) {
+        // Log error if creating the file fails, but still return [] to prevent ISE.
+        console.error(`Error creating initial data file ${filename} after ENOENT:`, (writeError as Error).message);
+      }
       return [];
     }
     // For other errors (e.g., malformed JSON, permissions issues), log and return empty.
