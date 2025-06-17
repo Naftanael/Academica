@@ -13,7 +13,8 @@ export default function TvDisplayLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="dark"> {/* Force dark theme for high contrast on TVs */}
+    // Removed className="dark" to use light theme by default
+    <div> 
       <div className="font-body antialiased bg-background text-foreground min-h-screen flex flex-col selection:bg-primary/30 selection:text-primary-foreground">
         {children}
       </div>
