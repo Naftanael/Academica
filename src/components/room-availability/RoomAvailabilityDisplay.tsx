@@ -32,17 +32,17 @@ const getCourseColorClasses = (groupName: string): string => {
   const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
 
   switch (prefix) {
-    case 'ENF':
-      return 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-700/30 dark:text-sky-200 dark:border-sky-600 hover:bg-sky-200 dark:hover:bg-sky-700/50';
-    case 'FMC':
-      return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-700/30 dark:text-amber-200 dark:border-amber-600 hover:bg-amber-200 dark:hover:bg-amber-700/50';
-    case 'RAD':
-      return 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-700/30 dark:text-lime-200 dark:border-lime-600 hover:bg-lime-200 dark:hover:bg-lime-700/50';
-    case 'ADM':
+    case 'RAD': // Radiologia - Amarelo
+      return 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-700/30 dark:text-yellow-200 dark:border-yellow-600 hover:bg-yellow-200 dark:hover:bg-yellow-700/50';
+    case 'FMC': // Farmácia - Roxo
       return 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-700/30 dark:text-purple-200 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-700/50';
-    case 'CDI':
+    case 'ADM': // Administração - Azul
+      return 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-700/30 dark:text-blue-200 dark:border-blue-600 hover:bg-blue-200 dark:hover:bg-blue-700/50';
+    case 'CDI': // Cuidador de Idosos - Rosa
       return 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-700/30 dark:text-pink-200 dark:border-pink-600 hover:bg-pink-200 dark:hover:bg-pink-700/50';
-    default:
+    case 'ENF': // Enfermagem - Azul Céu (mantido)
+      return 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-700/30 dark:text-sky-200 dark:border-sky-600 hover:bg-sky-200 dark:hover:bg-sky-700/50';
+    default: // Outros cursos - Cinza
       return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700/30 dark:text-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700/50';
   }
 };
@@ -356,3 +356,4 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     </TooltipProvider>
   );
 }
+
