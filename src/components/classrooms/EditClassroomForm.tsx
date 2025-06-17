@@ -8,13 +8,13 @@ import { Save, Wrench } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  Form,
+  Form, // A correção está aqui: 'Form' foi adicionado a esta lista.
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -113,7 +113,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                   placeholder="Ex: 30" 
                   {...field} 
                   onChange={event => field.onChange(event.target.value === '' ? undefined : +event.target.value)}
-                  value={field.value === undefined ? '' : field.value}
+                  value={field.value ?? ''}
                 />
               </FormControl>
               <FormDescription>
@@ -158,6 +158,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                   <Textarea
                     placeholder="Ex: Ar condicionado quebrado, pintura, etc."
                     {...field}
+                    value={field.value ?? ''}
                   />
                 </FormControl>
                 <FormDescription>
