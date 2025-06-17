@@ -31,18 +31,9 @@ interface DataStatus {
   classroomsMtime: number | null;
 }
 
-const getCourseLeftBorderColorClass = (groupName: string): string => {
-  const prefixMatch = groupName.match(/^([A-Z]+)/);
-  const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
-
-  switch (prefix) {
-    case 'ENF': return 'border-l-sky-500 dark:border-l-sky-400';
-    case 'FMC': return 'border-l-amber-500 dark:border-l-amber-400';
-    case 'RAD': return 'border-l-lime-500 dark:border-l-lime-400';
-    case 'ADM': return 'border-l-purple-500 dark:border-l-purple-400';
-    case 'CDI': return 'border-l-pink-500 dark:border-l-pink-400';
-    default: return 'border-l-slate-500 dark:border-l-slate-400';
-  }
+// Simplified to use the theme's primary color for the left border
+const getCourseLeftBorderColorClass = (): string => {
+  return 'border-l-primary'; // Uses the CSS variable --primary defined in globals.css
 };
 
 export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientProps) {
@@ -192,7 +183,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
               key={item.id}
               className={cn(
                 "bg-card rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px]",
-                getCourseLeftBorderColorClass(item.groupName)
+                getCourseLeftBorderColorClass() // Simplified: uses theme primary color
               )}
             >
               <div className="flex-grow">
