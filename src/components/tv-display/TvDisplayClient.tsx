@@ -19,7 +19,6 @@ interface TvDisplayClientProps {
   initialDisplayData: TvDisplayInfo[];
 }
 
-const PLACEHOLDER_TIME = "--:--";
 const PLACEHOLDER_DATE = "Carregando data...";
 const LOCAL_STORAGE_KEY = 'tvDisplayData';
 const DATA_CHECK_INTERVAL = 3 * 60 * 1000; // 3 minutes
@@ -54,7 +53,6 @@ const getCourseLeftBorderColorClass = (groupName: string): string => {
 export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientProps) {
   const router = useRouter();
   const [displayData, setDisplayData] = React.useState<TvDisplayInfo[]>(initialDisplayData);
-  const [liveCurrentTime, setLiveCurrentTime] = React.useState<string>(PLACEHOLDER_TIME);
   const [liveCurrentDateHeader, setLiveCurrentDateHeader] = React.useState<string>(PLACEHOLDER_DATE);
   const [lastDataStatus, setLastDataStatus] = React.useState<DataStatus | null>(null);
   const [isOffline, setIsOffline] = React.useState<boolean>(false);
@@ -62,21 +60,18 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
   const retryTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
-    const updateDateTime = () => {
+    const updateDateHeader = () => {
       const now = new Date();
-      setLiveCurrentTime(format(now, "HH:mm", { locale: ptBR }));
       setLiveCurrentDateHeader(format(now, "EEEE, dd 'de' MMMM", { locale: ptBR }));
     };
     
-    updateDateTime();
-    const clockIntervalId = setInterval(updateDateTime, 1000);
+    updateDateHeader(); // Set date on mount
     
     const pageReloadTimer = setTimeout(() => {
       window.location.reload();
     }, PAGE_RELOAD_INTERVAL);
 
     return () => {
-      clearInterval(clockIntervalId);
       clearTimeout(pageReloadTimer);
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
@@ -120,7 +115,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           currentDataStatus.classGroupsMtime !== lastDataStatus.classGroupsMtime ||
           currentDataStatus.classroomsMtime !== lastDataStatus.classroomsMtime
         ) {
-          router.refresh(); // This will re-trigger SSR and provide new initialDisplayData
+          router.refresh(); 
         }
       }
       setLastDataStatus(currentDataStatus);
@@ -132,26 +127,22 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
   }, [router, lastDataStatus]);
 
   React.useEffect(() => {
-    // Initial data status check and setup interval
-    checkDataChanges(); // Perform an initial check
+    checkDataChanges(); 
     const dataCheckIntervalId = setInterval(checkDataChanges, DATA_CHECK_INTERVAL);
     return () => clearInterval(dataCheckIntervalId);
   }, [checkDataChanges]);
 
   React.useEffect(() => {
-    // Handle initialDisplayData and localStorage
     if (initialDisplayData && initialDisplayData.length > 0) {
       setDisplayData(initialDisplayData);
       saveToLocalStorage(initialDisplayData);
-      setUsingLocalStorageData(false); // Fresh data from server
+      setUsingLocalStorageData(false); 
     } else {
-      // initialDisplayData is empty or undefined, try localStorage
       const cachedData = loadFromLocalStorage();
       if (cachedData && cachedData.length > 0) {
         setDisplayData(cachedData);
-        setUsingLocalStorageData(true); // Using cached data
+        setUsingLocalStorageData(true); 
       } else {
-        // No initial data and no cached data
         setDisplayData([]);
         setUsingLocalStorageData(false);
       }
@@ -169,7 +160,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           </h1>
         </div>
         <p className="text-2xl sm:text-3xl md:text-4xl text-muted-foreground">
-          {liveCurrentDateHeader} - <span className="font-semibold text-foreground">{liveCurrentTime}</span>
+          {liveCurrentDateHeader}
         </p>
       </header>
 
@@ -242,10 +233,10 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
       )}
        <footer className="mt-8 sm:mt-12 text-center text-sm sm:text-base md:text-lg text-muted-foreground">
         {isOffline 
-          ? `Tentando reconectar... ${liveCurrentTime}`
+          ? `Tentando reconectar...`
           : usingLocalStorageData 
-            ? `Dados em cache. Tentando atualizar. ${liveCurrentTime}`
-            : `Verificando atualizações. ${liveCurrentTime}`}
+            ? `Dados em cache. Tentando atualizar.`
+            : `Verificando atualizações.`}
       </footer>
     </div>
   );
