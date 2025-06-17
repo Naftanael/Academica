@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Inter } from 'next/font/google';
@@ -21,9 +22,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Manual Google Font links removed as next/font handles Inter */}
       </head>
       <body className={`${inter.variable} font-body antialiased`}>
         {isTvRoute ? (

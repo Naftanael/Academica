@@ -64,11 +64,17 @@ async function getDashboardData() {
       const classroom = classroomMap.get(cg.assignedClassroomId);
       // Count only if classroom exists and is not under maintenance
       if (classroom && !classroom.isUnderMaintenance) {
-        cg.classDays.forEach(day => {
-          if (dailyOccupancyCounts[day] !== undefined) {
-            dailyOccupancyCounts[day]++;
-          }
-        });
+        // Ensure classDays is an array before trying to iterate over it
+        if (Array.isArray(cg.classDays)) {
+          cg.classDays.forEach(day => {
+            if (dailyOccupancyCounts[day] !== undefined) {
+              dailyOccupancyCounts[day]++;
+            }
+          });
+        } else {
+          // Optional: Log a warning if classDays is not as expected
+          // console.warn(`ClassGroup ${cg.id} has missing or invalid classDays property.`);
+        }
       }
     }
   });
