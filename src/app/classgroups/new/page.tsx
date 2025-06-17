@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm';
 
-export default async function NewClassGroupPage() {
+export default function NewClassGroupPage() {
 
   return (
     <>
