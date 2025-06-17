@@ -9,102 +9,101 @@ body {
 
 @layer base {
   :root {
-    /* PRD: Background color: Light gray (#f0f4f8) */
-    --background: 210 25% 96%; /* hsl(210, 25%, 96%) - #f0f4f8 */
-    --foreground: 210 10% 23%; /* Dark Gray for text on light background */
+    /* Green Palette - Light Mode */
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 10%; /* Dark Gray/Black for text */
 
-    --card: 210 25% 96%; /* Same as background for a seamless look, or slightly whiter if distinction is needed e.g. 0 0% 100% */
-    --card-foreground: 210 10% 23%;
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 0 0% 10%;
 
-    --popover: 0 0% 100%; /* White for popovers */
-    --popover-foreground: 210 10% 23%;
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 0 0% 10%;
 
-    /* PRD: Primary color: Vibrant blue (#3490dc) */
-    --primary: 207 70% 53%; /* hsl(207, 70%, 53%) - #3490dc */
-    --primary-foreground: 0 0% 98%; /* Almost White for text on primary */
+    --primary: 145 58% 40%; /* Vibrant Green (e.g., #279959) */
+    --primary-foreground: 0 0% 100%; /* White for text on primary */
 
-    --secondary: 210 15% 90%; /* Slightly darker gray for secondary elements */
-    --secondary-foreground: 210 10% 23%;
+    --secondary: 210 20% 94%; /* Very Light Gray */
+    --secondary-foreground: 0 0% 20%; /* Dark Gray for text on secondary */
 
-    --muted: 210 15% 85%; /* Muted gray for less emphasis text or backgrounds */
-    --muted-foreground: 210 10% 45%;
+    --muted: 210 20% 96%; /* Very Light Gray, slightly lighter */
+    --muted-foreground: 210 10% 45%; /* Medium Gray */
 
-    /* PRD: Accent color: Warm orange (#ff8533) */
-    --accent: 25 100% 60%; /* hsl(25, 100%, 60%) - #ff8533 */
-    --accent-foreground: 240 10% 10%; /* Dark for text on accent */
+    --accent: 135 60% 50%; /* Lighter/Brighter Green (e.g., #40bf80) */
+    --accent-foreground: 0 0% 10%; /* Dark text on accent */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%; /* Standard Red */
+    --destructive-foreground: 0 0% 98%; /* White */
 
-    --border: 210 10% 80%; /* Light gray border */
-    --input: 210 10% 88%;  /* Slightly lighter gray for input backgrounds */
-    --ring: 207 70% 53%;  /* Primary color for focus rings */
+    --border: 210 15% 88%; /* Light Gray Border */
+    --input: 210 20% 96%;  /* Very Light Gray for input backgrounds */
+    --ring: 145 58% 40%;  /* Primary Green for focus rings */
 
     --radius: 0.5rem; /* Modern rounded corners */
 
-    /* Chart Colors - derived from primary and accent */
-    --chart-1: 207 70% 53%; /* Primary */
-    --chart-2: 25 100% 60%;  /* Accent */
-    --chart-3: 207 70% 43%; /* Darker Primary */
-    --chart-4: 25 100% 50%;  /* Darker Accent */
-    --chart-5: 207 70% 63%; /* Lighter Primary */
+    /* Chart Colors - Derived from green primary and accent */
+    --chart-1: 145 58% 40%; /* Primary Green */
+    --chart-2: 135 60% 50%;  /* Accent Green */
+    --chart-3: 145 58% 30%; /* Darker Primary Green */
+    --chart-4: 135 60% 40%;  /* Darker Accent Green */
+    --chart-5: 145 58% 50%; /* Lighter Primary Green */
     
-    /* Sidebar Colors */
-    --sidebar-background: 210 10% 15%; /* Dark blue/gray for sidebar */
-    --sidebar-foreground: 0 0% 95%;   /* Light text for sidebar */
-    --sidebar-primary: 207 70% 53%;      /* Primary blue for active/hover */
-    --sidebar-primary-foreground: 0 0% 98%; 
-    --sidebar-accent: 210 10% 25%;         /* Slightly lighter dark for hover background */
-    --sidebar-accent-foreground: 0 0% 95%;    
-    --sidebar-border: 210 10% 30%;      
-    --sidebar-ring: 207 70% 53%;      
+    /* Sidebar Colors - Light Mode */
+    --sidebar-background: 0 0% 100%; /* White, consistent with card/page background */
+    --sidebar-foreground: 0 0% 15%;   /* Dark text for sidebar */
+    --sidebar-primary: 145 58% 40%;      /* Primary green for active/hover */
+    --sidebar-primary-foreground: 0 0% 100%; 
+    --sidebar-accent: 145 50% 95%;         /* Very light green for hover background */
+    --sidebar-accent-foreground: 145 58% 30%; /* Darker green text on hover */
+    --sidebar-border: 210 15% 88%;      /* Light gray border, consistent with app border */
+    --sidebar-ring: 145 58% 40%;      /* Primary green for focus */
   }
 
   .dark {
-    --background: 210 10% 12%; /* Very Dark Blue/Gray */
+    /* Green Palette - Dark Mode */
+    --background: 0 0% 8%; /* Very Dark Gray/Almost Black */
     --foreground: 0 0% 95%;   /* Light Gray/White text */
 
-    --card: 210 10% 18%; /* Slightly lighter than background for cards */
+    --card: 0 0% 12%; /* Slightly lighter than background for cards */
     --card-foreground: 0 0% 95%;
 
-    --popover: 210 10% 15%; 
+    --popover: 0 0% 12%; 
     --popover-foreground: 0 0% 95%;
 
-    --primary: 207 70% 58%; /* Slightly brighter blue for dark mode */
+    --primary: 145 58% 48%; /* Slightly brighter green for dark mode */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 10% 25%; 
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 0 0% 20%; 
+    --secondary-foreground: 0 0% 90%;
 
-    --muted: 210 10% 22%; 
+    --muted: 0 0% 18%; 
     --muted-foreground: 0 0% 65%; 
 
-    --accent: 25 100% 65%; /* Slightly brighter orange for dark mode */
-    --accent-foreground: 240 10% 10%; 
+    --accent: 135 60% 55%; /* Brighter accent green for dark mode */
+    --accent-foreground: 0 0% 10%; /* Dark text for contrast */
 
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 210 10% 30%; 
-    --input: 210 10% 25%;  
-    --ring: 207 70% 58%;  
+    --border: 0 0% 25%; 
+    --input: 0 0% 20%;  
+    --ring: 145 58% 48%;  
     
     /* Chart Colors - Dark Mode */
-    --chart-1: 207 70% 58%;
-    --chart-2: 25 100% 65%;
-    --chart-3: 207 70% 48%;
-    --chart-4: 25 100% 55%;
-    --chart-5: 207 70% 68%;
+    --chart-1: 145 58% 48%;
+    --chart-2: 135 60% 55%;
+    --chart-3: 145 58% 38%;
+    --chart-4: 135 60% 45%;
+    --chart-5: 145 58% 58%;
 
-    /* Sidebar Colors - Dark Mode (can be same or adjusted) */
-    --sidebar-background: 210 10% 10%; /* Even darker for sidebar */
+    /* Sidebar Colors - Dark Mode */
+    --sidebar-background: 0 0% 8%; /* Matches app dark background */
     --sidebar-foreground: 0 0% 95%;   
-    --sidebar-primary: 207 70% 58%;      
+    --sidebar-primary: 145 58% 48%;      /* Primary green (dark mode version) */
     --sidebar-primary-foreground: 0 0% 98%; 
-    --sidebar-accent: 210 10% 20%;        
+    --sidebar-accent: 145 30% 15%;        /* Darker green-ish gray for hover background */
     --sidebar-accent-foreground: 0 0% 95%; 
-    --sidebar-border: 210 10% 25%;     
-    --sidebar-ring: 207 70% 58%;      
+    --sidebar-border: 0 0% 25%;     /* Matches app dark border */
+    --sidebar-ring: 145 58% 48%;      /* Primary green (dark mode version) */
   }
 }
 
