@@ -1,6 +1,6 @@
 
 import type { Metadata } from 'next';
-import '../../globals.css'; // Adjusted path for globals.css
+// import '../../globals.css'; // Removed: globals.css is imported in the root layout
 
 export const metadata: Metadata = {
   title: 'Guia de Salas - Academica',
@@ -13,7 +13,6 @@ export default function TvDisplayLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Removed className="dark" to use light theme by default
     <div> 
       <div className="font-body antialiased bg-background text-foreground min-h-screen flex flex-col selection:bg-primary/30 selection:text-primary-foreground">
         {children}
