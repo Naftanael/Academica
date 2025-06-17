@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -57,7 +56,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
         description: result.message,
       });
       router.push('/classrooms');
-      router.refresh();
+      router.refresh(); 
     } else {
       if (result.errors) {
         Object.entries(result.errors).forEach(([field, errors]) => {
@@ -109,10 +108,10 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
             <FormItem>
               <FormLabel>Capacidade</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Ex: 30"
-                  {...field}
+                <Input 
+                  type="number" 
+                  placeholder="Ex: 30" 
+                  {...field} 
                   onChange={event => field.onChange(event.target.value === '' ? undefined : +event.target.value)}
                   value={field.value === undefined ? '' : field.value}
                 />

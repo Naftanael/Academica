@@ -13,7 +13,20 @@ export async function readData<T>(filename: string): Promise<T[]> {
       return [];
     }
 
-    return JSON.parse(jsonData) as T[];
+    const parsedData = JSON.parse(jsonData);
+
+    if (!Array.isArray(parsedData)) {
+      console.warn(`Data in ${filename} is not an array. Content was: ${JSON.stringify(parsedData)}. Overwriting with empty array.`);
+      try {
+        await writeData<T>(filename, []); // Attempt to fix the file
+      } catch (writeError) {
+        console.error(`Error attempting to overwrite malformed file ${filename}:`, (writeError as Error).message);
+        // Still return [] to allow the app to proceed, albeit with a warning about the failed write.
+      }
+      return [];
+    }
+
+    return parsedData as T[];
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
