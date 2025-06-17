@@ -31,11 +31,6 @@ interface DataStatus {
   classroomsMtime: number | null;
 }
 
-// Simplified to use the theme's primary color for the left border
-const getCourseLeftBorderColorClass = (): string => {
-  return 'border-l-primary'; // Uses the CSS variable --primary defined in globals.css
-};
-
 export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientProps) {
   const router = useRouter();
   const [displayData, setDisplayData] = React.useState<TvDisplayInfo[]>(initialDisplayData);
@@ -182,8 +177,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
             <div
               key={item.id}
               className={cn(
-                "bg-card rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px]",
-                getCourseLeftBorderColorClass() // Simplified: uses theme primary color
+                "bg-card rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px] border-l-primary"
               )}
             >
               <div className="flex-grow">
@@ -231,5 +225,3 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     </div>
   );
 }
-
-    
