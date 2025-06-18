@@ -75,7 +75,10 @@ const getCellContainerClass = (classroomId: string, day: DayOfWeek, displayedCla
       return 'bg-amber-100/70 dark:bg-amber-900/40 opacity-70';
     }
     const groupsInCellToday = displayedClassGroups.filter(
-      cg => cg.assignedClassroomId === classroomId && cg.classDays.includes(day) && cg.status === 'Em Andamento'
+      cg => 
+        cg.assignedClassroomId === classroomId && 
+        Array.isArray(cg.classDays) && cg.classDays.includes(day) && 
+        cg.status === 'Em Andamento'
     );
     if (groupsInCellToday.length === 0) return 'bg-background dark:bg-card';
 
@@ -104,18 +107,16 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
       return;
     }
     const filtered = initialClassGroups.filter(cg => {
+      if (!cg || typeof cg.startDate !== 'string' || typeof cg.endDate !== 'string' || typeof cg.status !== 'string') {
+        return false; 
+      }
       const cgStartDate = parseISO(cg.startDate);
       const cgEndDate = parseISO(cg.endDate);
       if (!isValid(cgStartDate) || !isValid(cgEndDate)) return false;
       
-      // Consider only "Em Andamento" class groups
       if (cg.status !== 'Em Andamento') {
           return false;
       }
-      
-      // Exclude class groups assigned to rooms currently under maintenance IF the room is specified
-      // This part is implicitly handled by the UI later, but filtering here might be cleaner if we only want active, usable assignments
-      // For now, we allow them to be "displayed" but the room cell itself will show maintenance status
       
       return cgStartDate <= endDate && cgEndDate >= startDate;
     });
@@ -129,9 +130,9 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
   const getScheduledGroupsForShift = (classroomId: string, day: DayOfWeek, shift: PeriodOfDay): ClassGroup[] => {
     return displayedClassGroups.filter(cg =>
       cg.assignedClassroomId === classroomId &&
-      cg.classDays.includes(day) &&
-      cg.shift === shift && // Ensure shift matches
-      cg.status === 'Em Andamento' // Double check status, though filterClassGroups should handle it
+      Array.isArray(cg.classDays) && cg.classDays.includes(day) &&
+      cg.shift === shift && 
+      cg.status === 'Em Andamento'
     );
   };
 

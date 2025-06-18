@@ -10,7 +10,8 @@ import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 // Define the props type for this specific page
 type Props = {
   params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  // searchParams is not used in this component, removing it to simplify type signature
+  // searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 export default async function EditClassGroupPage({ params }: Props) {
