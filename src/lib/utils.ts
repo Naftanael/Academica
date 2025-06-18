@@ -1,6 +1,7 @@
 
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { PeriodOfDay } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -61,3 +62,15 @@ export const dateRangesOverlap = (startA: Date, endA: Date, startB: Date, endB: 
   }
   return startA <= endB && endA >= startB;
 };
+
+export function getCurrentShift(hour: number | null): PeriodOfDay | null {
+  if (hour === null) return null;
+  if (hour >= 6 && hour < 12) {
+    return 'Manhã';
+  } else if (hour >= 12 && hour < 18) {
+    return 'Tarde';
+  } else if (hour >= 18 && hour < 24) { // Adjusted to cover up to 23:59 for 'Noite'
+    return 'Noite';
+  }
+  return null; // Return null if hour is outside expected ranges (e.g., 0-5)
+}

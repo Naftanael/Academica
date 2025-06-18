@@ -27,7 +27,8 @@ interface RoomAvailabilityDisplayProps {
   initialClassGroups: ClassGroup[];
 }
 
-const getCourseColorClasses = (groupName: string): string => {
+const getCourseColorClasses = (groupName: string | undefined): string => {
+  if (!groupName) return 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700/30 dark:text-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700/50';
   const prefixMatch = groupName.match(/^([A-Z]+)/);
   const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
 
@@ -48,7 +49,7 @@ const getCourseColorClasses = (groupName: string): string => {
 };
 
 const getColumnDateString = (targetDay: DayOfWeek, currentFilterStartDate: Date | undefined): string => {
-  if (!currentFilterStartDate) return '';
+  if (!currentFilterStartDate || !isValid(currentFilterStartDate)) return '';
   const mondayOfFilterWeek = startOfWeek(currentFilterStartDate, { weekStartsOn: 1 });
   const orderInDAYS_OF_WEEK: DayOfWeek[] = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
   const targetDayIndexInOrder = orderInDAYS_OF_WEEK.indexOf(targetDay);
@@ -82,7 +83,10 @@ const getCellContainerClass = (classroomId: string, day: DayOfWeek, displayedCla
     );
     if (groupsInCellToday.length === 0) return 'bg-background dark:bg-card';
 
-    const endDates = groupsInCellToday.map(cg => parseISO(cg.endDate)).filter(date => isValid(date));
+    const endDates = groupsInCellToday
+      .map(cg => (typeof cg.endDate === 'string' ? parseISO(cg.endDate) : null))
+      .filter(date => date && isValid(date)) as Date[]; // Ensure only valid Dates are kept
+
     if (endDates.length === 0) return 'bg-muted/30 dark:bg-muted/20'; 
 
     const latestEndDateInCell = maxDate(endDates);
@@ -102,17 +106,22 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
   const [displayedClassGroups, setDisplayedClassGroups] = useState<ClassGroup[]>([]);
 
   const filterClassGroups = React.useCallback(() => {
-    if (!startDate || !endDate) {
+    if (!startDate || !endDate || !isValid(startDate) || !isValid(endDate)) {
       setDisplayedClassGroups([]);
       return;
     }
     const filtered = initialClassGroups.filter(cg => {
       if (!cg || typeof cg.startDate !== 'string' || typeof cg.endDate !== 'string' || typeof cg.status !== 'string') {
+        // console.warn('Skipping class group due to missing or invalid properties:', cg);
         return false; 
       }
       const cgStartDate = parseISO(cg.startDate);
       const cgEndDate = parseISO(cg.endDate);
-      if (!isValid(cgStartDate) || !isValid(cgEndDate)) return false;
+      
+      if (!isValid(cgStartDate) || !isValid(cgEndDate)) {
+        // console.warn('Skipping class group due to invalid date format:', cg);
+        return false;
+      }
       
       if (cg.status !== 'Em Andamento') {
           return false;
@@ -153,7 +162,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
+                  {startDate && isValid(startDate) ? format(startDate, "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -161,7 +170,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
                   mode="single"
                   selected={startDate}
                   onSelect={(date) => {
-                    if (date) {
+                    if (date && isValid(date)) {
                       const weekStart = startOfWeek(date, { weekStartsOn: 1 });
                       setStartDate(weekStart);
                       setEndDate(addDays(weekStart, 6));
@@ -188,7 +197,7 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {endDate ? format(endDate, "PPP", { locale: ptBR }) : <span>Calculada automaticamente</span>}
+              {endDate && isValid(endDate) ? format(endDate, "PPP", { locale: ptBR }) : <span>Calculada automaticamente</span>}
             </Button>
           </div>
         </div>

@@ -11,6 +11,7 @@ import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomBu
 import { EditClassroomButton } from '@/components/classrooms/EditClassroomButton';
 import { JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { getCurrentShift } from '@/lib/utils'; // Import from utils
 import {
   Tooltip,
   TooltipContent,
@@ -18,17 +19,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import * as React from 'react';
-
-function getCurrentShift(hour: number | null): PeriodOfDay | null {
-  if (hour === null) return null;
-  if (hour >= 6 && hour < 12) {
-    return 'Manhã';
-  } else if (hour >= 12 && hour < 18) {
-    return 'Tarde';
-  } else {
-    return 'Noite';
-  }
-}
 
 interface ClassroomsDisplayProps {
   classrooms: Classroom[];

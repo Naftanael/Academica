@@ -1,18 +1,9 @@
 
 import { getClassGroups } from '@/lib/actions/classgroups';
 import { getClassrooms } from '@/lib/actions/classrooms';
-import type { ClassGroup, Classroom, ClassGroupShift } from '@/types';
+import type { ClassGroup, Classroom } from '@/types';
 import TvDisplayClient, { type TvDisplayInfo } from '@/components/tv-display/TvDisplayClient';
-
-function getCurrentShift(hour: number): ClassGroupShift {
-  if (hour >= 6 && hour < 12) {
-    return 'Manhã';
-  } else if (hour >= 12 && hour < 18) {
-    return 'Tarde';
-  } else {
-    return 'Noite';
-  }
-}
+import { getCurrentShift } from '@/lib/utils'; // Import from utils
 
 export default async function TvDisplayPage() {
   const allClassGroups = await getClassGroups();
@@ -25,6 +16,7 @@ export default async function TvDisplayPage() {
   const activeClassGroups = allClassGroups.filter(cg => {
     // Ensure cg is a valid object with essential properties before proceeding
     if (!cg || typeof cg !== 'object' || cg === null) {
+        console.warn(`TV Display: Skipping class group due to invalid object: ${JSON.stringify(cg)}`);
         return false;
     }
     if (typeof cg.status !== 'string' || typeof cg.shift !== 'string') {
@@ -58,7 +50,7 @@ export default async function TvDisplayPage() {
       return {
         id: group.id,
         groupName: group.name,
-        shift: group.shift as ClassGroupShift, // Type assertion after validation
+        shift: group.shift, 
         classroomName: (classroom && typeof classroom.name === 'string') ? classroom.name : null,
       };
     })
