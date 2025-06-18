@@ -11,7 +11,7 @@ import { getEventReservations } from '@/lib/actions/event_reservations';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
 import type { ClassroomRecurringReservation, EventReservation, Classroom, ClassGroup, DayOfWeek } from '@/types';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns'; // Added isValid
 import { ptBR } from 'date-fns/locale';
 import { DeleteRecurringReservationButton } from '@/components/reservations/DeleteRecurringReservationButton';
 import { DeleteEventReservationButton } from '@/components/reservations/DeleteEventReservationButton';
@@ -42,21 +42,24 @@ export default async function ReservationsPage() {
 
   const enrichedRecurringReservations: EnrichedRecurringReservation[] = recurringReservationsData.map(res => {
     const classGroupDetails = classGroupMap.get(res.classGroupId);
+    const parsedStartDate = parseISO(res.startDate);
+    const parsedEndDate = parseISO(res.endDate);
     return {
       ...res,
       classroomName: classroomMap.get(res.classroomId) || 'Sala desconhecida',
       classGroupName: classGroupDetails?.name || 'Turma desconhecida',
       classGroupDays: classGroupDetails?.classDays || [],
-      formattedStartDate: format(parseISO(res.startDate), "dd/MM/yy", { locale: ptBR }),
-      formattedEndDate: format(parseISO(res.endDate), "dd/MM/yy", { locale: ptBR }),
+      formattedStartDate: isValid(parsedStartDate) ? format(parsedStartDate, "dd/MM/yy", { locale: ptBR }) : 'Data Inválida',
+      formattedEndDate: isValid(parsedEndDate) ? format(parsedEndDate, "dd/MM/yy", { locale: ptBR }) : 'Data Inválida',
     };
   });
 
   const enrichedEventReservations: EnrichedEventReservation[] = eventReservationsData.map(event => {
+    const parsedDate = parseISO(event.date);
     return {
       ...event,
       classroomName: classroomMap.get(event.classroomId) || 'Sala desconhecida',
-      formattedDate: format(parseISO(event.date), "dd/MM/yyyy", { locale: ptBR }),
+      formattedDate: isValid(parsedDate) ? format(parsedDate, "dd/MM/yyyy", { locale: ptBR }) : 'Data Inválida',
       formattedStartTime: event.startTime, // Already HH:mm
       formattedEndTime: event.endTime, // Already HH:mm
     };

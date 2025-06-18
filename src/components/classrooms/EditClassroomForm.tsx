@@ -167,7 +167,8 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                 <FormMessage />
               </FormItem>
             )}
-          )}
+          />
+        )}
         <div className="flex justify-end">
           <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
             {isPending ? "Salvando..." : (

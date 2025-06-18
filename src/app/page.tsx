@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard, Activity } from 'lucide-react';
 import Link from 'next/link';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays, isValid } from 'date-fns'; // Added isValid
 import { ptBR } from 'date-fns/locale';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import ClassroomOccupancyChart from '@/components/dashboard/ClassroomOccupancyChart';
@@ -34,15 +34,19 @@ async function getDashboardData() {
   };
 
   const detailedActiveClassGroups = activeClassGroupsData.map(cg => {
-    const startDate = parseISO(cg.startDate);
-    const endDate = parseISO(cg.endDate);
-    const daysRemaining = differenceInDays(endDate, currentDate);
-    const nearEnd = daysRemaining <= 7 && daysRemaining >= 0;
+    const parsedStartDate = parseISO(cg.startDate);
+    const parsedEndDate = parseISO(cg.endDate);
+    
+    const daysRemaining = (isValid(parsedStartDate) && isValid(parsedEndDate))
+      ? differenceInDays(parsedEndDate, currentDate)
+      : NaN;
+
+    const nearEnd = !isNaN(daysRemaining) && daysRemaining <= 7 && daysRemaining >= 0;
 
     return {
       ...cg,
-      formattedStartDate: format(startDate, 'dd/MM/yyyy'),
-      formattedEndDate: format(endDate, 'dd/MM/yyyy'),
+      formattedStartDate: isValid(parsedStartDate) ? format(parsedStartDate, 'dd/MM/yyyy') : 'Data Início Inválida',
+      formattedEndDate: isValid(parsedEndDate) ? format(parsedEndDate, 'dd/MM/yyyy') : 'Data Fim Inválida',
       nearEnd,
     };
   });
