@@ -10,40 +10,51 @@ export async function readData<T>(filename: string): Promise<T[]> {
     const jsonData = await fs.readFile(filePath, 'utf-8');
 
     if (!jsonData || jsonData.trim() === '') {
+      // File is empty or whitespace only, treat as empty array.
       return [];
     }
 
     const parsedData = JSON.parse(jsonData);
 
     if (!Array.isArray(parsedData)) {
-      console.warn(`Data in ${filename} is not an array. Content was: ${JSON.stringify(parsedData)}. Overwriting with empty array.`);
+      // Log this specific case: valid JSON, but not an array.
+      console.warn(`Data in ${filename} is valid JSON but not an array. Content: ${JSON.stringify(parsedData)}. Attempting to overwrite with an empty array.`);
       try {
         await writeData<T>(filename, []); // Attempt to fix the file
       } catch (writeError) {
-        console.error(`Error attempting to overwrite malformed file ${filename}:`, (writeError as Error).message);
+        console.error(`Error attempting to overwrite malformed (non-array) file ${filename}:`, (writeError as Error).message);
         // Still return [] to allow the app to proceed, albeit with a warning about the failed write.
       }
-      return [];
+      return []; // Return empty array as the content was not the expected array.
     }
 
-    // Filter out null, undefined, or non-object items from the array.
-    // This helps prevent TypeErrors if the array contains malformed entries.
+    // Filter out null, undefined, or non-object items from the array if T is expected to be an array of objects.
+    // This is a basic sanity check. For more complex object validation, schemas (e.g., Zod) should be used by the caller.
     const validItems = parsedData.filter(item => item !== null && typeof item === 'object');
+    
+    // If you expect an array of primitives (e.g., string[], number[]), this filter might be too aggressive.
+    // However, for this project, T is typically an array of objects (Classroom[], ClassGroup[], etc.).
+    // If T could be array of primitives, this filtering logic would need adjustment or removal.
+    if (validItems.length !== parsedData.length) {
+        // console.warn(`Filtered out non-object or null items from ${filename}. Original count: ${parsedData.length}, Valid count: ${validItems.length}`);
+    }
 
-    return validItems as T[]; // This is still a type assertion, but the data is cleaner.
+
+    return validItems as T[]; // Assumes T is an array of objects.
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
+      // File doesn't exist. Attempt to create it with an empty array.
       try {
         await writeData<T>(filename, []);
       } catch (writeError) {
         console.error(`Error creating initial data file ${filename} after ENOENT:`, (writeError as Error).message);
+        // Still return [] to allow the app to proceed.
       }
       return [];
     }
+    // For other errors (e.g., malformed JSON that JSON.parse throws on, permissions issues), log and return empty.
     console.error(`Error reading or parsing data from ${filename}:`, nodeError.message);
-    // In case of JSON parsing errors or other read errors, return empty array
-    // and log the error.
     return [];
   }
 }
@@ -51,11 +62,11 @@ export async function readData<T>(filename: string): Promise<T[]> {
 export async function writeData<T>(filename: string, data: T[]): Promise<void> {
   try {
     const filePath = path.join(dataDir, filename);
-    await fs.mkdir(dataDir, { recursive: true });
+    await fs.mkdir(dataDir, { recursive: true }); // Ensure data directory exists
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
     console.error(`Error writing data to ${filename}:`, error);
-    throw error; 
+    throw error; // Re-throw to be handled by Server Action or caller
   }
 }
 
