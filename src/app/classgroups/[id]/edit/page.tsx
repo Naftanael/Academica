@@ -7,8 +7,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 
-// Define props inline conforme solicitado para corrigir o erro de tipo
-export default async function EditClassGroupPage({ params }: { params: { id: string } }) {
+export default async function EditClassGroupPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const classGroup = await getClassGroupById(params.id);
 
   if (!classGroup) {

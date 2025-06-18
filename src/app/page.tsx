@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard, Activity } from 'lucide-react';
 import Link from 'next/link';
-import { format, parseISO, differenceInDays, isValid } from 'date-fns'; // Added isValid
+import { format, parseISO, differenceInDays, isValid, isAfter } from 'date-fns'; // Added isAfter
 import { ptBR } from 'date-fns/locale';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import ClassroomOccupancyChart from '@/components/dashboard/ClassroomOccupancyChart';
@@ -22,6 +22,7 @@ async function getDashboardData() {
   const classGroups = await readData<ClassGroup>('classgroups.json');
 
   const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0); // Normalize current date for accurate day comparisons
 
   const activeClassGroupsData = classGroups.filter(cg => cg.status === 'Em Andamento');
   const plannedClassGroups = classGroups.filter(cg => cg.status === 'Planejada');
@@ -34,19 +35,51 @@ async function getDashboardData() {
   };
 
   const detailedActiveClassGroups = activeClassGroupsData.map(cg => {
-    const parsedStartDate = parseISO(cg.startDate);
-    const parsedEndDate = parseISO(cg.endDate);
-    
-    const daysRemaining = (isValid(parsedStartDate) && isValid(parsedEndDate))
-      ? differenceInDays(parsedEndDate, currentDate)
-      : NaN;
+    let parsedStartDate: Date | null = null;
+    let parsedEndDate: Date | null = null;
+    let daysRemaining: number | undefined = undefined;
+    let formattedStartDate = 'Data Início Inválida';
+    let formattedEndDate = 'Data Fim Inválida';
+    let nearEnd = false; // Default to false
 
-    const nearEnd = !isNaN(daysRemaining) && daysRemaining <= 7 && daysRemaining >= 0;
+    // Validate and parse start date
+    if (typeof cg.startDate === 'string') {
+        const tempStartDate = parseISO(cg.startDate);
+        if (isValid(tempStartDate)) {
+            parsedStartDate = tempStartDate;
+            formattedStartDate = format(parsedStartDate, 'dd/MM/yyyy');
+        }
+    }
+
+    // Validate and parse end date
+    if (typeof cg.endDate === 'string') {
+        const tempEndDate = parseISO(cg.endDate);
+        if (isValid(tempEndDate)) {
+            parsedEndDate = tempEndDate;
+            formattedEndDate = format(parsedEndDate, 'dd/MM/yyyy');
+        }
+    }
+
+    // Calculate daysRemaining and nearEnd only if both dates are valid
+    if (parsedStartDate && parsedEndDate) {
+        // Ensure startDate is not after endDate before calculating difference
+        if (!isAfter(parsedStartDate, parsedEndDate)) {
+            daysRemaining = differenceInDays(parsedEndDate, currentDate);
+            // A turma está "perto do fim" se termina nos próximos 7 dias (inclusive hoje)
+            // E não já terminou (daysRemaining >= 0)
+            nearEnd = daysRemaining !== undefined && daysRemaining <= 7 && daysRemaining >= 0;
+        } else {
+            // Handle case where start date is after end date if necessary
+            // For now, it will remain 'Data Início Inválida' or 'Data Fim Inválida' if one is invalid
+            // or formatted dates if both are valid but in wrong order.
+            // daysRemaining will be undefined, nearEnd will be false.
+        }
+    }
 
     return {
       ...cg,
-      formattedStartDate: isValid(parsedStartDate) ? format(parsedStartDate, 'dd/MM/yyyy') : 'Data Início Inválida',
-      formattedEndDate: isValid(parsedEndDate) ? format(parsedEndDate, 'dd/MM/yyyy') : 'Data Fim Inválida',
+      formattedStartDate,
+      formattedEndDate,
       nearEnd,
     };
   });
@@ -75,9 +108,6 @@ async function getDashboardData() {
               dailyOccupancyCounts[day]++;
             }
           });
-        } else {
-          // Optional: Log a warning if classDays is not as expected
-          // console.warn(`ClassGroup ${cg.id} has missing or invalid classDays property.`);
         }
       }
     }
@@ -170,4 +200,3 @@ export default async function DashboardPage() {
     </>
   );
 }
-
