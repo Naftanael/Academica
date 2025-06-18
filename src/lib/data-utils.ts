@@ -18,16 +18,16 @@ export async function readData<T>(filename: string): Promise<T[]> {
 
     if (!Array.isArray(parsedData)) {
       // Log this specific case: valid JSON, but not an array.
-      // Removed the attempt to overwrite the file here.
       console.warn(`Data in ${filename} is valid JSON but not an array. Content: ${JSON.stringify(parsedData)}. Returning empty array.`);
       return []; // Return empty array as the content was not the expected array.
     }
 
     // Filter out null, undefined, or non-object items from the array if T is expected to be an array of objects.
-    const validItems = parsedData.filter(item => item !== null && typeof item === 'object');
+    // This assumes T is generally an object type when T[] is used.
+    const validItems = parsedData.filter(item => item !== null && item !== undefined && typeof item === 'object');
     
     if (validItems.length !== parsedData.length) {
-        // console.warn(`Filtered out non-object or null items from ${filename}. Original count: ${parsedData.length}, Valid count: ${validItems.length}`);
+        // console.warn(`Filtered out non-object or null/undefined items from ${filename}. Original count: ${parsedData.length}, Valid count: ${validItems.length}`);
     }
 
     return validItems as T[];

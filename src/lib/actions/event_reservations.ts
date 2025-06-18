@@ -8,25 +8,18 @@ import type { EventReservation, ClassroomRecurringReservation, ClassGroup, Class
 import { eventReservationFormSchema, type EventReservationFormValues } from '@/lib/schemas/event_reservations';
 import { getRecurringReservations } from './recurring_reservations';
 import { getClassGroups } from './classgroups';
-import { getClassrooms } from './classrooms'; // To get classroom names for messages
+import { getClassrooms } from './classrooms';
 import { parseISO, getDay, format } from 'date-fns';
 import { SHIFT_TIME_RANGES, JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
-
-// Helper to check if two time ranges overlap (HH:mm strings)
-function timeRangesOverlap(startA: string, endA: string, startB: string, endB: string): boolean {
-  const toMinutes = (timeStr: string) => {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
-  const startAMin = toMinutes(startA);
-  const endAMin = toMinutes(endA);
-  const startBMin = toMinutes(startB);
-  const endBMin = toMinutes(endB);
-  return startAMin < endBMin && endAMin > startBMin;
-}
+import { timeRangesOverlap } from '@/lib/utils'; // Moved helper
 
 export async function getEventReservations(): Promise<EventReservation[]> {
-  return await readData<EventReservation>('event_reservations.json');
+  try {
+    return await readData<EventReservation>('event_reservations.json');
+  } catch (error) {
+    console.error('Failed to get event reservations:', error);
+    return [];
+  }
 }
 
 export async function createEventReservation(values: EventReservationFormValues) {
@@ -36,21 +29,23 @@ export async function createEventReservation(values: EventReservationFormValues)
     const existingEventReservations = await getEventReservations();
     const existingRecurringReservations = await getRecurringReservations();
     const allClassGroups = await getClassGroups();
-    const allClassrooms = await getClassrooms(); // For richer error messages
+    const allClassrooms = await getClassrooms();
 
     const newEventDate = parseISO(validatedValues.date);
-    const newEventDayOfWeekJs = getDay(newEventDate); // 0 for Sunday, 1 for Monday...
+    if (!newEventDate || isNaN(newEventDate.getTime())) {
+        return { success: false, message: 'Data do evento inválida.'};
+    }
+    const newEventDayOfWeekJs = getDay(newEventDate);
     const newEventDayOfWeekPt = JS_DAYS_OF_WEEK_MAP_TO_PT[newEventDayOfWeekJs];
-
 
     // 1. Check conflict with other EventReservations
     for (const existingEvent of existingEventReservations) {
       if (existingEvent.classroomId === validatedValues.classroomId && existingEvent.date === validatedValues.date) {
         if (timeRangesOverlap(validatedValues.startTime, validatedValues.endTime, existingEvent.startTime, existingEvent.endTime)) {
           const classroomName = allClassrooms.find(c => c.id === validatedValues.classroomId)?.name || validatedValues.classroomId;
-          return { 
-            success: false, 
-            message: `Conflito: A sala "${classroomName}" já está reservada para o evento "${existingEvent.title}" neste dia e horário (${existingEvent.startTime} - ${existingEvent.endTime}).` 
+          return {
+            success: false,
+            message: `Conflito: A sala "${classroomName}" já está reservada para o evento "${existingEvent.title}" neste dia e horário (${existingEvent.startTime} - ${existingEvent.endTime}).`
           };
         }
       }
@@ -64,20 +59,19 @@ export async function createEventReservation(values: EventReservationFormValues)
 
       const recurringStartDate = parseISO(recurringRes.startDate);
       const recurringEndDate = parseISO(recurringRes.endDate);
+      if (isNaN(recurringStartDate.getTime()) || isNaN(recurringEndDate.getTime())) continue;
 
-      // Check if the new event date is within the recurring reservation's date range
+
       if (newEventDate >= recurringStartDate && newEventDate <= recurringEndDate) {
         const classGroup = allClassGroups.find(cg => cg.id === recurringRes.classGroupId);
-        if (classGroup && classGroup.classDays.includes(newEventDayOfWeekPt)) {
-          // The recurring reservation is active on this day of the week.
-          // Now check if the event's time overlaps with the recurring reservation's shift.
+        if (classGroup && Array.isArray(classGroup.classDays) && classGroup.classDays.includes(newEventDayOfWeekPt)) {
           const shiftTimeRange = SHIFT_TIME_RANGES[recurringRes.shift];
           if (timeRangesOverlap(validatedValues.startTime, validatedValues.endTime, shiftTimeRange.start, shiftTimeRange.end)) {
             const classroomName = allClassrooms.find(c => c.id === validatedValues.classroomId)?.name || validatedValues.classroomId;
             const turmaName = classGroup.name;
-            return { 
-              success: false, 
-              message: `Conflito: A sala "${classroomName}" tem uma reserva recorrente para a turma "${turmaName}" no turno da "${recurringRes.shift}" (${newEventDayOfWeekPt}) que coincide com o horário deste evento.`
+            return {
+              success: false,
+              message: `Conflito: A sala "${classroomName}" tem uma reserva recorrente para a turma "${turmaName}" no turno da "${recurringRes.shift}" (${newEventDayOfWeekPt}, ${shiftTimeRange.start}-${shiftTimeRange.end}) que coincide com o horário deste evento.`
             };
           }
         }
@@ -93,28 +87,42 @@ export async function createEventReservation(values: EventReservationFormValues)
     await writeData<EventReservation>('event_reservations.json', existingEventReservations);
 
     revalidatePath('/reservations');
-    revalidatePath('/room-availability'); // Also revalidate availability page
+    revalidatePath('/room-availability');
     return { success: true, message: 'Reserva de evento criada com sucesso!', data: newEventReservation };
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, message: 'Erro de validação.', errors: error.flatten().fieldErrors };
+      return { success: false, message: 'Erro de validação ao criar reserva de evento.', errors: error.flatten().fieldErrors };
     }
     console.error('Failed to create event reservation:', error);
-    return { success: false, message: 'Erro ao criar reserva de evento. Verifique o console para mais detalhes.' };
+    // Check if the error is from timeRangesOverlap due to invalid time format
+    if (error instanceof Error && error.message.startsWith('Invalid time string format')) {
+        return { success: false, message: `Formato de hora inválido para a reserva do evento: ${error.message}` };
+    }
+    if (error instanceof Error && error.message.includes('is not before end time')) {
+        return { success: false, message: `Lógica de horários inválida: ${error.message}` };
+    }
+    return { success: false, message: 'Erro interno ao criar reserva de evento.' };
   }
 }
 
 export async function deleteEventReservation(id: string) {
   try {
     let eventReservations = await getEventReservations();
-    eventReservations = eventReservations.filter(er => er.id !== id);
+    const reservationIndex = eventReservations.findIndex(er => er.id === id);
+
+    if (reservationIndex === -1) {
+      return { success: false, message: 'Reserva de evento não encontrada para exclusão.' };
+    }
+
+    eventReservations.splice(reservationIndex, 1);
     await writeData<EventReservation>('event_reservations.json', eventReservations);
+
     revalidatePath('/reservations');
     revalidatePath('/room-availability');
     return { success: true, message: 'Reserva de evento excluída com sucesso!' };
   } catch (error) {
-    console.error('Failed to delete event reservation:', error);
-    return { success: false, message: 'Erro ao excluir reserva de evento.' };
+    console.error(`Failed to delete event reservation ${id}:`, error);
+    return { success: false, message: 'Erro interno ao excluir reserva de evento.' };
   }
 }
