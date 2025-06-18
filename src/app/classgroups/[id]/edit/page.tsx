@@ -7,13 +7,8 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 
-// Define a tipagem para as props desta página específica
-type Props = {
-  params: { id: string };
-  // searchParams não está sendo usado neste componente, removendo para simplificar
-};
-
-export default async function EditClassGroupPage({ params }: Props) {
+// Simplificando a tipagem das props diretamente na assinatura da função
+export default async function EditClassGroupPage({ params }: { params: { id: string } }) {
   const classGroup = await getClassGroupById(params.id);
 
   if (!classGroup) {
