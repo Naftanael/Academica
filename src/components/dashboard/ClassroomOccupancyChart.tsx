@@ -10,7 +10,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { Activity } from 'lucide-react'; // Icon for chart card header
+import { Activity, AlertTriangle } from 'lucide-react'; // Icon for chart card header, AlertTriangle for error
 
 const chartConfig = {
   turmas: {
@@ -30,6 +30,24 @@ interface ClassroomOccupancyChartProps {
 }
 
 export default function ClassroomOccupancyChart({ data }: ClassroomOccupancyChartProps) {
+  if (!Array.isArray(data)) {
+    return (
+      <Card className="shadow-lg rounded-lg">
+        <CardHeader>
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xl font-semibold font-headline">Ocupação de Salas por Dia</CardTitle>
+            <Activity className="h-5 w-5 text-muted-foreground" />
+          </div>
+        </CardHeader>
+        <CardContent className="h-[300px] flex flex-col items-center justify-center text-center">
+          <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+          <p className="text-lg font-semibold text-destructive">Erro ao carregar dados do gráfico.</p>
+          <p className="text-sm text-muted-foreground">Não foi possível processar os dados de ocupação.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const chartDataPrepared = data.map(item => ({
     ...item,
     fill: 'var(--color-turmas)', // For Bar component to use the CSS variable
@@ -115,4 +133,3 @@ export default function ClassroomOccupancyChart({ data }: ClassroomOccupancyChar
     </Card>
   );
 }
-
