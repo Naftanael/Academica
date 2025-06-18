@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -8,7 +9,7 @@ import { Save, Wrench } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
-  Form, // A correção está aqui: 'Form' foi adicionado a esta lista.
+  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -113,7 +114,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                   placeholder="Ex: 30" 
                   {...field} 
                   onChange={event => field.onChange(event.target.value === '' ? undefined : +event.target.value)}
-                  value={field.value ?? ''}
+                  value={field.value === undefined ? '' : field.value}
                 />
               </FormControl>
               <FormDescription>
@@ -158,7 +159,6 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                   <Textarea
                     placeholder="Ex: Ar condicionado quebrado, pintura, etc."
                     {...field}
-                    value={field.value ?? ''}
                   />
                 </FormControl>
                 <FormDescription>
