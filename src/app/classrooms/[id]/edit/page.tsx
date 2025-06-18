@@ -5,8 +5,7 @@ import { School, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import EditClassroomForm from '@/components/classrooms/EditClassroomForm'; // Import the new form component
-
+import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW';
 interface EditClassroomPageProps {
   params: { id: string };
 }
