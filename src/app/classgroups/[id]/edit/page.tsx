@@ -7,11 +7,13 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 
-interface EditClassGroupPageProps {
+// Define the props type for this specific page
+type Props = {
   params: { id: string };
-}
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
 
-export default async function EditClassGroupPage({ params }: EditClassGroupPageProps) {
+export default async function EditClassGroupPage({ params }: Props) {
   const classGroup = await getClassGroupById(params.id);
 
   if (!classGroup) {

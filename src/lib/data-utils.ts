@@ -26,7 +26,11 @@ export async function readData<T>(filename: string): Promise<T[]> {
       return [];
     }
 
-    return parsedData as T[];
+    // Filter out null, undefined, or non-object items from the array.
+    // This helps prevent TypeErrors if the array contains malformed entries.
+    const validItems = parsedData.filter(item => item !== null && typeof item === 'object');
+
+    return validItems as T[]; // This is still a type assertion, but the data is cleaner.
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
@@ -38,6 +42,8 @@ export async function readData<T>(filename: string): Promise<T[]> {
       return [];
     }
     console.error(`Error reading or parsing data from ${filename}:`, nodeError.message);
+    // In case of JSON parsing errors or other read errors, return empty array
+    // and log the error.
     return [];
   }
 }
