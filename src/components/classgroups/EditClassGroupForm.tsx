@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -34,7 +33,10 @@ import type { ClassGroup, ClassGroupShift, DayOfWeek } from '@/types';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { required_error: "Selecione um turno.", invalid_type_error: "Turno inválido." }),
+  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], {
+    required_error: "Selecione um turno.",
+    invalid_type_error: "Turno inválido.",
+  }),
   classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
@@ -59,41 +61,26 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     },
   });
 
-  async function onSubmit(values: EditClassGroupFormValues) {
+  const onSubmit = async (values: EditClassGroupFormValues) => {
     setIsPending(true);
     const result = await updateClassGroup(classGroup.id, values);
     setIsPending(false);
 
     if (result.success) {
       toast({
-        title: 'Sucesso!',
-        description: result.message,
+        title: 'Turma atualizada!',
+        description: result.message || 'A turma foi editada com sucesso.',
       });
       router.push('/classgroups');
+      router.refresh();
     } else {
-      if (result.errors) {
-        Object.entries(result.errors).forEach(([field, errors]) => {
-          if (errors) {
-            form.setError(field as keyof EditClassGroupFormValues, {
-              type: 'manual',
-              message: Array.isArray(errors) ? errors.join(', ') : String(errors),
-            });
-          }
-        });
-         toast({
-          title: 'Erro de Validação',
-          description: "Por favor, corrija os campos destacados.",
-          variant: 'destructive',
-        });
-      } else {
-         toast({
-          title: 'Erro ao atualizar turma',
-          description: result.message || 'Ocorreu um erro inesperado.',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Erro ao atualizar',
+        description: result.message || 'Verifique os dados ou tente novamente.',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -105,95 +92,69 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
             <FormItem>
               <FormLabel>Nome da Turma</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: ADS 2024.1 - A" {...field} />
+                <Input placeholder="Ex: 3º Técnico em Farmácia" {...field} />
               </FormControl>
-              <FormDescription>
-                O nome que identificará esta turma.
-              </FormDescription>
+              <FormDescription>Identifique a turma com um nome claro.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="shift"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Turno</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o turno" />
+                    <SelectValue placeholder="Selecione um turno" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {CLASS_GROUP_SHIFTS.map((shift) => (
-                    <SelectItem key={shift} value={shift}>
-                      {shift}
-                    </SelectItem>
+                  {CLASS_GROUP_SHIFTS.map(shift => (
+                    <SelectItem key={shift} value={shift}>{shift}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>
-                O período em que as aulas da turma ocorrerão.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="classDays"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
-              <div className="mb-4">
-                <FormLabel className="text-base">Dias de Aula</FormLabel>
-                <FormDescription>
-                  Selecione os dias da semana em que haverá aula para esta turma.
-                </FormDescription>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {DAYS_OF_WEEK.map((day) => (
-                <FormField
-                  key={day}
-                  control={form.control}
-                  name="classDays"
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={day}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(day)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...(field.value || []), day])
-                                : field.onChange(
-                                    (field.value || []).filter(
-                                      (value) => value !== day
-                                    )
-                                  )
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          {day}
-                        </FormLabel>
-                      </FormItem>
-                    )
-                  }}
-                />
-              ))}
+              <FormLabel>Dias da Semana</FormLabel>
+              <div className="flex flex-wrap gap-3">
+                {DAYS_OF_WEEK.map(day => (
+                  <FormControl key={day}>
+                    <label className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={field.value.includes(day)}
+                        onCheckedChange={checked => {
+                          const newDays = checked
+                            ? [...field.value, day]
+                            : field.value.filter(d => d !== day);
+                          field.onChange(newDays);
+                        }}
+                      />
+                      <span>{day}</span>
+                    </label>
+                  </FormControl>
+                ))}
               </div>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <div className="flex justify-end">
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Salvando..." : (
+            {isPending ? 'Salvando...' : (
               <>
                 <Save className="mr-2 h-4 w-4" />
                 Salvar Alterações

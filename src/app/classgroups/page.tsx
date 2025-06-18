@@ -7,7 +7,7 @@ import { getClassGroups } from '@/lib/actions/classgroups';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import type { ClassGroup, Classroom } from '@/types';
 import ClassGroupsTable from '@/components/classgroups/ClassGroupsTable';
-
+import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm';
 export default async function ClassGroupsPage() {
   const classGroups = await getClassGroups();
   const classrooms = await getClassrooms();
