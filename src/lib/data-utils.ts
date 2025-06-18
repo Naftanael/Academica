@@ -2,6 +2,22 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+// IMPORTANT: The current implementation uses the Node.js 'fs' module to read and write
+// JSON files directly from the filesystem. This approach is suitable for:
+//  - Local development.
+//  - Scenarios where data files are bundled with the application deployment (e.g., Firebase App Hosting
+//    if these files are treated as read-only or are managed via the deployment process itself).
+//
+// For scalable production environments, especially when using serverless functions
+// (like Firebase Functions) which may have read-only or ephemeral filesystems,
+// this 'fs'-based approach for WRITING data will NOT work as expected for persistent data storage
+// that needs to be shared across instances or invocations.
+//
+// FUTURE MIGRATION TO FIRESTORE: For a robust and scalable backend with Firebase,
+// these data utility functions (readData, writeData) would need to be refactored
+// to interact with a database like Cloud Firestore instead of the local filesystem.
+// The current file-based system serves as a placeholder for such a database.
+
 // Determine data directory, allowing override from environment variable
 const defaultDataPath = path.join(process.cwd(), 'src', 'data');
 const dataDirFromEnv = process.env.DATA_DIR;
