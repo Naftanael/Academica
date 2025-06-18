@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/tooltip";
 import * as React from 'react';
 
-function getCurrentShift(hour: number): PeriodOfDay {
+function getCurrentShift(hour: number | null): PeriodOfDay | null {
+  if (hour === null) return null;
   if (hour >= 6 && hour < 12) {
     return 'Manhã';
   } else if (hour >= 12 && hour < 18) {
@@ -35,20 +36,83 @@ interface ClassroomsDisplayProps {
 }
 
 export default function ClassroomsDisplay({ classrooms, classGroups }: ClassroomsDisplayProps) {
-  const [currentHour, setCurrentHour] = React.useState<number>(new Date().getHours());
-  const [currentDayIndex, setCurrentDayIndex] = React.useState<number>(new Date().getDay());
+  const [currentHour, setCurrentHour] = React.useState<number | null>(null);
+  const [currentDayIndex, setCurrentDayIndex] = React.useState<number | null>(null);
 
   React.useEffect(() => {
+    const now = new Date();
+    setCurrentHour(now.getHours());
+    setCurrentDayIndex(now.getDay());
+
     const timer = setInterval(() => {
       const now = new Date();
       setCurrentHour(now.getHours());
       setCurrentDayIndex(now.getDay());
     }, 60000); // Update every minute
     return () => clearInterval(timer);
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on mount (client-side)
 
   const currentShift = getCurrentShift(currentHour);
-  const currentDayName = JS_DAYS_OF_WEEK_MAP_TO_PT[currentDayIndex];
+  const currentDayName = currentDayIndex !== null ? JS_DAYS_OF_WEEK_MAP_TO_PT[currentDayIndex] : null;
+
+  if (currentHour === null || currentDayIndex === null || !currentShift || !currentDayName) {
+    // Render a loading state or placeholder until client-side hydration sets the time
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {classrooms.map((room: Classroom) => (
+                 <Card key={room.id} className={cn("shadow-lg rounded-lg flex flex-col", room.isUnderMaintenance && "border-amber-500 border-2 bg-amber-50 dark:bg-amber-900/30")}>
+                    <CardHeader className="pb-4">
+                        <div className="flex justify-between items-start gap-2">
+                            <CardTitle className="font-headline text-xl text-foreground break-words">
+                            {room.name}
+                            </CardTitle>
+                            <div className="flex-shrink-0 space-x-1">
+                                <EditClassroomButton classroomId={room.id} className="h-8 w-8 hover:bg-accent" />
+                                <DeleteClassroomButton classroomId={room.id} className="h-8 w-8 hover:bg-destructive/10 text-destructive hover:text-destructive" />
+                            </div>
+                        </div>
+                        <CardDescription>
+                            Capacidade: {room.capacity ?? 'N/A'}
+                        </CardDescription>
+                         {room.isUnderMaintenance && (
+                            <>
+                            <Badge variant="destructive" className="mt-2 bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600">
+                                <Wrench className="mr-2 h-3.5 w-3.5" />
+                                Em Manutenção
+                            </Badge>
+                            </>
+                        )}
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                         <div className="border-t pt-4">
+                            <p className="text-sm text-muted-foreground">Carregando status da sala...</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+            {classrooms.length === 0 && (
+                <Card className="shadow-lg rounded-lg md:col-span-2 lg:col-span-3">
+                    <CardContent>
+                        <div className="text-center text-muted-foreground py-12">
+                            <School className="mx-auto h-16 w-16 mb-6 text-primary" />
+                            <h3 className="text-xl font-semibold mb-2 text-foreground">Nenhuma sala de aula cadastrada.</h3>
+                            <p className="mb-6">
+                                Comece cadastrando a primeira sala para sua instituição.
+                            </p>
+                            <Button asChild variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                                <Link href="/classrooms/new">
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Cadastrar Primeira Sala
+                                </Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    );
+  }
+
 
   return (
     <TooltipProvider>
@@ -76,8 +140,8 @@ export default function ClassroomsDisplay({ classrooms, classGroups }: Classroom
             const occupyingGroup = !room.isUnderMaintenance ? classGroups.find(cg =>
               cg.assignedClassroomId === room.id &&
               cg.status === 'Em Andamento' &&
-              cg.classDays.includes(currentDayName as DayOfWeek) &&
-              cg.shift === currentShift
+              Array.isArray(cg.classDays) && cg.classDays.includes(currentDayName as DayOfWeek) && // currentDayName is now guaranteed to be DayOfWeek or null
+              cg.shift === currentShift // currentShift is also guaranteed
             ) : undefined;
 
             return (
