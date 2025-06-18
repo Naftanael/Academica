@@ -1,4 +1,3 @@
-// src/app/classgroups/[id]/edit/page.tsx
 
 import { getClassroomById } from '@/lib/actions/classrooms';
 import PageHeader from '@/components/shared/PageHeader';
@@ -8,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW';
 
-export default async function EditClassroomPage({
+export default async function Page({
   params,
 }: {
   params: { id: string };

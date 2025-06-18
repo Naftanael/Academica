@@ -24,8 +24,12 @@ export default async function TvDisplayPage() {
 
   const activeClassGroups = allClassGroups.filter(cg => {
     // Ensure cg is a valid object with essential properties before proceeding
-    if (!cg || typeof cg.status !== 'string' || typeof cg.shift !== 'string') {
-      return false; // Skip malformed or incomplete class group objects
+    if (!cg || typeof cg !== 'object' || cg === null) {
+        return false;
+    }
+    if (typeof cg.status !== 'string' || typeof cg.shift !== 'string') {
+      console.warn(`TV Display: Skipping class group with missing/invalid status or shift: ${cg.id}`);
+      return false; 
     }
 
     if (cg.status !== 'Em Andamento' || cg.shift !== currentShift) {
@@ -47,6 +51,7 @@ export default async function TvDisplayPage() {
     .map(group => {
       // Ensure group is a valid object with essential properties for display
       if (!group || typeof group.id !== 'string' || typeof group.name !== 'string' || typeof group.shift !== 'string') {
+        console.warn(`TV Display: Skipping class group with missing/invalid id, name, or shift for display: ${JSON.stringify(group)}`);
         return null; // Mark as invalid to be filtered out
       }
       const classroom = allClassrooms.find(room => room?.id === group.assignedClassroomId);
@@ -54,7 +59,7 @@ export default async function TvDisplayPage() {
         id: group.id,
         groupName: group.name,
         shift: group.shift as ClassGroupShift, // Type assertion after validation
-        classroomName: classroom?.name ?? null, // Safely access classroom.name, provide null if not found or name is missing
+        classroomName: (classroom && typeof classroom.name === 'string') ? classroom.name : null,
       };
     })
     .filter(item => item !== null) as TvDisplayInfo[]; // Filter out any null entries from malformed groups
