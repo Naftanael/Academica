@@ -18,29 +18,19 @@ export async function readData<T>(filename: string): Promise<T[]> {
 
     if (!Array.isArray(parsedData)) {
       // Log this specific case: valid JSON, but not an array.
-      console.warn(`Data in ${filename} is valid JSON but not an array. Content: ${JSON.stringify(parsedData)}. Attempting to overwrite with an empty array.`);
-      try {
-        await writeData<T>(filename, []); // Attempt to fix the file
-      } catch (writeError) {
-        console.error(`Error attempting to overwrite malformed (non-array) file ${filename}:`, (writeError as Error).message);
-        // Still return [] to allow the app to proceed, albeit with a warning about the failed write.
-      }
+      // Removed the attempt to overwrite the file here.
+      console.warn(`Data in ${filename} is valid JSON but not an array. Content: ${JSON.stringify(parsedData)}. Returning empty array.`);
       return []; // Return empty array as the content was not the expected array.
     }
 
     // Filter out null, undefined, or non-object items from the array if T is expected to be an array of objects.
-    // This is a basic sanity check. For more complex object validation, schemas (e.g., Zod) should be used by the caller.
     const validItems = parsedData.filter(item => item !== null && typeof item === 'object');
     
-    // If you expect an array of primitives (e.g., string[], number[]), this filter might be too aggressive.
-    // However, for this project, T is typically an array of objects (Classroom[], ClassGroup[], etc.).
-    // If T could be array of primitives, this filtering logic would need adjustment or removal.
     if (validItems.length !== parsedData.length) {
         // console.warn(`Filtered out non-object or null items from ${filename}. Original count: ${parsedData.length}, Valid count: ${validItems.length}`);
     }
 
-
-    return validItems as T[]; // Assumes T is an array of objects.
+    return validItems as T[];
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
@@ -49,7 +39,6 @@ export async function readData<T>(filename: string): Promise<T[]> {
         await writeData<T>(filename, []);
       } catch (writeError) {
         console.error(`Error creating initial data file ${filename} after ENOENT:`, (writeError as Error).message);
-        // Still return [] to allow the app to proceed.
       }
       return [];
     }
@@ -73,3 +62,4 @@ export async function writeData<T>(filename: string, data: T[]): Promise<void> {
 export function generateId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`;
 }
+
