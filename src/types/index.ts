@@ -19,13 +19,13 @@ export interface Course { // Este é o tipo para "Disciplinas"
 }
 
 export type ClassGroupStatus = 'Planejada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
-export type ClassGroupShift = 'Manhã' | 'Tarde' | 'Noite';
+// ClassGroupShift was identical to PeriodOfDay, consolidating to PeriodOfDay.
 
 export interface ClassGroup {
   id: string;
   name: string;
   year: number;
-  shift: ClassGroupShift;
+  shift: PeriodOfDay; // Changed from ClassGroupShift
   status: ClassGroupStatus;
   startDate: string; // ISO Date string
   endDate: string; // ISO Date string

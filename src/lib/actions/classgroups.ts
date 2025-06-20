@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { CLASS_GROUP_SHIFTS, CLASS_GROUP_STATUSES, DAYS_OF_WEEK } from '@/lib/constants';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassGroup, ClassGroupShift, ClassGroupStatus, DayOfWeek } from '@/types';
+import type { ClassGroup, ClassGroupStatus, DayOfWeek, PeriodOfDay } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
 const classGroupFormSchema = z.object({
@@ -39,7 +39,7 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     const newClassGroup: ClassGroup = {
       id: generateId(),
       name: validatedValues.name,
-      shift: validatedValues.shift as ClassGroupShift,
+      shift: validatedValues.shift as PeriodOfDay, // Updated type
       classDays: validatedValues.classDays as DayOfWeek[],
       year: validatedValues.year || now.getFullYear(),
       status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
@@ -80,7 +80,7 @@ export async function updateClassGroup(id: string, values: ClassGroupFormValues)
     classGroups[classGroupIndex] = {
       ...existingClassGroup,
       name: validatedValues.name,
-      shift: validatedValues.shift as ClassGroupShift,
+      shift: validatedValues.shift as PeriodOfDay, // Updated type
       classDays: validatedValues.classDays as DayOfWeek[],
       // Preserve other fields not in the form like status, year, dates, assignedClassroomId
     };
