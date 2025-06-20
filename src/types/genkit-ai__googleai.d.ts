@@ -1,13 +1,15 @@
 // src/types/genkit-ai__googleai.d.ts
+import type { PluginOption } from './genkit'; // Import from our local genkit.d.ts stub
+
 declare module '@genkit-ai/googleai' {
-    import type { PluginOption } from 'genkit';
-    /** Ajuste os tipos conforme sua necessidade real */
-    export function googleAI(options?: GoogleAIOptions): PluginOption;
-    export interface GoogleAIOptions {
-      model?: string;
-      skipFlows?: string[];
-      disableNextFlows?: boolean;
-      flows?: any[];
-    }
+  export interface GoogleAIOptions {
+    model?: string;
+    apiVersion?: string; // Example, if this option exists
+    apiKey?: string;     // Example
+    disableNextFlows?: boolean;
+    skipFlows?: string[];
+    flows?: any[];
+    // Add other actual options used by the googleAI plugin
   }
-  
+  export function googleAI(opts?: GoogleAIOptions): PluginOption;
+}
