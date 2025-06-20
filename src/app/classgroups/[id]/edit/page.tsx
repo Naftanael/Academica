@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
+import type { ClassGroup } from '@/types';
 
-export default async function Page({
+export default async function EditClassGroupPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const classGroup = await getClassGroupById(params.id);
+  const classGroup: ClassGroup | undefined = await getClassGroupById(params.id);
 
   if (!classGroup) {
     return (

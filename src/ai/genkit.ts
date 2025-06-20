@@ -8,9 +8,8 @@ export const ai = genkit({
     googleAI({
       // ⚠️ Impede que o plugin gere flows de rota que injetam PageProps
       disableNextFlows: true,
-      skipFlows: ['*'], // Alternatively, target specific flows like 'next-page-props', 'next-api-props'
-      flows: [] 
+      skipFlows: ['*'], // Impede a geração de todos os flows nomeados
+      flows: [] // Garante que nenhum flow seja explicitamente definido aqui pelo plugin
     })
   ],
 });
-
