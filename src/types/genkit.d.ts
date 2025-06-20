@@ -1,3 +1,4 @@
+
 // src/types/genkit.d.ts
 
 // Define a minimal PluginOption locally to avoid issues with the actual 'genkit' package's types
