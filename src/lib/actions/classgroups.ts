@@ -8,16 +8,29 @@ import { readData, writeData, generateId } from '@/lib/data-utils';
 import type { ClassGroup, ClassGroupStatus, DayOfWeek, PeriodOfDay } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
+// Updated schema to directly use the imported constants for enums
 const classGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { required_error: "Selecione um turno.", invalid_type_error: "Turno inválido." }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
+  shift: z.enum(CLASS_GROUP_SHIFTS, { // Directly use CLASS_GROUP_SHIFTS
+    required_error: "Selecione um turno.",
+    invalid_type_error: "Turno inválido.",
+  }),
+  classDays: z.array(z.enum(DAYS_OF_WEEK)) // Directly use DAYS_OF_WEEK
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  year: z.number().optional(),
+  year: z.coerce.number({invalid_type_error: "Ano deve ser um número."}).optional(), // Added coerce for year
   status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  startDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de início inválida."}),
+  endDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de término inválida."}),
+}).refine(data => {
+  if (data.startDate && data.endDate) {
+    return new Date(data.startDate) <= new Date(data.endDate);
+  }
+  return true;
+}, {
+  message: "A data de início não pode ser posterior à data de término.",
+  path: ["endDate"],
 });
+
 
 export type ClassGroupFormValues = z.infer<typeof classGroupFormSchema>;
 
@@ -39,8 +52,8 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     const newClassGroup: ClassGroup = {
       id: generateId(),
       name: validatedValues.name,
-      shift: validatedValues.shift as PeriodOfDay, // Updated type
-      classDays: validatedValues.classDays as DayOfWeek[],
+      shift: validatedValues.shift, // Type is now PeriodOfDay
+      classDays: validatedValues.classDays, // Type is now DayOfWeek[]
       year: validatedValues.year || now.getFullYear(),
       status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
       startDate: validatedValues.startDate || formatISO(now),
@@ -68,6 +81,8 @@ export async function createClassGroup(values: ClassGroupFormValues) {
 
 export async function updateClassGroup(id: string, values: ClassGroupFormValues) {
   try {
+    // For update, we might use a slightly different schema or ensure all fields are present
+    // For now, using the same schema, ensure that optional fields are handled correctly if not provided
     const validatedValues = classGroupFormSchema.parse(values);
     const classGroups = await readData<ClassGroup>('classgroups.json');
     const classGroupIndex = classGroups.findIndex(cg => cg.id === id);
@@ -80,9 +95,13 @@ export async function updateClassGroup(id: string, values: ClassGroupFormValues)
     classGroups[classGroupIndex] = {
       ...existingClassGroup,
       name: validatedValues.name,
-      shift: validatedValues.shift as PeriodOfDay, // Updated type
-      classDays: validatedValues.classDays as DayOfWeek[],
-      // Preserve other fields not in the form like status, year, dates, assignedClassroomId
+      shift: validatedValues.shift, // Type is now PeriodOfDay
+      classDays: validatedValues.classDays, // Type is now DayOfWeek[]
+      year: validatedValues.year ?? existingClassGroup.year,
+      status: (validatedValues.status ?? existingClassGroup.status) as ClassGroupStatus,
+      startDate: validatedValues.startDate ?? existingClassGroup.startDate,
+      endDate: validatedValues.endDate ?? existingClassGroup.endDate,
+      // assignedClassroomId is not part of this form, preserve existing
     };
 
     await writeData<ClassGroup>('classgroups.json', classGroups);
