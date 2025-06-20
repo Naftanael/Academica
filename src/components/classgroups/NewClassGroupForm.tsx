@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -170,18 +169,22 @@ export default function NewClassGroupForm() {
         <FormField
           control={form.control}
           name="classDays"
-          render={() => ( // field is not directly used here as Checkbox group is custom
+          render={() => (
             <FormItem>
               <FormLabel>Dias da Semana</FormLabel>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {DAYS_OF_WEEK.map(day => (
+              <FormDescription>Selecione os dias em que a turma terá aula.</FormDescription>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-2 pt-2">
+                {DAYS_OF_WEEK.map((day) => (
                   <FormField
                     key={day}
                     control={form.control}
                     name="classDays"
                     render={({ field }) => {
                       return (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormItem
+                          key={day}
+                          className="flex flex-row items-start space-x-2 space-y-0"
+                        >
                           <FormControl>
                             <Checkbox
                               checked={field.value?.includes(day)}
@@ -192,15 +195,15 @@ export default function NewClassGroupForm() {
                                       (field.value || []).filter(
                                         (value) => value !== day
                                       )
-                                    )
+                                    );
                               }}
                             />
                           </FormControl>
-                          <FormLabel className="font-normal">
+                          <FormLabel className="font-normal text-sm leading-tight">
                             {day}
                           </FormLabel>
                         </FormItem>
-                      )
+                      );
                     }}
                   />
                 ))}
@@ -354,3 +357,4 @@ export default function NewClassGroupForm() {
     </Form>
   );
 }
+
