@@ -29,15 +29,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { updateClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
-import type { ClassGroup, ClassGroupShift, DayOfWeek } from '@/types';
+import type { ClassGroup, PeriodOfDay, DayOfWeek } from '@/types';
 
+// Use CLASS_GROUP_SHIFTS and DAYS_OF_WEEK directly for z.enum
+// This allows Zod to infer the literal union types for shift and classDays elements.
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], {
+  shift: z.enum(CLASS_GROUP_SHIFTS, { // Changed from `CLASS_GROUP_SHIFTS as [string, ...string[]]`
     required_error: "Selecione um turno.",
     invalid_type_error: "Turno inválido.",
   }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
+  classDays: z.array(z.enum(DAYS_OF_WEEK)) // Changed from `z.enum(DAYS_OF_WEEK as [string, ...string[]])`
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
 
@@ -56,13 +58,17 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: classGroup.name,
-      shift: classGroup.shift,
-      classDays: classGroup.classDays || [],
+      shift: classGroup.shift, // classGroup.shift is PeriodOfDay, formSchema.shift is now PeriodOfDay
+      classDays: classGroup.classDays || [], // classGroup.classDays is DayOfWeek[], formSchema.classDays is DayOfWeek[]
     },
   });
 
   const onSubmit = async (values: EditClassGroupFormValues) => {
     setIsPending(true);
+    // The `values.shift` will be PeriodOfDay and `values.classDays` will be DayOfWeek[]
+    // The server action updateClassGroup expects ClassGroupFormValues where these might be strings
+    // if its schema is still using `as [string, ...string[]]`.
+    // However, string values (like 'Manhã') are compatible where PeriodOfDay is expected.
     const result = await updateClassGroup(classGroup.id, values);
     setIsPending(false);
 
@@ -113,8 +119,8 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {CLASS_GROUP_SHIFTS.map(shift => (
-                    <SelectItem key={shift} value={shift}>{shift}</SelectItem>
+                  {CLASS_GROUP_SHIFTS.map(shiftValue => ( // shiftValue is PeriodOfDay
+                    <SelectItem key={shiftValue} value={shiftValue}>{shiftValue}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -130,7 +136,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
             <FormItem>
               <FormLabel>Dias da Semana</FormLabel>
               <div className="flex flex-wrap gap-3">
-                {DAYS_OF_WEEK.map(day => (
+                {DAYS_OF_WEEK.map(day => ( // day is DayOfWeek
                   <FormControl key={day}>
                     <label className="flex items-center space-x-2">
                       <Checkbox
