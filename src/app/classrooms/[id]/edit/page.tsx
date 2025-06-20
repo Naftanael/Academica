@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW';
+import type { Classroom } from '@/types';
 
-export default async function Page({
+export default async function EditClassroomPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const classroom = await getClassroomById(params.id);
+  const classroom: Classroom | undefined = await getClassroomById(params.id);
 
   if (!classroom) {
     return (

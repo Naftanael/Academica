@@ -46,13 +46,13 @@ export async function readData<T>(filename: string): Promise<T[]> {
     try {
       parsedData = JSON.parse(jsonData);
     } catch (parseError) {
-      console.error(`[data-utils] Failed to parse JSON from ${filename} at ${filePath}. Error: ${(parseError as Error).message}. File content (first 500 chars): ${jsonData.substring(0,500)}`);
+      console.error(`[data-utils] Failed to parse JSON from file "${filename}" at path "${filePath}". Error: ${(parseError as Error).message}. File content (first 500 chars): ${jsonData.substring(0,500)}`);
       return []; // Return empty array if JSON is malformed
     }
-    
+
 
     if (!Array.isArray(parsedData)) {
-      console.warn(`[data-utils] Data in ${filename} at ${filePath} is valid JSON but not an array. Returning empty array. Content type: ${typeof parsedData}`);
+      console.warn(`[data-utils] Data in file "${filename}" at path "${filePath}" is valid JSON but not an array. Content type: ${typeof parsedData}. Returning empty array.`);
       return [];
     }
 
@@ -64,28 +64,28 @@ export async function readData<T>(filename: string): Promise<T[]> {
       }
       return itemIsValid;
     });
-    
+
     if (validItems.length !== initialCount) {
-        console.warn(`[data-utils] Filtered out ${initialCount - validItems.length} non-object or null/undefined items from ${filename}. Original count: ${initialCount}, Valid count: ${validItems.length}`);
+        console.warn(`[data-utils] Filtered out ${initialCount - validItems.length} non-object or null/undefined items from file "${filename}" at path "${filePath}". Original count: ${initialCount}, Valid count: ${validItems.length}`);
     }
     // console.info(`[data-utils] Successfully parsed data from ${filename}. Found ${validItems.length} valid items.`);
     return validItems as T[];
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
-      console.warn(`[data-utils] File ${filename} not found at ${filePath}. Attempting to create it with an empty array.`);
+      console.warn(`[data-utils] File "${filename}" not found at path "${filePath}". Attempting to create it with an empty array.`);
       try {
         // Ensure directory exists before attempting to write a new file
         await fs.mkdir(dataDir, { recursive: true });
         await writeData<T>(filename, []); // This will call writeData which also logs its success/failure
-        console.info(`[data-utils] Successfully created empty file: ${filename} at ${filePath}`);
+        console.info(`[data-utils] Successfully created empty file: "${filename}" at path "${filePath}"`);
       } catch (writeError) {
-        console.error(`[data-utils] Critical error: Failed to create initial data file ${filename} at ${filePath} after ENOENT. Error:`, (writeError as Error).message, (writeError as Error).stack);
+        console.error(`[data-utils] Critical error: Failed to create initial data file "${filename}" at path "${filePath}" after ENOENT. Error:`, (writeError as Error).message, (writeError as Error).stack);
       }
       return [];
     }
     // Log other types of errors (permissions, etc.)
-    console.error(`[data-utils] Error reading data from ${filename} at ${filePath}:`, nodeError.message, nodeError.stack);
+    console.error(`[data-utils] Error reading data from file "${filename}" at path "${filePath}":`, nodeError.message, nodeError.stack);
     return []; // Return empty array on other read errors
   }
 }
@@ -98,10 +98,10 @@ export async function writeData<T>(filename: string, data: T[]): Promise<void> {
     await fs.mkdir(dataDir, { recursive: true }); // Ensure data directory exists
     const jsonData = JSON.stringify(data, null, 2);
     await fs.writeFile(filePath, jsonData, 'utf-8');
-    console.info(`[data-utils] Successfully wrote ${data.length} items to ${filename} at ${filePath}.`);
+    console.info(`[data-utils] Successfully wrote ${data.length} items to file "${filename}" at path "${filePath}".`);
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
-    console.error(`[data-utils] Error writing data to ${filename} at ${filePath}:`, nodeError.message, nodeError.stack);
+    console.error(`[data-utils] Error writing data to file "${filename}" at path "${filePath}":`, nodeError.message, nodeError.stack);
     throw error; // Re-throw to allow calling function to handle it, e.g., return a server error response
   }
 }
