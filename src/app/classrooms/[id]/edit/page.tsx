@@ -5,7 +5,7 @@ import { School, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW'; // Path kept as per current working state
+import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW';
 
 export default async function Page({
   params,
@@ -59,4 +59,3 @@ export default async function Page({
     </>
   );
 }
-
