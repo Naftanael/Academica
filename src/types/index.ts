@@ -7,25 +7,24 @@ export interface Classroom {
   name: string;
   capacity?: number;
   resources: string[];
-  isLab?: boolean; // Helper to identify labs easily
-  isUnderMaintenance?: boolean; // Indica se a sala está em manutenção
-  maintenanceReason?: string; // Motivo da manutenção
+  isLab?: boolean;
+  isUnderMaintenance?: boolean;
+  maintenanceReason?: string;
 }
 
-export interface Course { // Este é o tipo para "Disciplinas"
+export interface Course {
   id: string;
   name: string;
-  workload: number; // Quantidade de aulas
+  workload: number;
 }
 
 export type ClassGroupStatus = 'Planejada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
-// ClassGroupShift was identical to PeriodOfDay, consolidating to PeriodOfDay.
 
 export interface ClassGroup {
   id: string;
   name: string;
   year: number;
-  shift: PeriodOfDay; // Changed from ClassGroupShift
+  shift: PeriodOfDay;
   status: ClassGroupStatus;
   startDate: string; // ISO Date string
   endDate: string; // ISO Date string
@@ -33,33 +32,50 @@ export interface ClassGroup {
   classDays: DayOfWeek[];
 }
 
-// Represents recurring reservations made by a specific class group for a room
 export interface ClassroomRecurringReservation {
   id: string;
   classGroupId: string;
   classroomId: string;
   startDate: string; // ISO Date string YYYY-MM-DD
   endDate: string; // ISO Date string YYYY-MM-DD
-  shift: PeriodOfDay; 
+  shift: PeriodOfDay;
   purpose: string;
 }
 
-// Represents ad-hoc, single instance event/room bookings
 export interface EventReservation {
   id: string;
   classroomId: string;
-  title: string; // Name of the event
+  title: string;
   date: string; // ISO Date string YYYY-MM-DD
   startTime: string; // HH:mm format
   endTime: string; // HH:mm format
-  reservedBy: string; // Person or department reserving
-  details?: string; // Optional additional details
+  reservedBy: string;
+  details?: string;
 }
-
 
 export interface DashboardStats {
   totalClassGroups: number;
   activeClassGroups: number;
   plannedClassGroups: number;
   totalClassrooms: number;
+}
+
+// New types for Dashboard
+export interface ClassGroupWithDates extends ClassGroup {
+  formattedStartDate: string;
+  formattedEndDate: string;
+  nearEnd: boolean;
+}
+
+export interface DailyOccupancy {
+  day: string; // Abbreviation e.g. "Seg"
+  day_full: string; // Full name e.g. "Segunda-feira"
+  turmas: number;
+}
+
+export interface DashboardData {
+  stats: DashboardStats;
+  activeClassGroups: ClassGroupWithDates[];
+  currentDate: Date;
+  classroomOccupancyChartData: DailyOccupancy[];
 }

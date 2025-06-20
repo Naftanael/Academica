@@ -1,28 +1,22 @@
 
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, DashboardStats, Classroom, DayOfWeek } from '@/types'; 
+import type { ClassGroup, DashboardStats, Classroom, DayOfWeek, ClassGroupWithDates, DailyOccupancy, DashboardData } from '@/types';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard, Activity } from 'lucide-react';
 import Link from 'next/link';
-import { format, parseISO, differenceInDays, isValid, isAfter } from 'date-fns'; // Added isAfter
+import { format, parseISO, differenceInDays, isValid, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import ClassroomOccupancyChart from '@/components/dashboard/ClassroomOccupancyChart';
 
-interface DailyOccupancy {
-  day: string; // Abreviação, ex: "Seg"
-  day_full: string; // Nome completo, ex: "Segunda-feira"
-  turmas: number;
-}
-
-async function getDashboardData() {
+async function getDashboardData(): Promise<DashboardData> {
   const classrooms = await readData<Classroom>('classrooms.json');
   const classGroups = await readData<ClassGroup>('classgroups.json');
 
   const currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0); // Normalize current date for accurate day comparisons
+  currentDate.setHours(0, 0, 0, 0);
 
   const activeClassGroupsData = classGroups.filter(cg => cg.status === 'Em Andamento');
   const plannedClassGroups = classGroups.filter(cg => cg.status === 'Planejada');
@@ -34,15 +28,14 @@ async function getDashboardData() {
     totalClassrooms: classrooms.length,
   };
 
-  const detailedActiveClassGroups = activeClassGroupsData.map(cg => {
+  const detailedActiveClassGroups: ClassGroupWithDates[] = activeClassGroupsData.map(cg => {
     let parsedStartDate: Date | null = null;
     let parsedEndDate: Date | null = null;
     let daysRemaining: number | undefined = undefined;
     let formattedStartDate = 'Data Início Inválida';
     let formattedEndDate = 'Data Fim Inválida';
-    let nearEnd = false; // Default to false
+    let nearEnd = false;
 
-    // Validate and parse start date
     if (typeof cg.startDate === 'string') {
         const tempStartDate = parseISO(cg.startDate);
         if (isValid(tempStartDate)) {
@@ -51,7 +44,6 @@ async function getDashboardData() {
         }
     }
 
-    // Validate and parse end date
     if (typeof cg.endDate === 'string') {
         const tempEndDate = parseISO(cg.endDate);
         if (isValid(tempEndDate)) {
@@ -60,19 +52,10 @@ async function getDashboardData() {
         }
     }
 
-    // Calculate daysRemaining and nearEnd only if both dates are valid
     if (parsedStartDate && parsedEndDate) {
-        // Ensure startDate is not after endDate before calculating difference
         if (!isAfter(parsedStartDate, parsedEndDate)) {
             daysRemaining = differenceInDays(parsedEndDate, currentDate);
-            // A turma está "perto do fim" se termina nos próximos 7 dias (inclusive hoje)
-            // E não já terminou (daysRemaining >= 0)
             nearEnd = daysRemaining !== undefined && daysRemaining <= 7 && daysRemaining >= 0;
-        } else {
-            // Handle case where start date is after end date if necessary
-            // For now, it will remain 'Data Início Inválida' or 'Data Fim Inválida' if one is invalid
-            // or formatted dates if both are valid but in wrong order.
-            // daysRemaining will be undefined, nearEnd will be false.
         }
     }
 
@@ -84,24 +67,15 @@ async function getDashboardData() {
     };
   });
 
-  // Calculate daily classroom occupancy
   const classroomMap = new Map(classrooms.map(room => [room.id, room]));
   const dailyOccupancyCounts: { [key in DayOfWeek]: number } = {
-    'Segunda': 0,
-    'Terça': 0,
-    'Quarta': 0,
-    'Quinta': 0,
-    'Sexta': 0,
-    'Sábado': 0,
-    'Domingo': 0,
+    'Segunda': 0, 'Terça': 0, 'Quarta': 0, 'Quinta': 0, 'Sexta': 0, 'Sábado': 0, 'Domingo': 0,
   };
 
   activeClassGroupsData.forEach(cg => {
     if (cg.assignedClassroomId) {
       const classroom = classroomMap.get(cg.assignedClassroomId);
-      // Count only if classroom exists and is not under maintenance
       if (classroom && !classroom.isUnderMaintenance) {
-        // Ensure classDays is an array before trying to iterate over it
         if (Array.isArray(cg.classDays)) {
           cg.classDays.forEach(day => {
             if (dailyOccupancyCounts[day] !== undefined) {
@@ -114,8 +88,8 @@ async function getDashboardData() {
   });
 
   const classroomOccupancyChartData: DailyOccupancy[] = DAYS_OF_WEEK.map(day => ({
-    day: day.substring(0, 3), // Abbreviated for XAxis label
-    day_full: day, // Full name for Tooltip
+    day: day.substring(0, 3),
+    day_full: day,
     turmas: dailyOccupancyCounts[day],
   }));
 
@@ -124,21 +98,21 @@ async function getDashboardData() {
 
 
 export default async function DashboardPage() {
-  const { stats, activeClassGroups, currentDate, classroomOccupancyChartData } = await getDashboardData();
+  const { stats, activeClassGroups, currentDate, classroomOccupancyChartData }: DashboardData = await getDashboardData();
 
   const statItems = [
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-primary' },
-    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' }, 
-    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-orange-500' }, 
+    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' },
+    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-orange-500' },
     { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-blue-500' },
   ];
 
   return (
     <>
-      <PageHeader 
-        title="Dashboard" 
+      <PageHeader
+        title="Dashboard"
         description={`Bem-vindo(a) ao Painel Academica. Hoje é ${format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`}
-        icon={LayoutDashboard} 
+        icon={LayoutDashboard}
       />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -171,7 +145,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {activeClassGroups.map((cg) => (
+                {activeClassGroups.map((cg: ClassGroupWithDates) => (
                   <Card key={cg.id} className={`shadow-md hover:shadow-lg transition-shadow duration-300 rounded-md ${cg.nearEnd ? 'border-2 border-destructive' : 'border-border'}`}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
