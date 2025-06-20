@@ -1,4 +1,3 @@
-
 // src/types/genkit.d.ts
 
 // Define a minimal PluginOption locally to avoid issues with the actual 'genkit' package's types
@@ -25,27 +24,27 @@ export interface ZodSchema {
 
 
 export interface SchemaDefinition {
-  schema: ZodSchema;
-  description?: string; // Zod descriptions are often part of the schema definition itself via .describe()
+  schema: any; // Loosened from ZodSchema to any
+  description?: string;
   [key: string]: any; 
 }
 
 
 export interface PromptConfig {
   name: string;
-  input?: SchemaDefinition; // Changed from PromptInput to SchemaDefinition
-  output?: SchemaDefinition; // Changed from PromptOutput to SchemaDefinition
+  input?: SchemaDefinition; // Uses loosened SchemaDefinition
+  output?: SchemaDefinition; // Uses loosened SchemaDefinition
   prompt: string; 
-  tools?: any[]; // Define Tool type if needed
-  config?: any; // For safetySettings, etc.
-  system?: string; // For system prompts
+  tools?: any[]; 
+  config?: any; 
+  system?: string; 
   [key: string]: any;
 }
 
 export interface FlowConfig<I, O> {
   name: string;
-  inputSchema: ZodSchema;   
-  outputSchema: ZodSchema;  
+  inputSchema: any;   // Loosened from ZodSchema to any
+  outputSchema: any;  // Loosened from ZodSchema to any
   [key: string]: any; 
 }
 
@@ -64,8 +63,8 @@ export type DefinedFlow<InputType, OutputType> =
 export interface GenkitTool {
   name: string;
   description?: string;
-  inputSchema?: ZodSchema;
-  outputSchema?: ZodSchema;
+  inputSchema?: any; // Loosened from ZodSchema to any
+  outputSchema?: any; // Loosened from ZodSchema to any
   [key: string]: any;
 }
 
@@ -79,29 +78,21 @@ export interface GenkitInstance {
     { stream: AsyncIterable<{text?: string; output?: any; [key: string]: any;}>; response: Promise<{ text: string; output?: any; media?: {url: string}; [key: string]: any; }> };
   defineTool: (config: Omit<GenkitTool, 'call'>, handler: (input: any) => Promise<any>) => GenkitTool;
   defineSchema: <T extends ZodSchema>(name: string, schema: T) => T;
-  // Add any other methods or properties of the 'ai' object that you use
   [key: string]: any; 
 }
 
 export interface GenkitOptions {
   plugins?: PluginOption[];
-  model?: string; // Optional top-level model
+  model?: string; 
 }
 
-// This is the main export from 'genkit' module
 export function genkit(options: GenkitOptions): GenkitInstance;
 
-// If Zod is directly exported or used from 'genkit' itself (e.g. genkit.zod), stub it here.
-// Assuming 'z' is imported from 'genkit' like 'import {z} from "genkit"'
-// This is a simplified Zod stub. In a real scenario, you'd rely on the 'zod' package's own types.
 export const z: {
   object: (shape: Record<string, ZodSchema>) => ZodSchema;
   string: () => ZodSchema;
   number: () => ZodSchema;
   boolean: () => ZodSchema;
   array: (elementSchema: ZodSchema) => ZodSchema;
-  // Add other Zod static methods as needed
   [key: string]: any;
 };
-
-} // End of declare module 'genkit'
