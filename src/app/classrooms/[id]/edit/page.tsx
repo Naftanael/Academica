@@ -8,11 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW';
 import type { Classroom } from '@/types';
 
-export default async function EditClassroomPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+// Definindo a interface de props para a página
+interface EditClassroomPageProps {
+  params: {
+    id: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default async function EditClassroomPage({ params }: EditClassroomPageProps) {
   const classroom: Classroom | undefined = await getClassroomById(params.id);
 
   if (!classroom) {

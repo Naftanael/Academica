@@ -8,11 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 import type { ClassGroup } from '@/types';
 
-export default async function EditClassGroupPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+// Definindo a interface de props para a página
+interface EditClassGroupPageProps {
+  params: {
+    id: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default async function EditClassGroupPage({ params }: EditClassGroupPageProps) {
   const classGroup: ClassGroup | undefined = await getClassGroupById(params.id);
 
   if (!classGroup) {
