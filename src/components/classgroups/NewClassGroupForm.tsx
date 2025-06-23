@@ -36,17 +36,17 @@ import { createClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK, CLASS_GROUP_STATUSES } from '@/lib/constants';
 import type { PeriodOfDay, DayOfWeek, ClassGroupStatus } from '@/types';
 import { cn } from '@/lib/utils';
+import type { CheckedState } from '@radix-ui/react-checkbox';
 
 
 // Schema for the form - can be adapted from the server action or defined here
 // For simplicity, reusing the structure from server action and making year optional.
 const newClassGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, {
+  shift: z.enum(CLASS_GROUP_SHIFTS as [PeriodOfDay, ...PeriodOfDay[]], {
     required_error: "Selecione um turno.",
-    invalid_type_error: "Turno inválido.",
   }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK))
+  classDays: z.array(z.enum(DAYS_OF_WEEK as [DayOfWeek, ...DayOfWeek[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   year: z.coerce.number({ invalid_type_error: "Ano deve ser um número." })
                  .min(new Date().getFullYear() - 10, { message: "Ano muito antigo."})
@@ -172,8 +172,12 @@ export default function NewClassGroupForm() {
           name="classDays"
           render={() => (
             <FormItem>
-              <FormLabel>Dias da Semana</FormLabel>
-              <FormDescription>Selecione os dias em que a turma terá aula.</FormDescription>
+              <div className="mb-4">
+                <FormLabel className="text-base">Dias da Semana</FormLabel>
+                <FormDescription>
+                  Selecione os dias em que a turma terá aula.
+                </FormDescription>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-2 pt-2">
                 {DAYS_OF_WEEK.map((day) => (
                   <FormField
@@ -189,7 +193,7 @@ export default function NewClassGroupForm() {
                           <FormControl>
                             <Checkbox
                               checked={field.value?.includes(day)}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={(checked: CheckedState) => {
                                 return checked
                                   ? field.onChange([...(field.value || []), day])
                                   : field.onChange(
