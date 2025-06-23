@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 import type { ClassGroup } from '@/types';
 
-// Definindo a interface de props para a página
+// Definindo a interface de props para a página de forma explícita
 interface EditClassGroupPageProps {
   params: {
     id: string;

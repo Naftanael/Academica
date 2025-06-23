@@ -29,17 +29,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { updateClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
-import type { ClassGroup, PeriodOfDay, DayOfWeek } from '@/types';
+import type { ClassGroup } from '@/types';
 
-// Use CLASS_GROUP_SHIFTS and DAYS_OF_WEEK directly for z.enum
-// This allows Zod to infer the literal union types for shift and classDays elements.
+// O schema do Zod para validação
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, { // Changed from `CLASS_GROUP_SHIFTS as [string, ...string[]]`
+  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], {
     required_error: "Selecione um turno.",
-    invalid_type_error: "Turno inválido.",
   }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK)) // Changed from `z.enum(DAYS_OF_WEEK as [string, ...string[]])`
+  classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
 
@@ -58,17 +56,13 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: classGroup.name,
-      shift: classGroup.shift, // classGroup.shift is PeriodOfDay, formSchema.shift is now PeriodOfDay
-      classDays: classGroup.classDays || [], // classGroup.classDays is DayOfWeek[], formSchema.classDays is DayOfWeek[]
+      shift: classGroup.shift,
+      classDays: classGroup.classDays || [],
     },
   });
 
   const onSubmit = async (values: EditClassGroupFormValues) => {
     setIsPending(true);
-    // The `values.shift` will be PeriodOfDay and `values.classDays` will be DayOfWeek[]
-    // The server action updateClassGroup expects ClassGroupFormValues where these might be strings
-    // if its schema is still using `as [string, ...string[]]`.
-    // However, string values (like 'Manhã') are compatible where PeriodOfDay is expected.
     const result = await updateClassGroup(classGroup.id, values);
     setIsPending(false);
 
@@ -112,15 +106,15 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
           render={({ field }) => (
             <FormItem>
               <FormLabel>Turno</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um turno" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {CLASS_GROUP_SHIFTS.map(shiftValue => ( // shiftValue is PeriodOfDay
-                    <SelectItem key={shiftValue} value={shiftValue}>{shiftValue}</SelectItem>
+                  {CLASS_GROUP_SHIFTS.map(shift => (
+                    <SelectItem key={shift} value={shift}>{shift}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -132,25 +126,47 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
         <FormField
           control={form.control}
           name="classDays"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
-              <FormLabel>Dias da Semana</FormLabel>
-              <div className="flex flex-wrap gap-3">
-                {DAYS_OF_WEEK.map(day => ( // day is DayOfWeek
-                  <FormControl key={day}>
-                    <label className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={field.value.includes(day)}
-                        onCheckedChange={checked => {
-                          const newDays = checked
-                            ? [...field.value, day]
-                            : field.value.filter(d => d !== day);
-                          field.onChange(newDays);
-                        }}
-                      />
-                      <span>{day}</span>
-                    </label>
-                  </FormControl>
+              <div className="mb-4">
+                <FormLabel className="text-base">Dias da Semana</FormLabel>
+                <FormDescription>
+                  Selecione os dias em que esta turma terá aulas.
+                </FormDescription>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {DAYS_OF_WEEK.map((day) => (
+                  <FormField
+                    key={day}
+                    control={form.control}
+                    name="classDays"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={day}
+                          className="flex flex-row items-center space-x-2 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(day)}
+                              onCheckedChange={(checked: boolean) => { // <-- CORREÇÃO APLICADA AQUI
+                                return checked
+                                  ? field.onChange([...field.value, day])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== day
+                                      )
+                                    );
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal">
+                            {day}
+                          </FormLabel>
+                        </FormItem>
+                      );
+                    }}
+                  />
                 ))}
               </div>
               <FormMessage />

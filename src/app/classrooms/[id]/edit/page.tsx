@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW';
 import type { Classroom } from '@/types';
 
-// Definindo a interface de props para a página
+// Definindo a interface de props para a página de forma explícita
 interface EditClassroomPageProps {
   params: {
     id: string;

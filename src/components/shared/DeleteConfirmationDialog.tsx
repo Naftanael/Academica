@@ -11,13 +11,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import type { ReactNode } from "react";
-import { useState } from "react";
+import * as React from "react";
 
 interface DeleteConfirmationDialogProps {
   onConfirm: () => Promise<void> | void;
-  triggerButton: ReactNode;
+  // CORREÇÃO: Alterado de ReactNode para React.ReactElement para tipagem correta
+  // do botão que é passado como propriedade.
+  triggerButton: React.ReactElement;
   dialogTitle?: string;
   dialogDescription?: string;
   confirmText?: string;
@@ -32,8 +32,8 @@ export function DeleteConfirmationDialog({
   confirmText = "Excluir",
   cancelText = "Cancelar",
 }: DeleteConfirmationDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
 
   const handleConfirm = async () => {
     setIsPending(true);
@@ -41,8 +41,8 @@ export function DeleteConfirmationDialog({
       await onConfirm();
       setIsOpen(false);
     } catch (error) {
-      console.error("Failed to delete:", error);
-      // Optionally show a toast message here
+      console.error("Failed to perform confirm action:", error);
+      // Opcionalmente, mostrar uma mensagem de erro para o utilizador.
     } finally {
       setIsPending(false);
     }
