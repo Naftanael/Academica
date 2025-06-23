@@ -492,4 +492,3 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     </Form>
   );
 }
-

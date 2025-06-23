@@ -366,4 +366,3 @@ export default function RoomAvailabilityDisplay({ initialClassrooms, initialClas
     </TooltipProvider>
   );
 }
-

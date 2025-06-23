@@ -1,3 +1,4 @@
+
 import type { DayOfWeek, PeriodOfDay } from "@/types";
 
 export const DAYS_OF_WEEK: DayOfWeek[] = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];

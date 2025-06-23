@@ -35,4 +35,3 @@ export default function NewRecurringReservationFormClientLoader({
             allRecurringReservations={allRecurringReservations} // Added
           />;
 }
-

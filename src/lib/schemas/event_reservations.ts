@@ -26,4 +26,3 @@ export const eventReservationFormSchema = z.object({
 });
 
 export type EventReservationFormValues = z.infer<typeof eventReservationFormSchema>;
-
