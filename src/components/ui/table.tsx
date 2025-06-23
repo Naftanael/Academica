@@ -55,7 +55,9 @@ const TableRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement>
 >(({ className, children, ...props }, ref) => {
-  // Filter out whitespace-only string children to prevent hydration errors
+  // Filter out whitespace-only string children. This prevents a common Next.js
+  // hydration error where the server renders whitespace text nodes that the client
+  // does not, causing a mismatch.
   const filteredChildren = React.Children.toArray(children).filter(child =>
     !(typeof child === 'string' && child.trim() === '')
   );
