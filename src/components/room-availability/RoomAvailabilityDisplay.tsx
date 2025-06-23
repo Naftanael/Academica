@@ -101,9 +101,18 @@ const getCellContainerClass = (classroomId: string, day: DayOfWeek, displayedCla
 
 
 export default function RoomAvailabilityDisplay({ initialClassrooms, initialClassGroups }: RoomAvailabilityDisplayProps) {
-  const [startDate, setStartDate] = useState<Date | undefined>(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [endDate, setEndDate] = useState<Date | undefined>(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6));
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [displayedClassGroups, setDisplayedClassGroups] = useState<ClassGroup[]>([]);
+
+  useEffect(() => {
+    // This effect runs only on the client, after the initial render.
+    // This avoids hydration mismatch errors with `new Date()`.
+    const initialDate = new Date();
+    const weekStart = startOfWeek(initialDate, { weekStartsOn: 1 });
+    setStartDate(weekStart);
+    setEndDate(addDays(weekStart, 6));
+  }, []); // Empty dependency array ensures this runs once after mount.
 
   const filterClassGroups = React.useCallback(() => {
     if (!startDate || !endDate || !isValid(startDate) || !isValid(endDate)) {
