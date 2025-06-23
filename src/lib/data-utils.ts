@@ -92,7 +92,7 @@ export async function writeData<T>(filename: string, data: T[]): Promise<void> {
     const jsonData = JSON.stringify(data, null, 2);
     await fs.writeFile(filePath, jsonData, 'utf-8');
     // Log success for better traceability.
-    console.info(`[data-utils] Successfully wrote ${data.length} items to file "${filename}" at path "${filePath}".`);
+    // console.info(`[data-utils] Successfully wrote ${data.length} items to file "${filename}" at path "${filePath}".`);
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     console.error(`[data-utils] Error writing data to file "${filename}" at path "${filePath}":`, nodeError.message, nodeError.stack);
