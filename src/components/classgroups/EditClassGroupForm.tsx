@@ -33,7 +33,6 @@ import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
 import type { ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 
-// O schema do Zod para validação
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
   shift: z.enum(CLASS_GROUP_SHIFTS as [PeriodOfDay, ...PeriodOfDay[]], {

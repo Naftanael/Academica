@@ -4,7 +4,7 @@ import { ArrowLeft, UsersRound } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm'; // Corrected import
+import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm';
 
 export default function NewClassGroupPage() {
 

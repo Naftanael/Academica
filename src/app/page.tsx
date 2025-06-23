@@ -37,19 +37,27 @@ async function getDashboardData(): Promise<DashboardData> {
     let nearEnd = false;
 
     if (typeof cg.startDate === 'string') {
+      try {
         const tempStartDate = parseISO(cg.startDate);
         if (isValid(tempStartDate)) {
             parsedStartDate = tempStartDate;
-            formattedStartDate = format(parsedStartDate, 'dd/MM/yyyy');
+            formattedStartDate = format(parsedStartDate, 'dd/MM/yyyy', { locale: ptBR });
         }
+      } catch (e) {
+        console.warn(`Dashboard: Could not parse startDate "${cg.startDate}" for class group ${cg.id}.`, e);
+      }
     }
 
     if (typeof cg.endDate === 'string') {
+      try {
         const tempEndDate = parseISO(cg.endDate);
         if (isValid(tempEndDate)) {
             parsedEndDate = tempEndDate;
-            formattedEndDate = format(parsedEndDate, 'dd/MM/yyyy');
+            formattedEndDate = format(parsedEndDate, 'dd/MM/yyyy', { locale: ptBR });
         }
+      } catch (e) {
+         console.warn(`Dashboard: Could not parse endDate "${cg.endDate}" for class group ${cg.id}.`, e);
+      }
     }
 
     if (parsedStartDate && parsedEndDate) {

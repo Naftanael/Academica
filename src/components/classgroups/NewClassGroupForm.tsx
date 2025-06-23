@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { PlusCircle, Calendar as CalendarIconLucide } from 'lucide-react'; // Renamed to avoid conflict
+import { PlusCircle, Calendar as CalendarIconLucide } from 'lucide-react';
 import { format, formatISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar'; // ShadCN Calendar
+import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { createClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK, CLASS_GROUP_STATUSES } from '@/lib/constants';
@@ -38,9 +38,6 @@ import type { PeriodOfDay, DayOfWeek, ClassGroupStatus } from '@/types';
 import { cn } from '@/lib/utils';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 
-
-// Schema for the form - can be adapted from the server action or defined here
-// For simplicity, reusing the structure from server action and making year optional.
 const newClassGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
   shift: z.enum(CLASS_GROUP_SHIFTS as [PeriodOfDay, ...PeriodOfDay[]], {
@@ -77,18 +74,17 @@ export default function NewClassGroupForm() {
     resolver: zodResolver(newClassGroupFormSchema),
     defaultValues: {
       name: '',
-      shift: undefined, // Let user select
+      shift: undefined,
       classDays: [],
       year: currentYear,
       status: 'Planejada',
       startDate: new Date(),
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Default to one month later
+      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     },
   });
 
   const onSubmit = async (values: NewClassGroupFormValues) => {
     setIsPending(true);
-    // Convert dates to ISO strings before sending to server action
     const submissionValues = {
       ...values,
       startDate: values.startDate ? formatISO(values.startDate) : undefined,

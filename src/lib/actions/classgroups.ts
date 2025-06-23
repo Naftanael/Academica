@@ -8,16 +8,15 @@ import { readData, writeData, generateId } from '@/lib/data-utils';
 import type { ClassGroup, ClassGroupStatus, DayOfWeek, PeriodOfDay } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
-// Updated schema to directly use the imported constants for enums
 const classGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, { // Directly use CLASS_GROUP_SHIFTS
+  shift: z.enum(CLASS_GROUP_SHIFTS, {
     required_error: "Selecione um turno.",
     invalid_type_error: "Turno inválido.",
   }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK)) // Directly use DAYS_OF_WEEK
+  classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  year: z.coerce.number({invalid_type_error: "Ano deve ser um número."}).optional(), // Added coerce for year
+  year: z.coerce.number({invalid_type_error: "Ano deve ser um número."}).optional(),
   status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
   startDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de início inválida."}),
   endDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de término inválida."}),
@@ -32,14 +31,24 @@ const classGroupFormSchema = z.object({
 });
 
 
+const classGroupEditFormSchema = z.object({
+  name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
+  shift: z.enum(CLASS_GROUP_SHIFTS, {
+    required_error: "Selecione um turno.",
+  }),
+  classDays: z.array(z.enum(DAYS_OF_WEEK))
+    .min(1, { message: "Selecione pelo menos um dia da semana." }),
+});
+
 export type ClassGroupFormValues = z.infer<typeof classGroupFormSchema>;
+type ClassGroupEditFormValues = z.infer<typeof classGroupEditFormSchema>;
 
 export async function getClassGroups(): Promise<ClassGroup[]> {
   try {
     return await readData<ClassGroup>('classgroups.json');
   } catch (error) {
     console.error('Failed to get class groups:', error);
-    return []; // Return empty array on error to prevent breaking UI
+    return [];
   }
 }
 
@@ -52,8 +61,8 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     const newClassGroup: ClassGroup = {
       id: generateId(),
       name: validatedValues.name,
-      shift: validatedValues.shift, // Type is now PeriodOfDay
-      classDays: validatedValues.classDays, // Type is now DayOfWeek[]
+      shift: validatedValues.shift,
+      classDays: validatedValues.classDays,
       year: validatedValues.year || now.getFullYear(),
       status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
       startDate: validatedValues.startDate || formatISO(now),
@@ -67,7 +76,7 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     revalidatePath('/classgroups');
     revalidatePath('/room-availability');
     revalidatePath('/tv-display');
-    revalidatePath('/'); // Dashboard also uses this data
+    revalidatePath('/');
     return { success: true, message: 'Turma criada com sucesso!', data: newClassGroup };
 
   } catch (error) {
@@ -79,11 +88,9 @@ export async function createClassGroup(values: ClassGroupFormValues) {
   }
 }
 
-export async function updateClassGroup(id: string, values: ClassGroupFormValues) {
+export async function updateClassGroup(id: string, values: ClassGroupEditFormValues) {
   try {
-    // For update, we might use a slightly different schema or ensure all fields are present
-    // For now, using the same schema, ensure that optional fields are handled correctly if not provided
-    const validatedValues = classGroupFormSchema.parse(values);
+    const validatedValues = classGroupEditFormSchema.parse(values);
     const classGroups = await readData<ClassGroup>('classgroups.json');
     const classGroupIndex = classGroups.findIndex(cg => cg.id === id);
 
@@ -95,13 +102,8 @@ export async function updateClassGroup(id: string, values: ClassGroupFormValues)
     classGroups[classGroupIndex] = {
       ...existingClassGroup,
       name: validatedValues.name,
-      shift: validatedValues.shift, // Type is now PeriodOfDay
-      classDays: validatedValues.classDays, // Type is now DayOfWeek[]
-      year: validatedValues.year ?? existingClassGroup.year,
-      status: (validatedValues.status ?? existingClassGroup.status) as ClassGroupStatus,
-      startDate: validatedValues.startDate ?? existingClassGroup.startDate,
-      endDate: validatedValues.endDate ?? existingClassGroup.endDate,
-      // assignedClassroomId is not part of this form, preserve existing
+      shift: validatedValues.shift,
+      classDays: validatedValues.classDays,
     };
 
     await writeData<ClassGroup>('classgroups.json', classGroups);
@@ -110,7 +112,7 @@ export async function updateClassGroup(id: string, values: ClassGroupFormValues)
     revalidatePath(`/classgroups/${id}/edit`);
     revalidatePath('/room-availability');
     revalidatePath('/tv-display');
-    revalidatePath('/'); // Dashboard
+    revalidatePath('/');
     return { success: true, message: 'Turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
 
   } catch (error) {
@@ -137,7 +139,7 @@ export async function deleteClassGroup(id: string) {
     revalidatePath('/classgroups');
     revalidatePath('/room-availability');
     revalidatePath('/tv-display');
-    revalidatePath('/'); // Dashboard
+    revalidatePath('/');
     return { success: true, message: 'Turma excluída com sucesso!' };
   } catch (error) {
     console.error(`Failed to delete class group ${id}:`, error);
@@ -149,7 +151,8 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | undefi
   try {
     const classGroups = await readData<ClassGroup>('classgroups.json');
     return classGroups.find(cg => cg.id === id);
-  } catch (error) {
+  } catch (error)
+    {
     console.error(`Failed to get class group by ID ${id}:`, error);
     return undefined;
   }
@@ -170,7 +173,7 @@ export async function assignClassroomToClassGroup(classGroupId: string, newClass
     revalidatePath('/classgroups');
     revalidatePath('/room-availability');
     revalidatePath('/tv-display');
-    revalidatePath('/'); // Dashboard
+    revalidatePath('/');
     return { success: true, message: 'Sala da turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
 
   } catch (error) {
