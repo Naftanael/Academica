@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -17,7 +16,7 @@ const classGroupFormSchema = z.object({
   classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   year: z.coerce.number({invalid_type_error: "Ano deve ser um número."}).optional(),
-  status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
+  status: z.enum(CLASS_GROUP_STATUSES).optional(),
   startDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de início inválida."}),
   endDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de término inválida."}),
 }).refine(data => {

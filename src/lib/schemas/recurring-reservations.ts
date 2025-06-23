@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 import { parseISO, isBefore, isEqual } from 'date-fns'; // Using parseISO for robust date parsing
 import { CLASS_GROUP_SHIFTS } from '@/lib/constants'; // Import shifts for enum
@@ -14,7 +13,7 @@ export const recurringReservationFormSchema = z.object({
   endDate: dateStringSchema.refine(val => !isNaN(parseISO(val).getTime()), {
     message: "Data de fim inválida.",
   }),
-  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], { // Use imported shifts
+  shift: z.enum(CLASS_GROUP_SHIFTS, {
     required_error: "Selecione um turno.",
     invalid_type_error: "Turno inválido."
   }),
