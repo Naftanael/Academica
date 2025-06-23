@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -16,8 +15,6 @@ import * as React from "react";
 
 interface DeleteConfirmationDialogProps {
   onConfirm: () => Promise<void> | void;
-  // Use React.ReactElement for the trigger to ensure a single, valid component is passed.
-  // This is stricter and safer than React.ReactNode, preventing runtime errors.
   triggerButton: React.ReactElement;
   dialogTitle?: string;
   dialogDescription?: string;
@@ -40,10 +37,9 @@ export function DeleteConfirmationDialog({
     setIsPending(true);
     try {
       await onConfirm();
-      setIsOpen(false); // Close the dialog on successful confirmation
+      setIsOpen(false);
     } catch (error) {
       console.error("Failed to perform confirm action:", error);
-      // The dialog remains open on error, allowing the user to retry or cancel.
     } finally {
       setIsPending(false);
     }
