@@ -12,12 +12,6 @@ export interface Classroom {
   maintenanceReason?: string;
 }
 
-export interface Course {
-  id: string;
-  name: string;
-  workload: number;
-}
-
 export type ClassGroupStatus = 'Planejada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
 
 export interface ClassGroup {
