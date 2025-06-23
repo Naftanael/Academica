@@ -15,8 +15,8 @@ import * as React from "react";
 
 interface DeleteConfirmationDialogProps {
   onConfirm: () => Promise<void> | void;
-  // CORREÇÃO: Alterado de ReactNode para React.ReactElement para tipagem correta
-  // do botão que é passado como propriedade.
+  // Correction: Changed from ReactNode to React.ReactElement for correct typing.
+  // The trigger must be a single valid element, not a string or array.
   triggerButton: React.ReactElement;
   dialogTitle?: string;
   dialogDescription?: string;
@@ -42,7 +42,7 @@ export function DeleteConfirmationDialog({
       setIsOpen(false);
     } catch (error) {
       console.error("Failed to perform confirm action:", error);
-      // Opcionalmente, mostrar uma mensagem de erro para o utilizador.
+      // Optionally, show an error message to the user.
     } finally {
       setIsPending(false);
     }
