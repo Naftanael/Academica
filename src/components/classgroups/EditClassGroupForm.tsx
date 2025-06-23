@@ -149,7 +149,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                           <FormControl>
                             <Checkbox
                               checked={field.value?.includes(day)}
-                              onCheckedChange={(checked: boolean) => { // <-- CORREÇÃO APLICADA AQUI
+                              onCheckedChange={(checked) => { // Removida a anotação de tipo incorreta `: boolean`
                                 return checked
                                   ? field.onChange([...field.value, day])
                                   : field.onChange(

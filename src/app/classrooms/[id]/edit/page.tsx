@@ -8,15 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassroomForm from '@/components/classrooms/ClassroomEditFormNEW';
 import type { Classroom } from '@/types';
 
-// Definindo a interface de props para a página de forma explícita
-interface EditClassroomPageProps {
-  params: {
-    id: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-export default async function EditClassroomPage({ params }: EditClassroomPageProps) {
+// Usando tipagem inline direta para máxima clareza e para evitar conflitos de tipo.
+export default async function EditClassroomPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const classroom: Classroom | undefined = await getClassroomById(params.id);
 
   if (!classroom) {

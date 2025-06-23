@@ -8,15 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
 import type { ClassGroup } from '@/types';
 
-// Definindo a interface de props para a página de forma explícita
-interface EditClassGroupPageProps {
-  params: {
-    id: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-export default async function EditClassGroupPage({ params }: EditClassGroupPageProps) {
+// Usando tipagem inline direta para máxima clareza e para evitar conflitos de tipo.
+export default async function EditClassGroupPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const classGroup: ClassGroup | undefined = await getClassGroupById(params.id);
 
   if (!classGroup) {
