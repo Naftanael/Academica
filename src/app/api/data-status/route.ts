@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic'; // Force dynamic execution
+
 // NOTE: This endpoint relies on filesystem modification times (`fs.stat`).
 // This is suitable for the current file-based data storage strategy,
 // particularly if data files are deployed alongside the application (e.g., with App Hosting).
