@@ -3,8 +3,8 @@ import { getClassGroupById } from '@/lib/actions/classgroups';
 import EditClassGroupView from '@/components/classgroups/EditClassGroupView';
 import type { ClassGroup } from '@/types';
 
-// The page remains a Server Component, but is much simpler.
-// It fetches data and passes it to a client component.
+// A página permanece um Server Component, mas é muito mais simples.
+// Ela busca os dados e os passa para um client component.
 export default async function EditClassGroupPage({
   params,
 }: {
@@ -12,6 +12,6 @@ export default async function EditClassGroupPage({
 }) {
   const classGroup: ClassGroup | undefined = await getClassGroupById(params.id);
 
-  // The view logic is now in a separate client component
+  // A lógica da view está agora num componente de cliente separado
   return <EditClassGroupView classGroup={classGroup} />;
 }

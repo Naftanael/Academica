@@ -29,15 +29,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { updateClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
-import type { ClassGroup } from '@/types';
+import type { ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
+import type { CheckedState } from '@radix-ui/react-checkbox';
 
 // O schema do Zod para validação
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS as [string, ...string[]], {
+  shift: z.enum(CLASS_GROUP_SHIFTS as [PeriodOfDay, ...PeriodOfDay[]], {
     required_error: "Selecione um turno.",
   }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK as [string, ...string[]]))
+  classDays: z.array(z.enum(DAYS_OF_WEEK as [DayOfWeek, ...DayOfWeek[]]))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
 
@@ -149,7 +150,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                           <FormControl>
                             <Checkbox
                               checked={field.value?.includes(day)}
-                              onCheckedChange={(checked) => { // Removida a anotação de tipo incorreta `: boolean`
+                              onCheckedChange={(checked: CheckedState) => {
                                 return checked
                                   ? field.onChange([...field.value, day])
                                   : field.onChange(
