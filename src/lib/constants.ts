@@ -1,3 +1,4 @@
+
 import type { DayOfWeek, PeriodOfDay } from "@/types";
 
 // Using `as const` provides a readonly tuple type that z.enum can correctly infer.
