@@ -40,16 +40,16 @@ import type { CheckedState } from '@radix-ui/react-checkbox';
 
 const newClassGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS as [PeriodOfDay, ...PeriodOfDay[]], {
+  shift: z.enum(CLASS_GROUP_SHIFTS, {
     required_error: "Selecione um turno.",
   }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK as [DayOfWeek, ...DayOfWeek[]]))
+  classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   year: z.coerce.number({ invalid_type_error: "Ano deve ser um número." })
                  .min(new Date().getFullYear() - 10, { message: "Ano muito antigo."})
                  .max(new Date().getFullYear() + 10, { message: "Ano muito no futuro."})
                  .optional(),
-  status: z.enum(CLASS_GROUP_STATUSES as [string, ...string[]]).optional(),
+  status: z.enum(CLASS_GROUP_STATUSES).optional(),
   startDate: z.date({ required_error: "Data de início é obrigatória."}),
   endDate: z.date({ required_error: "Data de término é obrigatória."}),
 }).refine(data => {

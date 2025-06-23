@@ -35,10 +35,10 @@ import type { CheckedState } from '@radix-ui/react-checkbox';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS as [PeriodOfDay, ...PeriodOfDay[]], {
+  shift: z.enum(CLASS_GROUP_SHIFTS, {
     required_error: "Selecione um turno.",
   }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK as [DayOfWeek, ...DayOfWeek[]]))
+  classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
 
