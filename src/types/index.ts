@@ -73,3 +73,9 @@ export interface DashboardData {
   currentDate: Date;
   classroomOccupancyChartData: DailyOccupancy[];
 }
+
+// Type for Room Availability Display
+export type OccupancyItem = 
+  | { type: 'class'; data: ClassGroup }
+  | { type: 'recurring'; data: ClassroomRecurringReservation }
+  | { type: 'event'; data: EventReservation };

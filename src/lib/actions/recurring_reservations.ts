@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { getClassGroups } from './classgroups';
 import { getClassrooms } from './classrooms';
 import { parseISO, format } from 'date-fns';
-import { dateRangesOverlap } from '@/lib/utils'; // Moved helper
+import { dateRangesOverlap } from '@/lib/utils';
 
 export async function getRecurringReservations(): Promise<ClassroomRecurringReservation[]> {
   try {
