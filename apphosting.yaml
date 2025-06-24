@@ -1,6 +1,8 @@
-
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
+
+# The command that starts the app. This is required for Next.js apps.
+entryPoint: npm run start
 
 runConfig:
   # Increase this value if you'd like to automatically spin up
