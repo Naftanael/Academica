@@ -153,12 +153,12 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     <div className="flex-grow w-full flex flex-col p-4 sm:p-6 md:p-8 xl:p-10">
       <header className="mb-8 md:mb-12 text-center">
         <div className="flex items-center justify-center mb-3 sm:mb-4">
-          <MonitorPlay className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 text-primary mr-3 sm:mr-4" />
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground font-headline">
+          <MonitorPlay className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 text-primary-foreground mr-3 sm:mr-4" />
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight font-headline">
             Guia de Salas
           </h1>
         </div>
-        <p className="text-2xl sm:text-3xl md:text-4xl text-muted-foreground">
+        <p className="text-2xl sm:text-3xl md:text-4xl text-primary-foreground/90">
           {liveCurrentDateHeader}
         </p>
       </header>
@@ -178,10 +178,10 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
       {displayData.length === 0 && !usingLocalStorageData ? (
         <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
           <AlertTriangle className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 text-accent mb-6 sm:mb-8" />
-          <p className="text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground">
+          <p className="text-3xl sm:text-4xl md:text-5xl font-semibold">
             Nenhuma turma em andamento.
           </p>
-          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mt-3 sm:mt-4">
+          <p className="text-lg sm:text-xl md:text-2xl text-primary-foreground/80 mt-3 sm:mt-4">
             Verifique novamente mais tarde.
           </p>
         </div>
@@ -230,7 +230,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           ))}
         </main>
       )}
-       <footer className="mt-8 sm:mt-12 text-center text-sm sm:text-base md:text-lg text-muted-foreground">
+       <footer className="mt-8 sm:mt-12 text-center text-sm sm:text-base md:text-lg text-primary-foreground/70">
         {isOffline 
           ? `Tentando reconectar...`
           : usingLocalStorageData 
