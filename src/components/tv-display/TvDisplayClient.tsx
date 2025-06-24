@@ -2,21 +2,11 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { DoorOpen, MonitorPlay, AlertTriangle, WifiOff } from 'lucide-react';
+import { MonitorPlay, AlertTriangle, WifiOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-
-export interface TvDisplayInfo {
-  id: string;
-  groupName: string;
-  shift: string;
-  classroomName: string | null;
-}
-
-interface TvDisplayClientProps {
-  initialDisplayData: TvDisplayInfo[];
-}
+import type { TvDisplayInfo } from '@/types';
+import TvDisplayCard from './TvDisplayCard';
 
 const PLACEHOLDER_DATE = "Carregando data...";
 const LOCAL_STORAGE_KEY = 'tvDisplayData';
@@ -29,25 +19,9 @@ interface DataStatus {
   classroomsMtime: number | null;
 }
 
-const getCourseLeftBorderColorClass = (groupName: string): string => {
-  const prefixMatch = groupName.match(/^([A-Z]+)/);
-  const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
-
-  switch (prefix) {
-    case 'RAD': // Radiologia - Amarelo
-      return 'border-l-yellow-500';
-    case 'FMC': // Farmácia - Roxo
-      return 'border-l-purple-500';
-    case 'ADM': // Administração - Azul
-      return 'border-l-blue-500';
-    case 'CDI': // Cuidador de Idosos - Rosa
-      return 'border-l-pink-500';
-    case 'ENF': // Enfermagem - Azul Céu
-      return 'border-l-sky-500';
-    default: // Outros cursos - Cor primária (verde)
-      return 'border-l-primary';
-  }
-};
+interface TvDisplayClientProps {
+  initialDisplayData: TvDisplayInfo[];
+}
 
 export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientProps) {
   const router = useRouter();
@@ -70,6 +44,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
       window.location.reload();
     }, PAGE_RELOAD_INTERVAL);
 
+    // Cleanup all timers on component unmount
     return () => {
       clearTimeout(pageReloadTimer);
       if (retryTimeoutRef.current) {
@@ -90,7 +65,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     try {
       const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
       return cachedData ? JSON.parse(cachedData) : null;
-    } catch (error) {
+    } catch (error)      {
       console.error("TV Display: Error loading data from localStorage", error);
       return null;
     }
@@ -153,24 +128,24 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     <div className="flex-grow w-full flex flex-col p-4 sm:p-6 md:p-8 xl:p-10">
       <header className="mb-8 md:mb-12 text-center">
         <div className="flex items-center justify-center mb-3 sm:mb-4">
-          <MonitorPlay className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 text-primary-foreground mr-3 sm:mr-4" />
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight font-headline">
+          <MonitorPlay className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-primary-foreground mr-3 sm:mr-4" />
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight font-headline">
             Guia de Salas
           </h1>
         </div>
-        <p className="text-2xl sm:text-3xl md:text-4xl text-primary-foreground/90">
+        <p className="text-3xl sm:text-4xl md:text-5xl text-primary-foreground/90">
           {liveCurrentDateHeader}
         </p>
       </header>
 
       {isOffline && (
-        <div className="my-3 sm:my-4 p-3 sm:p-4 bg-destructive/20 text-destructive-foreground border border-destructive rounded-md text-center flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg">
-          <WifiOff className="w-5 h-5 sm:w-6 sm:h-6" />
-          Sem conexão com o servidor. Tentando novamente em {RETRY_INTERVAL / 1000} segundos...
+        <div className="my-3 sm:my-4 p-3 sm:p-4 bg-destructive/20 text-destructive-foreground border border-destructive rounded-md text-center flex items-center justify-center gap-2 text-lg sm:text-xl md:text-2xl">
+          <WifiOff className="w-6 h-6 sm:w-8 sm:h-8" />
+          Sem conexão com o servidor. Tentando novamente...
         </div>
       )}
       {usingLocalStorageData && !isOffline && (
-         <div className="my-3 sm:my-4 p-3 bg-accent/20 text-accent-foreground border border-accent rounded-md text-center text-sm sm:text-base">
+         <div className="my-3 sm:my-4 p-3 bg-accent/20 text-accent-foreground border border-accent rounded-md text-center text-lg sm:text-xl md:text-2xl">
           Exibindo últimos dados salvos. A aplicação tentará atualizar em breve.
         </div>
       )}
@@ -178,64 +153,26 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
       {displayData.length === 0 && !usingLocalStorageData ? (
         <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
           <AlertTriangle className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 text-accent mb-6 sm:mb-8" />
-          <p className="text-3xl sm:text-4xl md:text-5xl font-semibold">
+          <p className="text-4xl sm:text-5xl md:text-6xl font-semibold">
             Nenhuma turma em andamento.
           </p>
-          <p className="text-lg sm:text-xl md:text-2xl text-primary-foreground/80 mt-3 sm:mt-4">
+          <p className="text-2xl sm:text-3xl md:text-4xl text-primary-foreground/80 mt-3 sm:mt-4">
             Verifique novamente mais tarde.
           </p>
         </div>
       ) : (
         <main className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {displayData.map(item => (
-            <div
-              key={item.id}
-              className={cn(
-                "bg-card rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px]",
-                getCourseLeftBorderColorClass(item.groupName)
-              )}
-            >
-              <div className="flex-grow">
-                <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground mb-3 sm:mb-4 truncate font-headline" title={item.groupName}>
-                  {item.groupName}
-                </h2>
-                <p className="text-2xl sm:text-3xl md:text-4xl text-muted-foreground mb-4 sm:mb-5">
-                  Turno: <span className="font-semibold text-foreground">{item.shift}</span>
-                </p>
-              </div>
-              <div className="mt-auto pt-4 sm:pt-5 border-t border-border/50">
-                {item.classroomName ? (
-                  <div className="flex items-center">
-                    <DoorOpen className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-accent mr-3 sm:mr-4 shrink-0" />
-                    <div>
-                      <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground uppercase tracking-wider font-medium">Sala Atual</p>
-                      <p className="text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground truncate" title={item.classroomName}>
-                        {item.classroomName}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                     <AlertTriangle className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-destructive mr-3 sm:mr-4 shrink-0" />
-                     <div>
-                        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground uppercase tracking-wider font-medium">Sala</p>
-                        <p className="text-3xl sm:text-4xl md:text-5xl font-semibold text-destructive">
-                            Não Atribuída
-                        </p>
-                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
+          {displayData.map((item, index) => (
+             <TvDisplayCard key={item.id} item={item} index={index} />
           ))}
         </main>
       )}
-       <footer className="mt-8 sm:mt-12 text-center text-sm sm:text-base md:text-lg text-primary-foreground/70">
+       <footer className="mt-8 sm:mt-12 text-center text-lg sm:text-xl text-primary-foreground/70">
         {isOffline 
           ? `Tentando reconectar...`
           : usingLocalStorageData 
             ? `Dados em cache. Tentando atualizar.`
-            : `Verificando atualizações.`}
+            : `Verificando atualizações...`}
       </footer>
     </div>
   );
