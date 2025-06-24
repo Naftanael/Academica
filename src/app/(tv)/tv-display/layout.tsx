@@ -14,7 +14,7 @@ export default function TvDisplayLayout({
 }>) {
   return (
     <div> 
-      <div className="font-body antialiased bg-primary/20 text-primary min-h-screen flex flex-col selection:bg-accent/30 selection:text-accent-foreground">
+      <div className="font-body antialiased bg-primary/50 text-primary-foreground min-h-screen flex flex-col selection:bg-accent/30 selection:text-accent-foreground">
         {children}
       </div>
     </div>
