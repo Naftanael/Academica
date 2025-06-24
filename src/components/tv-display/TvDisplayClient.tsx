@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -30,7 +29,6 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
   const [liveCurrentDateHeader, setLiveCurrentDateHeader] = React.useState<string>(PLACEHOLDER_DATE);
   const [lastDataStatus, setLastDataStatus] = React.useState<DataStatus | null>(null);
   const [isOffline, setIsOffline] = React.useState<boolean>(false);
-  const [usingLocalStorageData, setUsingLocalStorageData] = React.useState<boolean>(false);
   const retryTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
@@ -59,16 +57,6 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
       console.error("TV Display: Error saving data to localStorage", error);
-    }
-  };
-
-  const loadFromLocalStorage = (): TvDisplayInfo[] | null => {
-    try {
-      const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return cachedData ? JSON.parse(cachedData) : null;
-    } catch (error)      {
-      console.error("TV Display: Error loading data from localStorage", error);
-      return null;
     }
   };
   
@@ -108,20 +96,11 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
   }, [checkDataChanges]);
 
   React.useEffect(() => {
-    if (initialDisplayData && initialDisplayData.length > 0) {
-      setDisplayData(initialDisplayData);
-      saveToLocalStorage(initialDisplayData);
-      setUsingLocalStorageData(false); 
-    } else {
-      const cachedData = loadFromLocalStorage();
-      if (cachedData && cachedData.length > 0) {
-        setDisplayData(cachedData);
-        setUsingLocalStorageData(true); 
-      } else {
-        setDisplayData([]);
-        setUsingLocalStorageData(false);
-      }
-    }
+    // Always prioritize the data from the server props.
+    // An empty array is valid data that means "no classes currently active".
+    // This prevents showing stale data from localStorage when a new shift starts.
+    setDisplayData(initialDisplayData);
+    saveToLocalStorage(initialDisplayData);
   }, [initialDisplayData]);
 
 
@@ -145,13 +124,8 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           Sem conexão com o servidor. Tentando novamente...
         </div>
       )}
-      {usingLocalStorageData && !isOffline && (
-         <div className="my-3 sm:my-4 p-3 bg-accent/20 text-accent-foreground border border-accent rounded-md text-center text-lg sm:text-xl md:text-2xl">
-          Exibindo últimos dados salvos. A aplicação tentará atualizar em breve.
-        </div>
-      )}
 
-      {displayData.length === 0 && !usingLocalStorageData ? (
+      {displayData.length === 0 ? (
         <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
           <AlertTriangle className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 text-accent mb-6 sm:mb-8" />
           <p className="text-4xl sm:text-5xl md:text-6xl font-semibold">
@@ -171,9 +145,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
        <footer className="mt-8 sm:mt-12 text-center text-lg sm:text-xl text-primary-foreground/70">
         {isOffline 
           ? `Tentando reconectar...`
-          : usingLocalStorageData 
-            ? `Dados em cache. Tentando atualizar.`
-            : `Verificando atualizações...`}
+          : `Verificando atualizações...`}
       </footer>
     </div>
   );

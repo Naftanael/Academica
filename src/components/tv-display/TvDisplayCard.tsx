@@ -34,7 +34,7 @@ export default function TvDisplayCard({ item, index }: TvDisplayCardProps) {
     <div
       style={{ animationDelay: `${index * 100}ms` }}
       className={cn(
-        "bg-card rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px]",
+        "bg-card/80 rounded-xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col justify-between border border-border/70 border-l-[10px]",
         "animate-in fade-in-50 slide-in-from-bottom-5 duration-500 ease-out fill-mode-backwards",
         getCourseLeftBorderColorClass(item.groupName)
       )}
