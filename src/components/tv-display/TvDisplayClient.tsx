@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -128,12 +129,12 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
     <div className="flex-grow w-full flex flex-col p-4 sm:p-6 md:p-8 xl:p-10">
       <header className="mb-8 md:mb-12 text-center">
         <div className="flex items-center justify-center mb-3 sm:mb-4">
-          <MonitorPlay className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-primary-foreground mr-3 sm:mr-4" />
+          <MonitorPlay className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-primary mr-3 sm:mr-4" />
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight font-headline">
             Guia de Salas
           </h1>
         </div>
-        <p className="text-3xl sm:text-4xl md:text-5xl text-primary-foreground/90">
+        <p className="text-3xl sm:text-4xl md:text-5xl text-primary/90">
           {liveCurrentDateHeader}
         </p>
       </header>
@@ -156,7 +157,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           <p className="text-4xl sm:text-5xl md:text-6xl font-semibold">
             Nenhuma turma em andamento.
           </p>
-          <p className="text-2xl sm:text-3xl md:text-4xl text-primary-foreground/80 mt-3 sm:mt-4">
+          <p className="text-2xl sm:text-3xl md:text-4xl text-primary/80 mt-3 sm:mt-4">
             Verifique novamente mais tarde.
           </p>
         </div>
@@ -167,7 +168,7 @@ export default function TvDisplayClient({ initialDisplayData }: TvDisplayClientP
           ))}
         </main>
       )}
-       <footer className="mt-8 sm:mt-12 text-center text-lg sm:text-xl text-primary-foreground/70">
+       <footer className="mt-8 sm:mt-12 text-center text-lg sm:text-xl text-primary/70">
         {isOffline 
           ? `Tentando reconectar...`
           : usingLocalStorageData 
