@@ -44,13 +44,9 @@ export async function readData<T>(filename: string): Promise<T[]> {
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
-      console.warn(`[data-utils] File "${filename}" not found. Creating it with an empty array.`);
-      try {
-        await fs.mkdir(dataDir, { recursive: true });
-        await writeData<T>(filename, []);
-      } catch (writeError) {
-        console.error(`[data-utils] Critical error: Failed to create initial data file "${filename}". Error:`, (writeError as Error).message);
-      }
+      // In a read-only production environment, we cannot create the file.
+      // Log the issue and return an empty array. The app should handle this gracefully.
+      console.warn(`[data-utils] File "${filename}" not found. Returning an empty array as it cannot be created in this environment.`);
       return [];
     }
     console.error(`[data-utils] Error reading data from "${filename}":`, nodeError.message);
