@@ -9,26 +9,26 @@ body {
 
 @layer base {
   :root {
-    /* Grau Tecnico Palette - Light Mode */
-    --background: 0 0% 98%; /* off-white */
-    --foreground: 0 0% 9%; /* near black */
+    /* Academica Palette (PRD) - Light Mode */
+    --background: 210 29% 97%; /* #f0f4f8 - light gray */
+    --foreground: 222 47% 11%; /* near black */
 
     --card: 0 0% 100%; /* white */
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 90 61% 45%; /* Grau Green */
+    --primary: 208 79% 54%; /* #3490dc - vibrant blue */
     --primary-foreground: 0 0% 100%; /* white */
 
     --secondary: 210 40% 96.1%; /* light gray */
-    --secondary-foreground: 0 0% 9%;
+    --secondary-foreground: 222 47% 11%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 77 65% 55%; /* Grau Lime Green */
+    --accent: 22 100% 60%; /* #ff8533 - warm orange */
     --accent-foreground: 0 0% 9%;
 
     --destructive: 0 84.2% 60.2%; /* standard red */
@@ -36,40 +36,40 @@ body {
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 90 61% 45%; /* primary green */
+    --ring: 208 79% 54%; /* primary blue */
 
     --radius: 0.5rem;
 
     /* Chart Colors */
-    --chart-1: 90 61% 45%;
-    --chart-2: 77 65% 55%;
-    --chart-3: 90 61% 35%;
-    --chart-4: 77 65% 45%;
-    --chart-5: 90 61% 55%;
+    --chart-1: 208 79% 54%;
+    --chart-2: 22 100% 60%;
+    --chart-3: 208 79% 44%;
+    --chart-4: 22 100% 50%;
+    --chart-5: 208 79% 64%;
     
     /* Sidebar Colors - Light Mode */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 9%;
-    --sidebar-primary: 90 61% 45%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 208 79% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 90 60% 95%;
-    --sidebar-accent-foreground: 90 61% 30%;
+    --sidebar-accent: 210 40% 95%;
+    --sidebar-accent-foreground: 208 79% 30%;
     --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 90 61% 45%;
+    --sidebar-ring: 208 79% 54%;
   }
 
   .dark {
-    /* Grau Tecnico Palette - Dark Mode */
-    --background: 222 47% 11%;
+    /* Academica Palette (PRD) - Dark Mode */
+    --background: 210 20% 12%; /* dark gray-blue */
     --foreground: 0 0% 98%;
 
-    --card: 222 47% 11%;
+    --card: 210 20% 14%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 222 47% 11%;
+    --popover: 210 20% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 90 61% 55%;
+    --primary: 208 79% 64%; /* Lighter blue */
     --primary-foreground: 0 0% 9%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -78,7 +78,7 @@ body {
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 77 65% 65%;
+    --accent: 22 100% 70%; /* Lighter orange */
     --accent-foreground: 0 0% 9%;
 
     --destructive: 0 62.8% 30.6%;
@@ -86,24 +86,24 @@ body {
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 90 61% 55%;
+    --ring: 208 79% 64%;
     
     /* Chart Colors - Dark Mode */
-    --chart-1: 90 61% 55%;
-    --chart-2: 77 65% 65%;
-    --chart-3: 90 61% 45%;
-    --chart-4: 77 65% 55%;
-    --chart-5: 90 61% 65%;
+    --chart-1: 208 79% 64%;
+    --chart-2: 22 100% 70%;
+    --chart-3: 208 79% 54%;
+    --chart-4: 22 100% 60%;
+    --chart-5: 208 79% 74%;
 
     /* Sidebar Colors - Dark Mode */
-    --sidebar-background: 222 47% 11%;
+    --sidebar-background: 210 20% 12%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 90 61% 55%;
+    --sidebar-primary: 208 79% 64%;
     --sidebar-primary-foreground: 0 0% 9%;
     --sidebar-accent: 217.2 32.6% 20%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 90 61% 55%;
+    --sidebar-ring: 208 79% 64%;
   }
 }
 

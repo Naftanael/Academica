@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { Classroom, ClassGroup } from '@/types';
+import type { Classroom, ClassGroup, EventReservation, ClassroomRecurringReservation } from '@/types';
 import { classroomCreateSchema, classroomEditSchema, type ClassroomCreateValues, type ClassroomEditFormValues } from '@/lib/schemas/classrooms';
 
 export async function getClassrooms(): Promise<Classroom[]> {
@@ -90,6 +90,21 @@ export async function updateClassroom(id: string, values: ClassroomEditFormValue
 
 export async function deleteClassroom(id: string) {
   try {
+    const classGroups = await readData<ClassGroup>('classgroups.json');
+    if (classGroups.some(cg => cg.assignedClassroomId === id)) {
+      return { success: false, message: 'Não é possível excluir a sala. Ela está atribuída a uma ou mais turmas.' };
+    }
+
+    const eventReservations = await readData<EventReservation>('event_reservations.json');
+    if (eventReservations.some(er => er.classroomId === id)) {
+        return { success: false, message: 'Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas de eventos.' };
+    }
+
+    const recurringReservations = await readData<ClassroomRecurringReservation>('recurring_reservations.json');
+     if (recurringReservations.some(rr => rr.classroomId === id)) {
+        return { success: false, message: 'Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas recorrentes.' };
+    }
+    
     let classrooms = await readData<Classroom>('classrooms.json');
     const classroomIndex = classrooms.findIndex(c => c.id === id);
 
@@ -97,18 +112,13 @@ export async function deleteClassroom(id: string) {
       return { success: false, message: 'Sala não encontrada para exclusão.' };
     }
 
-    const classGroups = await readData<ClassGroup>('classgroups.json');
-    const isAssigned = classGroups.some(cg => cg.assignedClassroomId === id);
-    if (isAssigned) {
-      return { success: false, message: 'Não é possível excluir a sala. Ela está atribuída a uma ou mais turmas.' };
-    }
-    
     classrooms.splice(classroomIndex, 1);
     await writeData<Classroom>('classrooms.json', classrooms);
 
     revalidatePath('/classrooms');
     revalidatePath('/room-availability');
     revalidatePath('/tv-display');
+    revalidatePath('/reservations');
     revalidatePath('/'); // Dashboard
     return { success: true, message: 'Sala de aula excluída com sucesso!' };
   } catch (error) {

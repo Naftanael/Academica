@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { CLASS_GROUP_SHIFTS, CLASS_GROUP_STATUSES, DAYS_OF_WEEK } from '@/lib/constants';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassGroup, ClassGroupStatus, DayOfWeek, PeriodOfDay } from '@/types';
+import type { ClassGroup, ClassGroupStatus, ClassroomRecurringReservation } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
 const classGroupFormSchema = z.object({
@@ -133,14 +133,23 @@ export async function deleteClassGroup(id: string) {
       return { success: false, message: 'Turma não encontrada para exclusão.' };
     }
 
+    // Remove the class group
     classGroups.splice(classGroupIndex, 1);
     await writeData<ClassGroup>('classgroups.json', classGroups);
+
+    // Also remove any recurring reservations associated with this class group
+    let recurringReservations = await readData<ClassroomRecurringReservation>('recurring_reservations.json');
+    const remainingReservations = recurringReservations.filter(r => r.classGroupId !== id);
+    if (remainingReservations.length < recurringReservations.length) {
+        await writeData('recurring_reservations.json', remainingReservations);
+    }
 
     revalidatePath('/classgroups');
     revalidatePath('/room-availability');
     revalidatePath('/tv-display');
+    revalidatePath('/reservations');
     revalidatePath('/');
-    return { success: true, message: 'Turma excluída com sucesso!' };
+    return { success: true, message: 'Turma e reservas associadas foram excluídas com sucesso!' };
   } catch (error) {
     console.error(`Failed to delete class group ${id}:`, error);
     return { success: false, message: 'Erro interno ao excluir turma.' };
