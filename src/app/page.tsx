@@ -109,10 +109,10 @@ export default async function DashboardPage() {
   const { stats, activeClassGroups, currentDate, classroomOccupancyChartData }: DashboardData = await getDashboardData();
 
   const statItems = [
-    { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, color: 'text-primary' },
-    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, color: 'text-green-500' },
-    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, color: 'text-orange-500' },
-    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, color: 'text-blue-500' },
+    { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, className: 'text-primary' },
+    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, className: 'text-green-500 dark:text-green-400' },
+    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, className: 'text-orange-500 dark:text-orange-400' },
+    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, className: 'text-blue-500 dark:text-blue-400' },
   ];
 
   return (
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
           <Card key={item.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground font-headline">{item.title}</CardTitle>
-              <item.icon className={`h-5 w-5 ${item.color}`} />
+              <item.icon className={`h-5 w-5 ${item.className}`} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-foreground">{item.value}</div>

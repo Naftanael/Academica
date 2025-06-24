@@ -9,7 +9,7 @@ import {
   School,
   UsersRound,
   CalendarDays,
-  Landmark, // Using Landmark as a placeholder for the main Academica icon
+  GraduationCap,
   ListChecks,
   MonitorPlay,
 } from 'lucide-react';
@@ -45,7 +45,7 @@ export default function SidebarNav() {
     <>
       <SidebarHeader className="p-4 flex items-center justify-between border-b border-sidebar-border">
         <Link href="/" className="flex items-center gap-2">
-          <Landmark className="w-7 h-7 text-sidebar-primary group-data-[collapsible=icon]:w-6 group-data-[collapsible=icon]:h-6 transition-all" />
+          <GraduationCap className="w-7 h-7 text-sidebar-primary group-data-[collapsible=icon]:w-6 group-data-[collapsible=icon]:h-6 transition-all" />
           <h1 className="text-xl font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             Academica
           </h1>

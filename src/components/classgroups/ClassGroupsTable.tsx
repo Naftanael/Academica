@@ -104,10 +104,7 @@ export default function ClassGroupsTable({ classGroups, classrooms }: ClassGroup
                             'destructive'
                           }
                           className={cn(
-                            cg.status === 'Em Andamento' && 'bg-green-500 text-white dark:bg-green-600 dark:text-green-50',
-                            cg.status === 'Planejada' && 'bg-blue-500 text-white dark:bg-blue-600 dark:text-blue-50',
-                            cg.status === 'Concluída' && 'border-gray-500 text-gray-700 dark:border-gray-400 dark:text-gray-300',
-                            cg.status === 'Cancelada' && 'bg-red-500 text-white dark:bg-red-600 dark:text-red-50'
+                            cg.status === 'Planejada' && 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 border-blue-300 dark:border-blue-700'
                           )}
                         >
                           {cg.status}
