@@ -1,8 +1,8 @@
 
 import { getClassGroups } from '@/lib/actions/classgroups';
 import { getClassrooms } from '@/lib/actions/classrooms';
-import type { ClassGroup, Classroom } from '@/types';
-import TvDisplayClient, { type TvDisplayInfo } from '@/components/tv-display/TvDisplayClient';
+import type { ClassGroup, Classroom, TvDisplayInfo } from '@/types';
+import TvDisplayClient from '@/components/tv-display/TvDisplayClient';
 import { getCurrentShift } from '@/lib/utils'; // Import from utils
 
 export default async function TvDisplayPage() {
