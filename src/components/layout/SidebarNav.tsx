@@ -12,6 +12,7 @@ import {
   GraduationCap,
   ListChecks,
   MonitorPlay,
+  Search,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
   { href: '/reservations', label: 'Reservas', icon: ListChecks },
+  { href: '/student-search', label: 'Consulta Aluno', icon: Search },
   { href: '/tv-display', label: 'Painel TV', icon: MonitorPlay },
 ];
 
