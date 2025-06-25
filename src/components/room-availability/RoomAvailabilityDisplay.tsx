@@ -57,7 +57,7 @@ const OccupancyBadge = ({ item, classGroups }: { item: OccupancyItem, classGroup
       return (
         <Tooltip delayDuration={150}>
           <TooltipTrigger className="w-full">
-            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs bg-green-100 border-green-300 text-green-800 dark:bg-green-700/30 dark:text-green-200 dark:border-green-600 hover:bg-green-200 dark:hover:bg-green-700/50")} title={item.data.name}>
+            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30")} title={item.data.name}>
               <BookOpen className="h-3 w-3 mr-1 inline-block" />
               {item.data.name}
             </Badge>
@@ -74,7 +74,7 @@ const OccupancyBadge = ({ item, classGroups }: { item: OccupancyItem, classGroup
       return (
         <Tooltip delayDuration={150}>
           <TooltipTrigger className="w-full">
-            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-700/30 dark:text-blue-200 dark:border-blue-600 hover:bg-blue-200 dark:hover:bg-blue-700/50")} title={title}>
+            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs bg-secondary hover:bg-secondary/80")} title={title}>
               <Repeat className="h-3 w-3 mr-1 inline-block" />
               {item.data.purpose}
             </Badge>
@@ -91,7 +91,7 @@ const OccupancyBadge = ({ item, classGroups }: { item: OccupancyItem, classGroup
       return (
         <Tooltip delayDuration={150}>
           <TooltipTrigger className="w-full">
-            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-700/30 dark:text-purple-200 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-700/50")} title={eventTitle}>
+            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0.5 w-full text-left block max-w-full truncate leading-tight border font-medium shadow-xs bg-accent/10 border-accent/20 text-accent-foreground dark:bg-accent/20 dark:border-accent/30 hover:bg-accent/20 dark:hover:bg-accent/30")} title={eventTitle}>
               <EventCalendarIcon className="h-3 w-3 mr-1 inline-block" />
               {item.data.title}
             </Badge>
@@ -317,7 +317,7 @@ export default function RoomAvailabilityDisplay({
                                       )}
                                     </div>
                                   ) : (
-                                    <Badge variant="outline" className="text-[10px] px-2 py-1 bg-green-100 border-green-400 text-green-800 dark:bg-green-800/40 dark:text-green-200 dark:border-green-600/70 font-semibold shadow-xs">
+                                    <Badge variant="outline" className="text-[10px] px-2 py-1 bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:text-primary-foreground font-semibold shadow-xs">
                                       Livre
                                     </Badge>
                                   )}

@@ -110,9 +110,9 @@ export default async function DashboardPage() {
 
   const statItems = [
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, className: 'text-primary' },
-    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, className: 'text-green-500 dark:text-green-400' },
-    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, className: 'text-orange-500 dark:text-orange-400' },
-    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, className: 'text-blue-500 dark:text-blue-400' },
+    { title: 'Turmas em Andamento', value: stats.activeClassGroups, icon: TrendingUp, className: 'text-primary' },
+    { title: 'Turmas Planejadas', value: stats.plannedClassGroups, icon: CalendarClock, className: 'text-accent' },
+    { title: 'Total de Salas', value: stats.totalClassrooms, icon: Presentation, className: 'text-muted-foreground' },
   ];
 
   return (

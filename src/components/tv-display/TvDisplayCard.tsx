@@ -1,3 +1,4 @@
+
 'use client';
 
 import { DoorOpen, AlertTriangle } from 'lucide-react';
@@ -10,23 +11,8 @@ interface TvDisplayCardProps {
 }
 
 const getCourseLeftBorderColorClass = (groupName: string): string => {
-  const prefixMatch = groupName.match(/^([A-Z]+)/);
-  const prefix = prefixMatch ? prefixMatch[1] : 'DEFAULT';
-
-  switch (prefix) {
-    case 'RAD': // Radiologia - Amarelo
-      return 'border-l-yellow-500';
-    case 'FMC': // Farmácia - Roxo
-      return 'border-l-purple-500';
-    case 'ADM': // Administração - Azul
-      return 'border-l-blue-500';
-    case 'CDI': // Cuidador de Idosos - Rosa
-      return 'border-l-pink-500';
-    case 'ENF': // Enfermagem - Azul Céu
-      return 'border-l-sky-500';
-    default: // Outros cursos - Cor primária (verde)
-      return 'border-l-primary';
-  }
+  // Unify border color to brand's primary green
+  return 'border-l-primary';
 };
 
 export default function TvDisplayCard({ item, index }: TvDisplayCardProps) {

@@ -103,9 +103,6 @@ export default function ClassGroupsTable({ classGroups, classrooms }: ClassGroup
                             cg.status === 'Concluída' ? 'outline' :
                             'destructive'
                           }
-                          className={cn(
-                            cg.status === 'Planejada' && 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 border-blue-300 dark:border-blue-700'
-                          )}
                         >
                           {cg.status}
                         </Badge>

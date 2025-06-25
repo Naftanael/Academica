@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -197,7 +198,7 @@ export default function ClassroomsDisplay({ classrooms, classGroups }: Classroom
                       </div>
                     ) : (
                        <div className="space-y-1.5">
-                        <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-300 dark:bg-green-700/30 dark:text-green-200 dark:border-green-600 text-xs mb-2">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/30 text-xs mb-2">
                           Livre Agora
                         </Badge>
                          <p className="text-sm text-muted-foreground flex items-center">
