@@ -151,11 +151,13 @@ export async function POST() {
     const htmlContent = getPanelHtml(displayData, publishedDate);
 
     // 4. Launch Puppeteer using @sparticuz/chromium
+    const executablePath = await chromium.executablePath();
+
     browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: { width: 1920, height: 1080 },
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless, // Use the library's recommended headless mode
+        executablePath: executablePath,
+        headless: 'new', // Use the new, more reliable headless mode
         ignoreHTTPSErrors: true,
     });
 
@@ -168,6 +170,9 @@ export async function POST() {
     });
 
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+    // Add an explicit wait to ensure the main content is rendered before taking a screenshot.
+    await page.waitForSelector('main', { timeout: 15000 });
     
     // 5. Take screenshot and save to public directory
     const publicDir = path.join(process.cwd(), 'public');
