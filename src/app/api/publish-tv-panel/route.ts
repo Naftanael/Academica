@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { readData, writeData } from '@/lib/data-utils';
 import { getCurrentShift } from '@/lib/utils';
@@ -43,7 +44,7 @@ export async function POST() {
     };
 
     // 4. Write data to the JSON file
-    await writeData('published_tv_data.json', dataToPublish);
+    await writeData('published_tv_data.json', [dataToPublish]);
     
     return NextResponse.json({ success: true, message: 'Painel de TV publicado com sucesso.' });
 
