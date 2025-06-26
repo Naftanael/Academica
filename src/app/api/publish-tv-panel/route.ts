@@ -80,13 +80,16 @@ function getPanelHtml(displayData: TvDisplayInfo[], publishedDate: string): stri
     <head>
       <meta charset="UTF-8">
       <title>Painel de Salas</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
       <style>
         :root {
           --background: 210 20% 12%; --foreground: 0 0% 98%; --card: 210 20% 14%;
           --card-foreground: 0 0% 98%; --primary: 96 56% 53%; --primary-foreground: 222 47% 11%;
           --accent: 100 65% 37%; --destructive: 0 84.2% 60.2%; --border: 217.2 32.6% 17.5%;
         }
-        body { background-color: hsl(var(--primary)); color: hsl(var(--foreground)); font-family: "Inter", sans-serif; margin: 0; padding: 2rem; height: 100vh; width: 100vw; box-sizing: border-box; display: flex; flex-direction: column; }
+        body { background-color: hsl(var(--primary)); color: hsl(var(--foreground)); font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; height: 100vh; width: 100vw; box-sizing: border-box; display: flex; flex-direction: column; }
         header { text-align: center; margin-bottom: 2rem; color: hsl(var(--foreground)); flex-shrink: 0; }
         header h1 { font-size: 4rem; font-weight: 800; margin: 0; display: flex; align-items: center; justify-content: center; gap: 1.5rem; }
         header h1 svg { width: 4.5rem; height: 4.5rem; }
