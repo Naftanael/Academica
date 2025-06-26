@@ -155,7 +155,7 @@ export async function POST() {
         args: chromium.args,
         defaultViewport: { width: 1920, height: 1080 },
         executablePath: await chromium.executablePath(),
-        headless: 'new', // Use the new headless mode
+        headless: chromium.headless, // Use the library's recommended headless mode
         ignoreHTTPSErrors: true,
     });
 
