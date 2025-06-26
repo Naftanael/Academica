@@ -37,11 +37,7 @@ const navItems = [
 
 export default function SidebarNav() {
   const pathname = usePathname();
-  const [currentYear, setCurrentYear] = React.useState<number | null>(null);
-
-  React.useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
+  const currentYear = new Date().getFullYear();
 
   return (
     <>
@@ -82,7 +78,7 @@ export default function SidebarNav() {
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-sidebar-border">
          <div className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/70">
-            {currentYear !== null ? `© ${currentYear} Academica` : `© Academica`}
+            © {currentYear} Academica
          </div>
       </SidebarFooter>
     </>
