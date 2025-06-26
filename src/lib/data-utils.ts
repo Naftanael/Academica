@@ -1,3 +1,4 @@
+
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -11,7 +12,7 @@ if (dataDirFromEnv) {
 
 /**
  * Reads and parses a JSON file from the data directory.
- * This function is resilient to common errors like file not found (it creates the file),
+ * This function is resilient to common errors like file not found,
  * empty files, malformed JSON, and non-array data structures.
  * @param filename The name of the JSON file (e.g., 'classrooms.json').
  * @returns A promise that resolves to an array of type T, or an empty array if an error occurs.

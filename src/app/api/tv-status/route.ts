@@ -1,9 +1,9 @@
 
 import { NextResponse } from 'next/server';
 
-// This file is no longer in use as the TV panel has been refactored
-// to a static HTML generation system.
-// It is kept here to handle any old clients gracefully and to fix a build error
+// This API endpoint is deprecated and no longer in use.
+// The TV panel system has been refactored to use a server-generated static image.
+// This file is kept to handle any old clients gracefully and to fix a build error
 // caused by an empty non-module file.
 export async function GET() {
   // Return a 410 Gone response to indicate the endpoint is permanently removed.
