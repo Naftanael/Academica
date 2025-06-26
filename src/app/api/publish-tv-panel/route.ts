@@ -84,31 +84,26 @@ function getPanelHtml(displayData: TvDisplayInfo[], publishedDate: string): stri
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
       <style>
-        :root {
-          --background: 210 20% 12%; --foreground: 0 0% 98%; --card: 210 20% 14%;
-          --card-foreground: 0 0% 98%; --primary: 96 56% 53%; --primary-foreground: 222 47% 11%;
-          --accent: 100 65% 37%; --destructive: 0 84.2% 60.2%; --border: 217.2 32.6% 17.5%;
-        }
-        body { background-color: hsl(var(--primary)); color: hsl(var(--foreground)); font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; height: 100vh; width: 100vw; box-sizing: border-box; display: flex; flex-direction: column; }
-        header { text-align: center; margin-bottom: 2rem; color: hsl(var(--foreground)); flex-shrink: 0; }
+        body { background-color: hsl(96 56% 53%); color: hsl(0 0% 98%); font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; height: 100vh; width: 100vw; box-sizing: border-box; display: flex; flex-direction: column; }
+        header { text-align: center; margin-bottom: 2rem; color: hsl(0 0% 98%); flex-shrink: 0; }
         header h1 { font-size: 4rem; font-weight: 800; margin: 0; display: flex; align-items: center; justify-content: center; gap: 1.5rem; }
         header h1 svg { width: 4.5rem; height: 4.5rem; }
         header p { font-size: 2.5rem; margin: 0.5rem 0 0 0; opacity: 0.9; }
         main { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; overflow: hidden; }
-        .card { background-color: hsla(var(--card), 0.8); border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid hsl(var(--border) / 0.7); border-left: 8px solid hsl(var(--primary)); }
+        .card { background-color: hsla(210 20% 14%, 0.8); border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid hsl(217.2 32.6% 17.5% / 0.7); border-left: 8px solid hsl(96 56% 53%); }
         .card-content { flex-grow: 1; margin-bottom: 0.5rem; }
-        .group-name { font-size: 2.5rem; font-weight: 700; color: hsl(var(--foreground)); margin: 0 0 0.5rem 0; word-break: break-word; }
-        .shift-info { font-size: 1.5rem; color: hsl(var(--card-foreground) / 0.7); }
-        .shift-value { font-weight: 600; color: hsl(var(--card-foreground)); }
-        .classroom-info { margin-top: auto; padding-top: 0.75rem; border-top: 1px solid hsl(var(--border) / 0.5); }
+        .group-name { font-size: 2.5rem; font-weight: 700; color: hsl(0 0% 98%); margin: 0 0 0.5rem 0; word-break: break-word; }
+        .shift-info { font-size: 1.5rem; color: hsl(0 0% 98% / 0.7); }
+        .shift-value { font-weight: 600; color: hsl(0 0% 98%); }
+        .classroom-info { margin-top: auto; padding-top: 0.75rem; border-top: 1px solid hsl(217.2 32.6% 17.5% / 0.5); }
         .classroom-details { display: flex; align-items: center; gap: 1rem; }
-        .classroom-details .icon { width: 3.5rem; height: 3.5rem; color: hsl(var(--accent)); flex-shrink: 0; }
-        .classroom-details.unavailable .icon { color: hsl(var(--destructive)); }
-        .classroom-label { font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.05em; color: hsl(var(--card-foreground) / 0.7); margin: 0;}
-        .classroom-name { font-size: 2rem; font-weight: 600; color: hsl(var(--card-foreground)); margin: 0; word-break: break-word; }
-        .text-destructive { color: hsl(var(--destructive)); }
-        .no-classes-card { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1rem; color: hsl(var(--foreground)); }
-        .no-classes-card .icon-large { width: 8rem; height: 8rem; color: hsl(var(--accent)); margin-bottom: 1.5rem; }
+        .classroom-details .icon { width: 3.5rem; height: 3.5rem; color: hsl(100 65% 37%); flex-shrink: 0; }
+        .classroom-details.unavailable .icon { color: hsl(0 84.2% 60.2%); }
+        .classroom-label { font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.05em; color: hsl(0 0% 98% / 0.7); margin: 0;}
+        .classroom-name { font-size: 2rem; font-weight: 600; color: hsl(0 0% 98%); margin: 0; word-break: break-word; }
+        .text-destructive { color: hsl(0 84.2% 60.2%); }
+        .no-classes-card { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1rem; color: hsl(0 0% 98%); }
+        .no-classes-card .icon-large { width: 8rem; height: 8rem; color: hsl(100 65% 37%); margin-bottom: 1.5rem; }
         .no-classes-title { font-size: 3rem; font-weight: 600; }
         .no-classes-subtitle { font-size: 1.75rem; opacity: 0.8; margin-top: 0.5rem; }
       </style>
