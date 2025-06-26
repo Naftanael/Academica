@@ -2,6 +2,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
 import SidebarNav from './SidebarNav';
 
@@ -10,6 +11,13 @@ interface AppShellProps {
 }
 
 export default function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+  const isTvRoute = pathname.startsWith('/tv-display');
+
+  if (isTvRoute) {
+    return <>{children}</>;
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <Sidebar collapsible="icon" variant="sidebar" side="left">
