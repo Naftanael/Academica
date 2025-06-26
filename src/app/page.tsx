@@ -10,7 +10,6 @@ import { format, parseISO, differenceInDays, isValid, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import ClassroomOccupancyChart from '@/components/dashboard/ClassroomOccupancyChart';
-import PublishTvPanelButton from '@/components/dashboard/PublishTvPanelButton';
 
 async function getDashboardData(): Promise<DashboardData> {
   const classrooms = await readData<Classroom>('classrooms.json');
@@ -122,7 +121,6 @@ export default async function DashboardPage() {
         title="Dashboard"
         description={`Bem-vindo(a) ao Painel Academica. Hoje é ${format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`}
         icon={LayoutDashboard}
-        actions={<PublishTvPanelButton />}
       />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">

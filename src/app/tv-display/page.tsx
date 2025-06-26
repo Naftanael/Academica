@@ -1,7 +1,9 @@
+
 import { readData } from '@/lib/data-utils';
 import { Clock, Building, AlertTriangle } from 'lucide-react';
-import type { PublishedTvData, TvDisplayInfo } from '@/types';
+import type { ClassGroup, Classroom, TvDisplayInfo } from '@/types';
 import ClientRefresher from '@/components/tv-display/ClientRefresher';
+import { getCurrentShift } from '@/lib/utils';
 
 // Helper to generate the card for a single class
 const TvCard = ({ item }: { item: TvDisplayInfo }) => {
@@ -40,16 +42,40 @@ const NoClassesMessage = () => {
     <div className="no-classes-card col-span-full flex flex-col items-center justify-center text-center p-4 text-[#e0e1dd]">
       <AlertTriangle className="h-32 w-32 text-[#778da9] mb-6" />
       <p className="no-classes-title text-5xl font-semibold">Nenhuma turma em andamento.</p>
-      <p className="no-classes-subtitle text-3xl opacity-80 mt-2">Verifique novamente mais tarde ou publique os dados.</p>
+      <p className="no-classes-subtitle text-3xl opacity-80 mt-2">O painel é atualizado automaticamente.</p>
     </div>
   );
 };
 
-export default async function TvDisplayPage() {
-  const publishedData = await readData<PublishedTvData>('published_tv_data.json');
-  const displayData = publishedData[0]?.data ?? [];
-  const publishedDate = publishedData[0]?.publishedDate ?? "Carregando...";
 
+export default async function TvDisplayPage() {
+  const classGroups = await readData<ClassGroup>('classgroups.json');
+  const classrooms = await readData<Classroom>('classrooms.json');
+
+  const classroomMap = new Map(classrooms.map(c => [c.id, c.name]));
+  const now = new Date();
+  const currentShift = getCurrentShift(now.getHours());
+  
+  let displayData: TvDisplayInfo[] = [];
+  if (currentShift) {
+    displayData = classGroups
+      .filter(cg => cg.status === 'Em Andamento' && cg.shift === currentShift)
+      .map(cg => ({
+        id: cg.id,
+        groupName: cg.name,
+        shift: cg.shift,
+        classroomName: cg.assignedClassroomId ? classroomMap.get(cg.assignedClassroomId) ?? null : null,
+      }))
+      .sort((a, b) => a.groupName.localeCompare(b.groupName));
+  }
+  
+  const lastUpdated = now.toLocaleDateString('pt-BR', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
   return (
     <div className="bg-[#0d1b2a] text-[#e0e1dd] font-body p-8 min-h-screen w-full flex flex-col">
       <ClientRefresher />
@@ -58,7 +84,7 @@ export default async function TvDisplayPage() {
           <Clock className="w-20 h-20" />
           Guia de Salas
         </h1>
-        <p className="text-4xl mt-2 opacity-90">{publishedDate}</p>
+        <p className="text-4xl mt-2 opacity-90">{lastUpdated}</p>
       </header>
       <main className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-hidden">
         {displayData.length > 0 ? (
