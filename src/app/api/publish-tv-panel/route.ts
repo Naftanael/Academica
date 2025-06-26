@@ -114,17 +114,6 @@ function getPanelHtml(displayData: TvDisplayInfo[], publishedDate: string): stri
         <p>${publishedDate}</p>
       </header>
       <main>${mainContentHtml}</main>
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          console.log('DOM content loaded successfully.');
-          const mainElement = document.querySelector('main');
-          if (mainElement) {
-            console.log('Main element found.');
-          } else {
-            console.error('Critical Error: Main element not found in DOM.');
-          }
-        });
-      </script>
     </body>
     </html>`;
 }
