@@ -1,27 +1,22 @@
 
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
 
-// Re-using the data directory logic from data-utils
-const defaultDataPath = path.join(process.cwd(), 'src', 'data');
-const dataDirFromEnv = process.env.DATA_DIR;
-const dataDir = dataDirFromEnv || defaultDataPath;
-const tvStatusFilePath = path.join(dataDir, 'tv-publish-status.json');
+// This API route now acts as a simple trigger endpoint.
+// In a real-world scenario, this would trigger the server-side image generation process
+// (e.g., invoke a Firebase Function with Puppeteer).
+// For now, it just simulates the action and returns a success response.
 
 export async function POST() {
   try {
-    const statusData = {
-      lastPublished: Date.now(),
-    };
+    // Placeholder for image generation logic.
+    console.log('Image generation for TV panel triggered.');
 
-    // Use fs directly for this simple, non-array file
-    await fs.mkdir(dataDir, { recursive: true });
-    await fs.writeFile(tvStatusFilePath, JSON.stringify(statusData, null, 2), 'utf-8');
+    // Simulate a short delay for the generation process.
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     return NextResponse.json({ success: true, message: 'Painel de TV publicado com sucesso.' });
   } catch (error) {
-    console.error('Error publishing TV panel status:', error);
+    console.error('Error triggering TV panel generation:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido.';
     return NextResponse.json({ success: false, message: `Falha ao publicar painel: ${errorMessage}` }, { status: 500 });
   }
