@@ -1,23 +1,5 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel de Salas</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #000; }
-        img { display: block; width: 100vw; height: 100vh; object-fit: contain; }
-    </style>
-</head>
-<body>
-    <img id="painel-display" src="https://storage.googleapis.com/academica-k9-system.appspot.com/tv_panel.png" alt="Carregando painel...">
-    <script>
-        const REFRESH_INTERVAL_MS = 300000; // 5 minutes
-        const imgElement = document.getElementById('painel-display');
-        const imageUrl = imgElement.src.split('?')[0];
-        setInterval(() => {
-            // Appending a timestamp bypasses the browser cache to get the latest image
-            imgElement.src = imageUrl + '?t=' + new Date().getTime();
-        }, REFRESH_INTERVAL_MS);
-    </script>
-</body>
-</html>
+<!--
+  This static HTML file is no longer in use.
+  The functionality has been moved to the Next.js page at /src/app/tv-display/page.tsx
+  to resolve routing conflicts and build errors.
+-->
