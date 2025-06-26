@@ -8,8 +8,7 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
-  # Increased resources to prevent timeouts during image generation.
-  # Puppeteer is resource-intensive and needs more time and memory.
+  # Resources are reduced as Puppeteer is no longer needed.
   cpu: 1
-  memoryMiB: 2048
-  timeoutSeconds: 300
+  memoryMiB: 1024
+  timeoutSeconds: 60

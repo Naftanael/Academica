@@ -1,4 +1,3 @@
-
 export type DayOfWeek = 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
 export type PeriodOfDay = 'Manhã' | 'Tarde' | 'Noite';
 
@@ -80,7 +79,7 @@ export type OccupancyItem =
   | { type: 'recurring'; data: ClassroomRecurringReservation }
   | { type: 'event'; data: EventReservation };
 
-// Type for TV Display
+// Type for TV Display data
 export interface TvDisplayInfo {
   id: string;
   groupName: string;

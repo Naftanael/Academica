@@ -1,8 +1,26 @@
+'use client';
 
-// This component is no longer in use.
-// The TV display panel's refresh logic is now handled directly within
-// the page component at /src/app/tv-display/page.tsx.
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function ClientRefresher_DEPRECATED() {
-  return null;
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * This is a lightweight client component that simply forces a server-side
+ * data refresh periodically, ensuring the TV panel stays up to date without
+ * a full page reload.
+ */
+export default function ClientRefresher() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      router.refresh();
+    }, REFRESH_INTERVAL_MS);
+
+    // Cleanup the timer if the component is unmounted.
+    return () => clearInterval(timer);
+  }, [router]);
+
+  return null; // This component renders nothing.
 }
