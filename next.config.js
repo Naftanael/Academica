@@ -2,7 +2,7 @@
 const nextConfig = {
   /* config options here */
   experimental: {
-    serverComponentsExternalPackages: ['chrome-aws-lambda'],
+    serverComponentsExternalPackages: ['@sparticuz/chromium'],
   },
   typescript: {
     ignoreBuildErrors: false, 

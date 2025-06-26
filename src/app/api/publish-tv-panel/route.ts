@@ -4,7 +4,8 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
-import chromium from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 import { readData } from '@/lib/data-utils';
 import { getCurrentShift } from '@/lib/utils';
 import type { ClassGroup, Classroom, TvDisplayInfo } from '@/types';
@@ -149,12 +150,12 @@ export async function POST() {
     const publishedDate = now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const htmlContent = getPanelHtml(displayData, publishedDate);
 
-    // 4. Launch Puppeteer using chrome-aws-lambda
-    browser = await chromium.puppeteer.launch({
+    // 4. Launch Puppeteer using @sparticuz/chromium
+    browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: { width: 1920, height: 1080 },
-        executablePath: await chromium.executablePath,
-        headless: chromium.headless,
+        executablePath: await chromium.executablePath(),
+        headless: 'new', // Use the new headless mode
         ignoreHTTPSErrors: true,
     });
 
