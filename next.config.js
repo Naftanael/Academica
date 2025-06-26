@@ -2,7 +2,7 @@
 const nextConfig = {
   /* config options here */
   experimental: {
-    serverComponentsExternalPackages: ['@sparticuz/chromium'],
+    serverComponentsExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   },
   typescript: {
     ignoreBuildErrors: false, 
