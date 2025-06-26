@@ -1,3 +1,4 @@
+
 export type DayOfWeek = 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
 export type PeriodOfDay = 'Manhã' | 'Tarde' | 'Noite';
 
@@ -85,4 +86,10 @@ export interface TvDisplayInfo {
   groupName: string;
   shift: string;
   classroomName: string | null;
+}
+
+// Type for the published TV panel data file
+export interface PublishedTvData {
+  data: TvDisplayInfo[];
+  publishedDate: string;
 }
