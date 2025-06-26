@@ -85,26 +85,26 @@ function getPanelHtml(displayData: TvDisplayInfo[], publishedDate: string): stri
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
       <style>
-        body { background-color: #79c844; color: #fafafa; font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; height: 100vh; width: 100vw; box-sizing: border-box; display: flex; flex-direction: column; }
-        header { text-align: center; margin-bottom: 2rem; color: #fafafa; flex-shrink: 0; }
+        body { background-color: #0d1b2a; color: #e0e1dd; font-family: 'Inter', sans-serif; margin: 0; padding: 2rem; height: 100vh; width: 100vw; box-sizing: border-box; display: flex; flex-direction: column; }
+        header { text-align: center; margin-bottom: 2rem; color: #e0e1dd; flex-shrink: 0; }
         header h1 { font-size: 4rem; font-weight: 800; margin: 0; display: flex; align-items: center; justify-content: center; gap: 1.5rem; }
         header h1 svg { width: 4.5rem; height: 4.5rem; }
         header p { font-size: 2.5rem; margin: 0.5rem 0 0 0; opacity: 0.9; }
         main { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; overflow: hidden; }
-        .card { background-color: rgba(30, 36, 42, 0.8); border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(38, 45, 55, 0.7); border-left: 8px solid #79c844; }
+        .card { background-color: #1b263b; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #415a77; border-left: 8px solid #778da9; }
         .card-content { flex-grow: 1; margin-bottom: 0.5rem; }
-        .group-name { font-size: 2.5rem; font-weight: 700; color: #fafafa; margin: 0 0 0.5rem 0; word-break: break-word; }
-        .shift-info { font-size: 1.5rem; color: rgba(250, 250, 250, 0.7); }
-        .shift-value { font-weight: 600; color: #fafafa; }
-        .classroom-info { margin-top: auto; padding-top: 0.75rem; border-top: 1px solid rgba(38, 45, 55, 0.5); }
+        .group-name { font-size: 2.5rem; font-weight: 700; color: #e0e1dd; margin: 0 0 0.5rem 0; word-break: break-word; }
+        .shift-info { font-size: 1.5rem; color: rgba(224, 225, 221, 0.7); }
+        .shift-value { font-weight: 600; color: #e0e1dd; }
+        .classroom-info { margin-top: auto; padding-top: 0.75rem; border-top: 1px solid #415a77; }
         .classroom-details { display: flex; align-items: center; gap: 1rem; }
-        .classroom-details .icon { width: 3.5rem; height: 3.5rem; color: #4a9d20; flex-shrink: 0; }
-        .classroom-details.unavailable .icon { color: #e52929; }
-        .classroom-label { font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(250, 250, 250, 0.7); margin: 0;}
-        .classroom-name { font-size: 2rem; font-weight: 600; color: #fafafa; margin: 0; word-break: break-word; }
-        .text-destructive { color: #e52929; }
-        .no-classes-card { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1rem; color: #fafafa; }
-        .no-classes-card .icon-large { width: 8rem; height: 8rem; color: #4a9d20; margin-bottom: 1.5rem; }
+        .classroom-details .icon { width: 3.5rem; height: 3.5rem; color: #778da9; flex-shrink: 0; }
+        .classroom-details.unavailable .icon { color: #e53d3d; }
+        .classroom-label { font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(224, 225, 221, 0.7); margin: 0;}
+        .classroom-name { font-size: 2rem; font-weight: 600; color: #e0e1dd; margin: 0; word-break: break-word; }
+        .text-destructive { color: #e53d3d; }
+        .no-classes-card { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1rem; color: #e0e1dd; }
+        .no-classes-card .icon-large { width: 8rem; height: 8rem; color: #778da9; margin-bottom: 1.5rem; }
         .no-classes-title { font-size: 3rem; font-weight: 600; }
         .no-classes-subtitle { font-size: 1.75rem; opacity: 0.8; margin-top: 0.5rem; }
       </style>
