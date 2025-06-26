@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import * as React from 'react'; 
+import * as React from 'react';
 import {
   LayoutDashboard,
   School,
@@ -41,7 +41,7 @@ export default function SidebarNav() {
 
   React.useEffect(() => {
     setCurrentYear(new Date().getFullYear());
-  }, []); 
+  }, []);
 
   return (
     <>
@@ -52,7 +52,7 @@ export default function SidebarNav() {
             Academica
           </h1>
         </Link>
-        <div className="md:hidden"> 
+        <div className="md:hidden">
             <SidebarTrigger />
         </div>
       </SidebarHeader>
