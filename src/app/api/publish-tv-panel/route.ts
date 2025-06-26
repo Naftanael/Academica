@@ -114,6 +114,17 @@ function getPanelHtml(displayData: TvDisplayInfo[], publishedDate: string): stri
         <p>${publishedDate}</p>
       </header>
       <main>${mainContentHtml}</main>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          console.log('DOM content loaded successfully.');
+          const mainElement = document.querySelector('main');
+          if (mainElement) {
+            console.log('Main element found.');
+          } else {
+            console.error('Critical Error: Main element not found in DOM.');
+          }
+        });
+      </script>
     </body>
     </html>`;
 }
@@ -159,6 +170,13 @@ export async function POST() {
     });
 
     const page = await browser.newPage();
+    
+    // Add logging from the page context for easier debugging
+    page.on('console', msg => console.log('PUPPETEER CONSOLE LOG:', msg.text()));
+    page.on('pageerror', error => {
+      console.error('PUPPETEER PAGE ERROR:', error.message);
+    });
+
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     
     // 5. Take screenshot and save to public directory
