@@ -1,50 +1,52 @@
 
-import { getClassrooms } from '@/lib/actions/classrooms';
-import { getClassGroups } from '@/lib/actions/classgroups';
-import type { ClassGroup, Classroom, TvDisplayInfo } from '@/types';
-import TvDisplayClient from '@/components/tv-display/TvDisplayClient';
-import { getCurrentShift } from '@/lib/utils';
+'use client';
 
-// This is the main data-fetching logic for the TV display page.
-// It runs on the server to prepare the initial data.
-async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
-  try {
-    const classGroups = await getClassGroups();
-    const classrooms = await getClassrooms();
+import * as React from 'react';
 
-    const classroomMap = new Map(classrooms.map(c => [c.id, c.name]));
-    const now = new Date();
-    const currentShift = getCurrentShift(now.getHours());
-    
-    if (!currentShift) {
-      // If it's outside of normal class hours, return empty array.
-      return [];
-    }
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-    const displayData: TvDisplayInfo[] = classGroups
-      .filter(cg => cg.status === 'Em Andamento' && cg.shift === currentShift)
-      .map(cg => ({
-        id: cg.id,
-        groupName: cg.name,
-        shift: cg.shift,
-        classroomName: cg.assignedClassroomId ? classroomMap.get(cg.assignedClassroomId) ?? null : null,
-      }))
-      .sort((a, b) => a.groupName.localeCompare(b.groupName));
+export default function TvDisplayPage() {
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
-    return displayData;
-  } catch (error) {
-    console.error("Failed to fetch initial TV display data:", error);
-    return []; // Return empty on error
-  }
-}
+  React.useEffect(() => {
+    const refreshIframe = () => {
+      if (iframeRef.current) {
+        // Appending a timestamp to the URL busts the cache and forces a reload
+        const url = `/tv_panel.html?t=${new Date().getTime()}`;
+        iframeRef.current.src = url;
+      }
+    };
 
-export default async function TvDisplayPage() {
-  const initialDisplayData = await getTvDisplayData();
+    // Initial load
+    refreshIframe();
 
-  // The main container sets the background color and flex layout for the TV view.
+    // Set up periodic refresh
+    const intervalId = setInterval(refreshIframe, REFRESH_INTERVAL_MS);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  // The parent container ensures the iframe fills the screen without scrollbars.
   return (
-    <div className="bg-primary min-h-screen flex flex-col">
-      <TvDisplayClient initialDisplayData={initialDisplayData} />
+    <div style={{
+      margin: 0,
+      padding: 0,
+      height: '100vh',
+      width: '100vw',
+      overflow: 'hidden',
+      backgroundColor: '#000' // Fallback background color
+    }}>
+      <iframe
+        ref={iframeRef}
+        title="Painel de Salas"
+        style={{
+          width: '100%',
+          height: '100%',
+          border: 'none',
+        }}
+      />
     </div>
   );
 }
