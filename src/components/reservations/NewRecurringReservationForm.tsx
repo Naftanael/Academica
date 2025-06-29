@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { CalendarPlus, Save, CalendarIcon as CalendarDateIcon, Info } from 'lucide-react';
-import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter, parseISO, addDays } from 'date-fns';
+import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter, parseISO, addDays, isEqual } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
@@ -168,7 +168,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
 
     const dayNum = getDay(date); 
     return numericalClassDays.includes(dayNum);
-  }, [selectedClassGroup, watchedStartDate, calculatedEndDate]);
+  }, [selectedClassGroup, watchedStartDate, calculatedEndDate, isEqual]);
 
   const modifiers = { 
     isClassDayInRange: classDayInRangeModifier,
