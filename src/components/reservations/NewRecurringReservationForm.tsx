@@ -172,7 +172,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
 
   const modifiers = { 
     isClassDayInRange: classDayInRangeModifier,
-    isCalculatedEnd: calculatedEndDate,
+    isCalculatedEnd: calculatedEndDate || undefined,
   };
 
   const modifiersStyles = {

@@ -73,9 +73,9 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     classGroups.push(newClassGroup);
     await writeData<ClassGroup>('classgroups.json', classGroups);
 
-    revalidatePath('/classgroups');
-    revalidatePath('/room-availability');
-    revalidatePath('/tv-display');
+    revalidatePath('/turmas');
+    revalidatePath('/disponibilidade-salas');
+    revalidatePath('/painel-tv');
     revalidatePath('/');
     return { success: true, message: 'Turma criada com sucesso!', data: newClassGroup };
 
@@ -108,10 +108,10 @@ export async function updateClassGroup(id: string, values: ClassGroupEditFormVal
 
     await writeData<ClassGroup>('classgroups.json', classGroups);
 
-    revalidatePath('/classgroups');
-    revalidatePath(`/classgroups/${id}/edit`);
-    revalidatePath('/room-availability');
-    revalidatePath('/tv-display');
+    revalidatePath('/turmas');
+    revalidatePath(`/turmas/${id}/editar`);
+    revalidatePath('/disponibilidade-salas');
+    revalidatePath('/painel-tv');
     revalidatePath('/');
     return { success: true, message: 'Turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
 
@@ -144,10 +144,10 @@ export async function deleteClassGroup(id: string) {
         await writeData('recurring_reservations.json', remainingReservations);
     }
 
-    revalidatePath('/classgroups');
-    revalidatePath('/room-availability');
-    revalidatePath('/tv-display');
-    revalidatePath('/reservations');
+    revalidatePath('/turmas');
+    revalidatePath('/disponibilidade-salas');
+    revalidatePath('/painel-tv');
+    revalidatePath('/reservas');
     revalidatePath('/');
     return { success: true, message: 'Turma e reservas associadas foram excluídas com sucesso!' };
   } catch (error) {
@@ -179,9 +179,9 @@ export async function assignClassroomToClassGroup(classGroupId: string, newClass
     classGroups[classGroupIndex].assignedClassroomId = newClassroomId === null ? undefined : newClassroomId;
     await writeData<ClassGroup>('classgroups.json', classGroups);
 
-    revalidatePath('/classgroups');
-    revalidatePath('/room-availability');
-    revalidatePath('/tv-display');
+    revalidatePath('/turmas');
+    revalidatePath('/disponibilidade-salas');
+    revalidatePath('/painel-tv');
     revalidatePath('/');
     return { success: true, message: 'Sala da turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
 
