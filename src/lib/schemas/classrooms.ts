@@ -6,7 +6,8 @@ export const classroomEditSchema = z.object({
   name: z.string().min(1, { message: "O nome da sala é obrigatório." })
                  .min(3, { message: "O nome da sala deve ter pelo menos 3 caracteres." }),
   capacity: z.coerce.number({ invalid_type_error: "Capacidade deve ser um número." })
-                     .min(1, { message: "A capacidade deve ser pelo menos 1." }),
+                     .min(1, { message: "A capacidade deve ser pelo menos 1." })
+                     .optional(),
   isUnderMaintenance: z.boolean().optional(),
   maintenanceReason: z.string().max(200, "O motivo da manutenção deve ter no máximo 200 caracteres.").optional(),
 });
