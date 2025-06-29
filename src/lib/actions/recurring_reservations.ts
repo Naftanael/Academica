@@ -8,8 +8,50 @@ import { recurringReservationFormSchema, type RecurringReservationFormValues } f
 import { z } from 'zod';
 import { getClassGroups } from './classgroups';
 import { getClassrooms } from './classrooms';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, addDays, getDay, isBefore } from 'date-fns';
 import { dateRangesOverlap } from '@/lib/utils';
+import { DAYS_OF_WEEK } from '../constants';
+
+const dayOfWeekMapping: Record<DayOfWeek, number> = {
+  'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6
+};
+
+// Helper function to calculate the end date based on number of classes and class days
+function calculateEndDate(startDate: Date, classDays: DayOfWeek[], numberOfClasses: number): Date {
+  const numericalClassDays = classDays.map(d => dayOfWeekMapping[d]);
+  let currentDate = new Date(startDate);
+  currentDate.setHours(0, 0, 0, 0); // Normalize time
+  let classesCount = 0;
+  let lastClassDate = new Date(currentDate);
+
+  if (numberOfClasses <= 0) {
+    return lastClassDate;
+  }
+  
+  // Infinite loop safeguard
+  let loop_guard = 0;
+  const max_days_to_check = 365 * 2; // Check up to 2 years out
+
+  // Find the very first class date (can be the start date itself or a future date)
+  while (!numericalClassDays.includes(getDay(currentDate)) && loop_guard < max_days_to_check) {
+    currentDate = addDays(currentDate, 1);
+    loop_guard++;
+  }
+  
+  lastClassDate = new Date(currentDate);
+  classesCount = 1;
+
+  while (classesCount < numberOfClasses && loop_guard < max_days_to_check) {
+    currentDate = addDays(currentDate, 1);
+    if (numericalClassDays.includes(getDay(currentDate))) {
+      classesCount++;
+      lastClassDate = new Date(currentDate);
+    }
+    loop_guard++;
+  }
+
+  return lastClassDate;
+}
 
 export async function getRecurringReservations(): Promise<ClassroomRecurringReservation[]> {
   try {
@@ -34,17 +76,17 @@ export async function createRecurringReservation(values: RecurringReservationFor
     }
     const newReservationClassDays = newReservationClassGroup.classDays;
     
-    let newResStartDate: Date, newResEndDate: Date;
+    let newResStartDate: Date;
     try {
         newResStartDate = parseISO(validatedValues.startDate);
-        newResEndDate = parseISO(validatedValues.endDate);
-        if (isNaN(newResStartDate.getTime()) || isNaN(newResEndDate.getTime())) {
-            return { success: false, message: 'Datas da nova reserva inválidas.'};
+        if (isNaN(newResStartDate.getTime())) {
+            return { success: false, message: 'Data de início da nova reserva inválida.'};
         }
     } catch (e) {
-        return { success: false, message: 'Formato de data da nova reserva inválido.'};
+        return { success: false, message: 'Formato de data de início da nova reserva inválido.'};
     }
-
+    
+    const newResEndDate = calculateEndDate(newResStartDate, newReservationClassDays, validatedValues.numberOfClasses);
 
     for (const existingRes of existingReservations) {
       if (existingRes.classroomId !== validatedValues.classroomId) {
@@ -99,7 +141,7 @@ export async function createRecurringReservation(values: RecurringReservationFor
       classGroupId: validatedValues.classGroupId,
       classroomId: validatedValues.classroomId,
       startDate: validatedValues.startDate, 
-      endDate: validatedValues.endDate,     
+      endDate: format(newResEndDate, 'yyyy-MM-dd'),
       shift: validatedValues.shift as PeriodOfDay,
       purpose: validatedValues.purpose,
     };
