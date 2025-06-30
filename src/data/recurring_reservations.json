@@ -3,8 +3,8 @@
     "id": "mchspzhj-2q8lka9",
     "classGroupId": "mbqkrhum-c8k98u0",
     "classroomId": "new-sala-1-aaabbbccc",
-    "startDate": "2025-07-02",
-    "endDate": "2025-08-05",
+    "startDate": "2024-07-02",
+    "endDate": "2024-08-05",
     "shift": "Manhã",
     "purpose": "Química"
   },
@@ -12,8 +12,8 @@
     "id": "mcihgpe0-znfvzld",
     "classGroupId": "imgdata-006-fmc08",
     "classroomId": "new-sala-6-aaabbbhhh",
-    "startDate": "2025-06-29",
-    "endDate": "2025-07-09",
+    "startDate": "2024-06-29",
+    "endDate": "2024-07-09",
     "shift": "Manhã",
     "purpose": "Deontologia e Ética Profissional"
   },
@@ -21,8 +21,8 @@
     "id": "mcii2ham-len2pi4",
     "classGroupId": "imgdata2-001-fmc06",
     "classroomId": "new-sala-9-aaabbbkkk",
-    "startDate": "2025-06-29",
-    "endDate": "2025-07-09",
+    "startDate": "2024-06-29",
+    "endDate": "2024-07-09",
     "shift": "Noite",
     "purpose": "Homeopatia"
   }

@@ -1,8 +1,8 @@
 
+import { NextResponse } from 'next/server';
 import { readData } from '@/lib/data-utils';
 import type { ClassGroup, Classroom, TvDisplayInfo } from '@/types';
 import { getCurrentShift, isClassDay } from '@/lib/utils';
-import TvDisplayClient from './TvDisplayClient';
 import { parseISO, isWithinInterval } from 'date-fns';
 
 async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
@@ -42,13 +42,13 @@ async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
 
     return displayData.sort((a, b) => a.groupName.localeCompare(b.groupName));
   } catch (error) {
-    console.error("Failed to get TV display data:", error);
+    console.error("Failed to get TV display data in API:", error);
+    // In a real app, you might want more sophisticated logging/error handling
     return [];
   }
 }
 
-export default async function TvDisplayPage() {
-  const displayData = await getTvDisplayData();
-  
-  return <TvDisplayClient initialData={displayData} />;
+export async function GET() {
+  const data = await getTvDisplayData();
+  return NextResponse.json(data);
 }
