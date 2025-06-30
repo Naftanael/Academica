@@ -2,8 +2,9 @@
 import { NextResponse } from 'next/server';
 import { readData } from '@/lib/data-utils';
 import type { ClassGroup, Classroom, TvDisplayInfo } from '@/types';
-import { getCurrentShift, isClassDay } from '@/lib/utils';
+import { getCurrentShift } from '@/lib/utils';
 import { parseISO, isWithinInterval } from 'date-fns';
+import { JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
 
 async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
   try {
@@ -12,10 +13,17 @@ async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
       readData<Classroom>('classrooms.json'),
     ]);
 
-    const serverDate = new Date();
-    // Assume um fuso horário UTC-3 para a localização da escola (ex: São Paulo, Brasil)
-    const now = new Date(serverDate.valueOf() - 3 * 60 * 60 * 1000);
-    const currentShift = getCurrentShift(now.getHours());
+    const nowUtc = new Date();
+    const utcHour = nowUtc.getUTCHours();
+    const utcDay = nowUtc.getUTCDay(); // 0 for Sunday, 1 for Monday...
+
+    // Brazil is generally UTC-3. Calculate local time parts from UTC.
+    const brazilHour = (utcHour - 3 + 24) % 24;
+    // If it's 00, 01, or 02 UTC, it's the previous day in Brazil.
+    const brazilDayIndex = utcHour < 3 ? (utcDay - 1 + 7) % 7 : utcDay;
+    const currentDayNameInBrazil = JS_DAYS_OF_WEEK_MAP_TO_PT[brazilDayIndex];
+
+    const currentShift = getCurrentShift(brazilHour);
 
     if (!currentShift) {
       return [];
@@ -29,9 +37,9 @@ async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
       
       return (
         cg.status === 'Em Andamento' &&
-        isWithinInterval(serverDate, { start: startDate, end: endDate }) && // Verifica o intervalo com a hora UTC do servidor
-        cg.shift === currentShift && // Verifica o turno com a hora local
-        isClassDay(now, cg.classDays) // Verifica o dia da semana com a data local
+        isWithinInterval(nowUtc, { start: startDate, end: endDate }) && // Check against UTC time
+        cg.shift === currentShift && // Check against calculated Brazil shift
+        Array.isArray(cg.classDays) && cg.classDays.includes(currentDayNameInBrazil) // Check against calculated Brazil day
       );
     });
 
