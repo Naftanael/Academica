@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Classroom, ClassGroup } from '@/types';
 import { Search, DoorOpen, AlertTriangle, Wrench, Pill, ScanLine, Stethoscope, Briefcase, BookOpen, LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 
 interface StudentSearchViewProps {

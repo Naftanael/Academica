@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { PlusCircle, ListChecks, CalendarPlus, Edit, Trash2, CalendarClock } from 'lucide-react';
+import { PlusCircle, ListChecks, CalendarPlus, CalendarClock } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { getRecurringReservations } from '@/lib/actions/recurring_reservations';
 import { getEventReservations } from '@/lib/actions/event_reservations';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
-import type { ClassroomRecurringReservation, EventReservation, Classroom, ClassGroup, DayOfWeek } from '@/types';
+import type { ClassroomRecurringReservation, EventReservation, DayOfWeek } from '@/types';
 import { format, parse, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DeleteRecurringReservationButton } from '@/components/reservations/DeleteRecurringReservationButton';
@@ -24,7 +24,7 @@ function formatSimpleDate(dateString: string): string {
     if (isValid(parsedDate)) {
       return format(parsedDate, 'dd/MM/yy', { locale: ptBR });
     }
-  } catch (e) {
+  } catch {
     // Fallback for unexpected formats
   }
   return 'Data Inválida';

@@ -3,14 +3,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassroomRecurringReservation, ClassGroup, Classroom, DayOfWeek, PeriodOfDay } from '@/types';
+import type { ClassroomRecurringReservation, DayOfWeek, PeriodOfDay } from '@/types';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import { z } from 'zod';
 import { getClassGroups } from './classgroups';
 import { getClassrooms } from './classrooms';
-import { parseISO, format, addDays, getDay, isBefore } from 'date-fns';
+import { parseISO, format, addDays, getDay } from 'date-fns';
 import { dateRangesOverlap } from '@/lib/utils';
-import { DAYS_OF_WEEK } from '../constants';
 
 const dayOfWeekMapping: Record<DayOfWeek, number> = {
   'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6
@@ -82,7 +81,7 @@ export async function createRecurringReservation(values: RecurringReservationFor
         if (isNaN(newResStartDate.getTime())) {
             return { success: false, message: 'Data de início da nova reserva inválida.'};
         }
-    } catch (e) {
+    } catch {
         return { success: false, message: 'Formato de data de início da nova reserva inválido.'};
     }
     
@@ -101,7 +100,7 @@ export async function createRecurringReservation(values: RecurringReservationFor
             console.warn(`Reserva existente ${existingRes.id} tem datas inválidas. Pulando.`);
             continue;
         }
-      } catch(e) {
+      } catch {
         console.warn(`Reserva existente ${existingRes.id} tem formato de data inválido. Pulando.`);
         continue;
       }
@@ -170,7 +169,7 @@ export async function createRecurringReservation(values: RecurringReservationFor
 
 export async function deleteRecurringReservation(id: string) {
   try {
-    let reservations = await getRecurringReservations();
+    const reservations = await getRecurringReservations();
     const reservationIndex = reservations.findIndex(r => r.id === id);
 
     if (reservationIndex === -1) {

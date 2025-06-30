@@ -105,7 +105,7 @@ export async function deleteClassroom(id: string) {
         return { success: false, message: 'Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas recorrentes.' };
     }
     
-    let classrooms = await readData<Classroom>('classrooms.json');
+    const classrooms = await readData<Classroom>('classrooms.json');
     const classroomIndex = classrooms.findIndex(c => c.id === id);
 
     if (classroomIndex === -1) {

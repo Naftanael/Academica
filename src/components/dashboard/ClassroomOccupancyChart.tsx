@@ -103,7 +103,6 @@ export default function ClassroomOccupancyChart({ data }: ClassroomOccupancyChar
                         // name here refers to the dataKey 'turmas'
                         const configEntry = chartConfig[name as keyof typeof chartConfig];
                         const count = Number(value);
-                        const label = count === 1 ? 'turma alocada' : 'turmas alocadas';
                         return (
                           <div className="flex flex-col items-start gap-0.5">
                             <div className="text-sm font-medium text-foreground">{props.payload.day_full || props.payload.day}</div>

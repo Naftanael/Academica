@@ -126,7 +126,7 @@ export async function updateClassGroup(id: string, values: ClassGroupEditFormVal
 
 export async function deleteClassGroup(id: string) {
   try {
-    let classGroups = await readData<ClassGroup>('classgroups.json');
+    const classGroups = await readData<ClassGroup>('classgroups.json');
     const classGroupIndex = classGroups.findIndex(cg => cg.id === id);
 
     if (classGroupIndex === -1) {
@@ -138,7 +138,7 @@ export async function deleteClassGroup(id: string) {
     await writeData<ClassGroup>('classgroups.json', classGroups);
 
     // Also remove any recurring reservations associated with this class group
-    let recurringReservations = await readData<ClassroomRecurringReservation>('recurring_reservations.json');
+    const recurringReservations = await readData<ClassroomRecurringReservation>('recurring_reservations.json');
     const remainingReservations = recurringReservations.filter(r => r.classGroupId !== id);
     if (remainingReservations.length < recurringReservations.length) {
         await writeData('recurring_reservations.json', remainingReservations);
@@ -160,8 +160,7 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | undefi
   try {
     const classGroups = await readData<ClassGroup>('classgroups.json');
     return classGroups.find(cg => cg.id === id);
-  } catch (error)
-    {
+  } catch (error) {
     console.error(`Failed to get class group by ID ${id}:`, error);
     return undefined;
   }

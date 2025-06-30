@@ -2,7 +2,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { PeriodOfDay, DayOfWeek } from "@/types";
-import { getDay } from "date-fns";
+import { getDay, parseISO, isValid } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -16,6 +16,12 @@ const dayOfWeekMapping: Record<DayOfWeek, number> = {
   'Sexta': 5,
   'Sábado': 6
 };
+
+export function isValidDate(dateStr: string | null | undefined): boolean {
+    if (!dateStr) return false;
+    const date = parseISO(dateStr);
+    return isValid(date);
+}
 
 export function isClassDay(currentDate: Date, classDays: DayOfWeek[]): boolean {
   if (!currentDate || !Array.isArray(classDays)) {

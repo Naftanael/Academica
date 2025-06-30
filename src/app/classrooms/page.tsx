@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
 import ClassroomsDisplay from '@/components/classrooms/ClassroomsDisplay';
-import type { Classroom, ClassGroup } from '@/types';
 
 export default async function ClassroomsPage() {
   const classrooms = await getClassrooms();

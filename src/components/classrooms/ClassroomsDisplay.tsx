@@ -6,8 +6,8 @@ import { PlusCircle, School, Users, CalendarDays, Clock, Wrench } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Classroom, ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
-import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton';
+import type { Classroom, ClassGroup, DayOfWeek } from '@/types';
+import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton'; // Keep the original import here
 import { EditClassroomButton } from '@/components/classrooms/EditClassroomButton';
 import { JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,7 @@ import * as React from 'react';
 
 interface ClassroomsDisplayProps {
   classrooms: Classroom[];
-  classGroups: ClassGroup[];
+ classGroups: ClassGroup[];
 }
 
 export default function ClassroomsDisplay({ classrooms, classGroups }: ClassroomsDisplayProps) {
@@ -131,7 +131,7 @@ export default function ClassroomsDisplay({ classrooms, classGroups }: Classroom
               cg.assignedClassroomId === room.id &&
               cg.status === 'Em Andamento' &&
               Array.isArray(cg.classDays) && cg.classDays.includes(currentDayName as DayOfWeek) && // currentDayName is now guaranteed to be DayOfWeek or null
-              cg.shift === currentShift // currentShift is also guaranteed
+ cg.shift === currentShift // currentShift is also guaranteed
             ) : undefined;
 
             return (

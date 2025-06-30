@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Poppins } from 'next/font/google';
 import '../globals.css';
-import './tv-display.css'; // Import the new CSS file
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -17,10 +16,8 @@ export const metadata: Metadata = {
 
 export default function TvDisplayLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className={poppins.variable}>
-      <body className="tv-display-body">
+    <div className={`${poppins.variable} tv-display-body h-full w-full`}>
         {children}
-      </body>
-    </html>
+    </div>
   );
 }

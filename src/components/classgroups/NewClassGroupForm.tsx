@@ -34,7 +34,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { createClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK, CLASS_GROUP_STATUSES } from '@/lib/constants';
-import type { PeriodOfDay, DayOfWeek, ClassGroupStatus } from '@/types';
 import { cn } from '@/lib/utils';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 

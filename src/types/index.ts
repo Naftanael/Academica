@@ -85,6 +85,10 @@ export interface TvDisplayInfo {
   groupName: string;
   shift: string;
   classroomName: string | null;
+  classDays: DayOfWeek[];
+  startDate: string;
+  endDate: string;
+  status: ClassGroupStatus;
 }
 
 // Type for the published TV panel data file

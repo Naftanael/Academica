@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { parseISO, isBefore, isEqual } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { CLASS_GROUP_SHIFTS } from '@/lib/constants';
 
 const dateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de data inválido. Use YYYY-MM-DD.");

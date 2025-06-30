@@ -30,7 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { updateClassGroup } from '@/lib/actions/classgroups';
 import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK } from '@/lib/constants';
-import type { ClassGroup, DayOfWeek, PeriodOfDay } from '@/types';
+import type { ClassGroup } from '@/types';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 
 const formSchema = z.object({

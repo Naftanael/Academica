@@ -4,7 +4,7 @@ import type { ClassGroup, DashboardStats, Classroom, DayOfWeek, ClassGroupWithDa
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard, Activity } from 'lucide-react';
+import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays, isValid, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

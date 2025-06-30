@@ -5,7 +5,6 @@ import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { getClassGroups } from '@/lib/actions/classgroups';
 import { getClassrooms } from '@/lib/actions/classrooms';
-import type { ClassGroup, Classroom } from '@/types';
 import ClassGroupsTable from '@/components/classgroups/ClassGroupsTable';
 
 export default async function ClassGroupsPage() {

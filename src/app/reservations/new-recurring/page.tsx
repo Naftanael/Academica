@@ -6,15 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getClassGroups } from '@/lib/actions/classgroups';
 import { getClassrooms } from '@/lib/actions/classrooms';
-import { getRecurringReservations } from '@/lib/actions/recurring_reservations';
 import NewRecurringReservationForm from '@/components/reservations/NewRecurringReservationForm';
-import type { ClassGroup, Classroom, ClassroomRecurringReservation } from '@/types';
-
 
 export default async function NewRecurringReservationPage() {
   const classGroups = await getClassGroups();
   const classrooms = await getClassrooms();
-  const allRecurringReservations = await getRecurringReservations();
 
   return (
     <>
@@ -39,7 +35,6 @@ export default async function NewRecurringReservationPage() {
           <NewRecurringReservationForm
             classGroups={classGroups}
             classrooms={classrooms}
-            allRecurringReservations={allRecurringReservations}
           />
         </CardContent>
       </Card>

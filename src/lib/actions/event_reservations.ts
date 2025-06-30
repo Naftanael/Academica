@@ -4,14 +4,47 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { EventReservation, ClassroomRecurringReservation, ClassGroup, Classroom } from '@/types';
+import type { EventReservation } from '@/types';
 import { eventReservationFormSchema, type EventReservationFormValues } from '@/lib/schemas/event_reservations';
 import { getRecurringReservations } from './recurring_reservations';
 import { getClassGroups } from './classgroups';
 import { getClassrooms } from './classrooms';
-import { parseISO, getDay, format } from 'date-fns';
+import { parseISO, getDay } from 'date-fns';
 import { SHIFT_TIME_RANGES, JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
-import { timeRangesOverlap } from '@/lib/utils'; // Moved helper
+
+// Helper function to convert HH:mm string to total minutes from midnight
+const timeToMinutes = (timeStr: string): number => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) {
+        throw new Error(`Invalid time string format: ${timeStr}`);
+    }
+    return hours * 60 + minutes;
+};
+
+// Helper function to check if two time ranges overlap
+const timeRangesOverlap = (startA: string, endA: string, startB: string, endB: string): boolean => {
+    try {
+        const startAMinutes = timeToMinutes(startA);
+        const endAMinutes = timeToMinutes(endA);
+        const startBMinutes = timeToMinutes(startB);
+        const endBMinutes = timeToMinutes(endB);
+
+        if (startAMinutes >= endAMinutes) {
+            throw new Error(`Start time ${startA} is not before end time ${endA}`);
+        }
+        if (startBMinutes >= endBMinutes) {
+            throw new Error(`Start time ${startB} is not before end time ${endB}`);
+        }
+
+        // Overlap occurs if one range starts before the other ends, and vice-versa
+        return startAMinutes < endBMinutes && startBMinutes < endAMinutes;
+    } catch (error) {
+        console.error("Error in timeRangesOverlap:", error);
+        // Decide how to handle invalid time formats. Returning false is a safe default.
+        // Or rethrow the error if the inputs should always be valid.
+        throw error;
+    }
+};
 
 export async function getEventReservations(): Promise<EventReservation[]> {
   try {
@@ -108,7 +141,7 @@ export async function createEventReservation(values: EventReservationFormValues)
 
 export async function deleteEventReservation(id: string) {
   try {
-    let eventReservations = await getEventReservations();
+    const eventReservations = await getEventReservations();
     const reservationIndex = eventReservations.findIndex(er => er.id === id);
 
     if (reservationIndex === -1) {

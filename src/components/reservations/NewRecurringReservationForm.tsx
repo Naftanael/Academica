@@ -5,9 +5,9 @@ import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { CalendarPlus, Save, CalendarIcon as CalendarDateIcon, Info } from 'lucide-react';
-import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter, parseISO, addDays, isEqual } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Save, CalendarIcon as CalendarDateIcon, Info } from 'lucide-react';
+import { format, isValid, getDay, isBefore, isAfter, parseISO, addDays, isEqual } from 'date-fns';
+import { ptBR } from 'date-fns/locale'; 
 import { type DayModifiers } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
@@ -33,14 +33,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { createRecurringReservation } from '@/lib/actions/recurring_reservations';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
-import type { ClassGroup, Classroom, DayOfWeek, ClassroomRecurringReservation, PeriodOfDay } from '@/types';
+import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
 import { cn } from '@/lib/utils';
 import { CLASS_GROUP_SHIFTS } from '@/lib/constants';
 
 interface NewRecurringReservationFormProps {
   classGroups: ClassGroup[];
   classrooms: Classroom[];
-  allRecurringReservations: ClassroomRecurringReservation[];
 }
 
 const dayOfWeekMapping: Record<DayOfWeek, number> = {
@@ -53,7 +52,7 @@ const dayOfWeekMapping: Record<DayOfWeek, number> = {
   'Sábado': 6
 };
 
-export default function NewRecurringReservationForm({ classGroups, classrooms, allRecurringReservations }: NewRecurringReservationFormProps) {
+export default function NewRecurringReservationForm({ classGroups, classrooms }: NewRecurringReservationFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, setIsPending] = React.useState(false);
@@ -162,15 +161,15 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     const dateIsWithinInterval = 
       (isAfter(date, firstClassDate) || isEqual(date, firstClassDate)) &&
       (isBefore(date, calculatedEndDate) || isEqual(date, calculatedEndDate));
-
+ 
     if (!dateIsWithinInterval) {
         return false;
     }
 
     const dayNum = getDay(date); 
     return numericalClassDays.includes(dayNum);
-  }, [selectedClassGroup, watchedStartDate, calculatedEndDate, isEqual]);
-
+  }, [selectedClassGroup, watchedStartDate, calculatedEndDate]);
+ 
   const modifiers: DayModifiers = { 
     isClassDayInRange: classDayInRangeModifier,
   };

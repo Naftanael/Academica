@@ -7,7 +7,6 @@ import { getClassGroups } from '@/lib/actions/classgroups';
 import { getEventReservations } from '@/lib/actions/event_reservations';
 import { getRecurringReservations } from '@/lib/actions/recurring_reservations';
 import RoomAvailabilityDisplay from '@/components/room-availability/RoomAvailabilityDisplay';
-import type { Classroom, ClassGroup, EventReservation, ClassroomRecurringReservation } from '@/types';
 
 export default async function RoomAvailabilityPage() {
   const classrooms = await getClassrooms();
