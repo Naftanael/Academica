@@ -11,10 +11,24 @@ import { getEventReservations } from '@/lib/actions/event_reservations';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
 import type { ClassroomRecurringReservation, EventReservation, Classroom, ClassGroup, DayOfWeek } from '@/types';
-import { format, parseISO, isValid } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DeleteRecurringReservationButton } from '@/components/reservations/DeleteRecurringReservationButton';
 import { DeleteEventReservationButton } from '@/components/reservations/DeleteEventReservationButton';
+
+// Helper to safely format YYYY-MM-DD string to DD/MM/YY
+function formatSimpleDate(dateString: string): string {
+  if (!dateString || typeof dateString !== 'string') return 'Data Inválida';
+  try {
+    const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
+    if (isValid(parsedDate)) {
+      return format(parsedDate, 'dd/MM/yy', { locale: ptBR });
+    }
+  } catch (e) {
+    // Fallback for unexpected formats
+  }
+  return 'Data Inválida';
+}
 
 interface EnrichedRecurringReservation extends ClassroomRecurringReservation {
   classroomName: string;
@@ -42,67 +56,24 @@ export default async function ReservationsPage() {
 
   const enrichedRecurringReservations: EnrichedRecurringReservation[] = recurringReservationsData.map(res => {
     const classGroupDetails = classGroupMap.get(res.classGroupId);
-    let parsedStartDate: Date | null = null;
-    let parsedEndDate: Date | null = null;
-    let formattedStartDate = 'Data Inválida';
-    let formattedEndDate = 'Data Inválida';
-
-    try {
-      if (typeof res.startDate === 'string') {
-        const tempDate = parseISO(res.startDate);
-        if (isValid(tempDate)) {
-          parsedStartDate = tempDate;
-          formattedStartDate = format(parsedStartDate, "dd/MM/yy", { locale: ptBR });
-        }
-      }
-    } catch (e) {
-      console.warn(`Reservations: Could not parse startDate "${res.startDate}" for recurring reservation ${res.id}.`, e);
-    }
     
-    try {
-      if (typeof res.endDate === 'string') {
-        const tempDate = parseISO(res.endDate);
-        if (isValid(tempDate)) {
-          parsedEndDate = tempDate;
-          formattedEndDate = format(parsedEndDate, "dd/MM/yy", { locale: ptBR });
-        }
-      }
-    } catch (e) {
-      console.warn(`Reservations: Could not parse endDate "${res.endDate}" for recurring reservation ${res.id}.`, e);
-    }
-
     return {
       ...res,
       classroomName: classroomMap.get(res.classroomId) || 'Sala desconhecida',
       classGroupName: classGroupDetails?.name || 'Turma desconhecida',
       classGroupDays: classGroupDetails?.classDays || [],
-      formattedStartDate: formattedStartDate,
-      formattedEndDate: formattedEndDate,
+      formattedStartDate: formatSimpleDate(res.startDate),
+      formattedEndDate: formatSimpleDate(res.endDate),
     };
   });
 
   const enrichedEventReservations: EnrichedEventReservation[] = eventReservationsData.map(event => {
-    let parsedDate: Date | null = null;
-    let formattedDate = 'Data Inválida';
-
-    try {
-      if (typeof event.date === 'string') {
-        const tempDate = parseISO(event.date);
-        if (isValid(tempDate)) {
-          parsedDate = tempDate;
-          formattedDate = format(parsedDate, "dd/MM/yyyy", { locale: ptBR });
-        }
-      }
-    } catch (e) {
-      console.warn(`Reservations: Could not parse date "${event.date}" for event reservation ${event.id}.`, e);
-    }
-    
     return {
       ...event,
       classroomName: classroomMap.get(event.classroomId) || 'Sala desconhecida',
-      formattedDate: formattedDate,
-      formattedStartTime: event.startTime, // Already HH:mm
-      formattedEndTime: event.endTime, // Already HH:mm
+      formattedDate: formatSimpleDate(event.date), // Reusing for event date
+      formattedStartTime: event.startTime,
+      formattedEndTime: event.endTime,
     };
   });
 

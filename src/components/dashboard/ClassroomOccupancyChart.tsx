@@ -15,7 +15,7 @@ import { Activity, AlertTriangle } from 'lucide-react'; // Icon for chart card h
 const chartConfig = {
   turmas: {
     label: 'Turmas Alocadas',
-    color: 'hsl(var(--primary))',
+    color: '#006400',
   },
 } satisfies ChartConfig;
 

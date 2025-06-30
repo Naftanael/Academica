@@ -12,7 +12,7 @@
     --card: #122814;
     --card-foreground: #ffffff;
 
-    --popover: #0d1a0f;
+    --popover: #2a6930; /* Lighter green for popups */
     --popover-foreground: #ffffff;
     
     --primary: #2e7d32; /* A brighter, more vibrant green */

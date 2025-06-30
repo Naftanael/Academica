@@ -1,4 +1,3 @@
-
 [
   {
     "id": "mbqkrhum-c8k98u0",
@@ -13,7 +12,7 @@
     "status": "Em Andamento",
     "startDate": "2025-06-10T13:46:51Z",
     "endDate": "2025-07-10T13:46:51Z",
-    "assignedClassroomId": null
+    "assignedClassroomId": "new-sala-12-aaabbbnnn"
   },
   {
     "id": "cg-2024-001",
@@ -23,21 +22,6 @@
       "Segunda",
       "Quarta",
       "Sexta"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-01-15T00:00:00Z",
-    "endDate": "2024-06-30T00:00:00Z",
-    "assignedClassroomId": "new-sala-1-aaabbbccc"
-  },
-  {
-    "id": "cg-2024-002",
-    "name": "FMC09",
-    "shift": "Tarde",
-    "classDays": [
-      "Sábado",
-      "Terça",
-      "Quinta"
     ],
     "year": 2024,
     "status": "Em Andamento",
@@ -420,9 +404,11 @@
   {
     "id": "imgdata-011-fmc11t",
     "name": "FMC11",
-    "shift": "Tarde",
+    "shift": "Noite",
     "classDays": [
-      "Sábado"
+      "Sábado",
+      "Terça",
+      "Quinta"
     ],
     "year": 2024,
     "status": "Em Andamento",
@@ -438,20 +424,6 @@
       "Segunda",
       "Quarta",
       "Sexta"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-7-aaabbbiii"
-  },
-  {
-    "id": "imgdata-013-fmc11n",
-    "name": "FMC11",
-    "shift": "Noite",
-    "classDays": [
-      "Terça",
-      "Quinta"
     ],
     "year": 2024,
     "status": "Em Andamento",
@@ -490,19 +462,6 @@
     "assignedClassroomId": "new-sala-8-aaabbbjjj"
   },
   {
-    "id": "imgdata-016-enf72t",
-    "name": "ENF72",
-    "shift": "Tarde",
-    "classDays": [
-      "Sábado"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-8-aaabbbjjj"
-  },
-  {
     "id": "imgdata-017-enf82",
     "name": "ENF82",
     "shift": "Noite",
@@ -518,20 +477,6 @@
     "assignedClassroomId": "new-sala-8-aaabbbjjj"
   },
   {
-    "id": "imgdata-018-enf72n",
-    "name": "ENF72",
-    "shift": "Noite",
-    "classDays": [
-      "Terça",
-      "Quinta"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-8-aaabbbjjj"
-  },
-  {
     "id": "imgdata-019-rad22",
     "name": "RAD22",
     "shift": "Manhã",
@@ -539,21 +484,6 @@
       "Segunda",
       "Quarta",
       "Sexta"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-9-aaabbbkkk"
-  },
-  {
-    "id": "imgdata-020-fmc05",
-    "name": "FMC05",
-    "shift": "Manhã",
-    "classDays": [
-      "Terça",
-      "Quinta",
-      "Sábado"
     ],
     "year": 2024,
     "status": "Em Andamento",
@@ -607,19 +537,6 @@
     "assignedClassroomId": "new-sala-10-aaabbblll"
   },
   {
-    "id": "imgdata2-004-enf79-tarde",
-    "name": "ENF79",
-    "shift": "Tarde",
-    "classDays": [
-      "Sábado"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-10-aaabbblll"
-  },
-  {
     "id": "imgdata2-005-enf86",
     "name": "ENF86",
     "shift": "Noite",
@@ -627,20 +544,6 @@
       "Segunda",
       "Quarta",
       "Sexta"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-10-aaabbblll"
-  },
-  {
-    "id": "imgdata2-006-enf79-noite",
-    "name": "ENF79",
-    "shift": "Noite",
-    "classDays": [
-      "Terça",
-      "Quinta"
     ],
     "year": 2024,
     "status": "Em Andamento",
@@ -664,19 +567,6 @@
     "assignedClassroomId": "new-sala-11-aaabbbmmm"
   },
   {
-    "id": "imgdata2-008-adm13-tarde",
-    "name": "ADM13",
-    "shift": "Tarde",
-    "classDays": [
-      "Sábado"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-11-aaabbbmmm"
-  },
-  {
     "id": "imgdata2-009-rad18",
     "name": "RAD18",
     "shift": "Noite",
@@ -690,35 +580,6 @@
     "startDate": "2024-08-01T00:00:00Z",
     "endDate": "2024-12-20T00:00:00Z",
     "assignedClassroomId": "new-sala-11-aaabbbmmm"
-  },
-  {
-    "id": "imgdata2-010-adm13-noite",
-    "name": "ADM13",
-    "shift": "Noite",
-    "classDays": [
-      "Terça",
-      "Quinta"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-11-aaabbbmmm"
-  },
-  {
-    "id": "imgdata2-011-fmc13",
-    "name": "FMC13",
-    "shift": "Manhã",
-    "classDays": [
-      "Terça",
-      "Quarta",
-      "Quinta"
-    ],
-    "year": 2024,
-    "status": "Em Andamento",
-    "startDate": "2024-08-01T00:00:00Z",
-    "endDate": "2024-12-20T00:00:00Z",
-    "assignedClassroomId": "new-sala-12-aaabbbnnn"
   },
   {
     "id": "imgdata2-012-fmc12-tarde",

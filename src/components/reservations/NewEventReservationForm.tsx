@@ -119,7 +119,7 @@ export default function NewEventReservationForm({ classrooms }: NewEventReservat
           render={({ field }) => (
             <FormItem>
               <FormLabel>Sala</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a sala" />

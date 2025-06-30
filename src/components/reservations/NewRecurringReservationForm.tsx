@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { CalendarPlus, Save, CalendarIcon as CalendarDateIcon, Info } from 'lucide-react';
 import { format, parse, isValid, isWithinInterval, getDay, isBefore, isAfter, parseISO, addDays, isEqual } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { type DayModifiers } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -151,7 +152,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     const startDate = parseISO(watchedStartDate);
     if (!isValid(startDate)) return false;
 
-    // Find the actual first class day
+    
     let firstClassDate = new Date(startDate);
     const numericalClassDays = selectedClassGroup.classDays.map(d => dayOfWeekMapping[d]);
     while (!numericalClassDays.includes(getDay(firstClassDate))) {
@@ -170,10 +171,13 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
     return numericalClassDays.includes(dayNum);
   }, [selectedClassGroup, watchedStartDate, calculatedEndDate, isEqual]);
 
-  const modifiers = { 
+  const modifiers: DayModifiers = { 
     isClassDayInRange: classDayInRangeModifier,
-    isCalculatedEnd: calculatedEndDate || undefined,
   };
+
+  if (calculatedEndDate) {
+    modifiers.isCalculatedEnd = calculatedEndDate;
+  }
 
   const modifiersStyles = {
     isClassDayInRange: {
@@ -257,7 +261,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
                     onValueChange={(value) => {
                       field.onChange(value);
                     }} 
-                    defaultValue={field.value}
+                    value={field.value || ''}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -285,7 +289,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sala</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione a sala" />
@@ -386,7 +390,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms, a
           render={({ field }) => (
             <FormItem>
               <FormLabel>Turno da Reserva</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger disabled>
                     <SelectValue placeholder="Selecione o turno para a reserva" />
