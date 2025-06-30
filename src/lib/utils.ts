@@ -71,5 +71,6 @@ export function getCurrentShift(hour: number | null): PeriodOfDay | null {
   if (hour === null || hour < 0 || hour > 23) return null;
   if (hour >= 6 && hour < 12) return 'Manhã';
   if (hour >= 12 && hour < 18) return 'Tarde';
-  return 'Noite';
+  if (hour >= 18 && hour <= 23) return 'Noite';
+  return null;
 }

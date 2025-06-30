@@ -12,7 +12,9 @@ async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
       readData<Classroom>('classrooms.json'),
     ]);
 
-    const now = new Date();
+    const serverDate = new Date();
+    // Assume um fuso horário UTC-3 para a localização da escola (ex: São Paulo, Brasil)
+    const now = new Date(serverDate.valueOf() - 3 * 60 * 60 * 1000);
     const currentShift = getCurrentShift(now.getHours());
 
     if (!currentShift) {
@@ -27,9 +29,9 @@ async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
       
       return (
         cg.status === 'Em Andamento' &&
-        isWithinInterval(now, { start: startDate, end: endDate }) &&
-        cg.shift === currentShift &&
-        isClassDay(now, cg.classDays)
+        isWithinInterval(serverDate, { start: startDate, end: endDate }) && // Verifica o intervalo com a hora UTC do servidor
+        cg.shift === currentShift && // Verifica o turno com a hora local
+        isClassDay(now, cg.classDays) // Verifica o dia da semana com a data local
       );
     });
 
