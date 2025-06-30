@@ -30,7 +30,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <Sidebar collapsible="icon" variant="sidebar" side="left" className="bg-transparent border-r border-border/20">
+      <Sidebar collapsible="icon" variant="sidebar" side="left" className="bg-secondary/50 border-r border-border/20">
         <SidebarNav />
       </Sidebar>
       <SidebarInset>
