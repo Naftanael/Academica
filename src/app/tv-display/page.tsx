@@ -2,7 +2,7 @@
 import { readData } from '@/lib/data-utils';
 import type { ClassGroup, Classroom, TvDisplayInfo } from '@/types';
 import { getCurrentShift } from '@/lib/utils';
-import TvDisplayClient from './TvDisplayClient';
+import TvDisplayClient from '@/components/tv-display/TvDisplayClient';
 import { parseISO, isWithinInterval, isValid } from 'date-fns';
 import { JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
 
