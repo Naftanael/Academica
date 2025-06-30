@@ -32,8 +32,16 @@ async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
     const classroomMap = new Map(classrooms.map(c => [c.id, c.name]));
 
     const activeClassGroups = classGroups.filter(cg => {
+      // Ensure dates are valid before parsing
+      if (!cg.startDate || !cg.endDate) return false;
+
       const startDate = parseISO(cg.startDate);
       const endDate = parseISO(cg.endDate);
+
+      // Check for invalid dates after parsing
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          return false;
+      }
       
       return (
         cg.status === 'Em Andamento' &&
@@ -60,5 +68,8 @@ async function getTvDisplayData(): Promise<TvDisplayInfo[]> {
 export default async function TvDisplayPage() {
   const displayData = await getTvDisplayData();
   
-  return <TvDisplayClient initialData={displayData} />;
+  // Pass the fetched data to the client component for rendering.
+  // The ClientRefresher component inside TvDisplayClient will trigger
+  // this entire page component to re-run and re-fetch data periodically.
+  return <TvDisplayClient data={displayData} />;
 }
