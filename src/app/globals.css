@@ -3,114 +3,44 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: var(--font-inter), sans-serif;
-}
-
 @layer base {
   :root {
-    /* Grau Tecnico Palette - Light Mode */
-    --background: 220 20% 97%; /* #f5f7f9 - very light gray-blue */
-    --foreground: 222 47% 11%; /* near black */
+    /* Monochromatic Green Theme */
+    --background: #0d1a0f; /* Very Dark Green */
+    --foreground: #ffffff; /* White */
 
-    --card: 0 0% 100%; /* white */
-    --card-foreground: 222 47% 11%;
+    --card: #122814;
+    --card-foreground: #ffffff;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: #0d1a0f;
+    --popover-foreground: #ffffff;
+    
+    --primary: #2e7d32; /* A brighter, more vibrant green */
+    --primary-foreground: #ffffff;
 
-    --primary: 100 65% 37%; /* #4a9d20 - Grau Green */
-    --primary-foreground: 0 0% 100%; /* white */
+    --secondary: #1b4d2d; /* A darker, more muted green */
+    --secondary-foreground: #ffffff;
 
-    --secondary: 210 40% 96.1%; /* light gray */
-    --secondary-foreground: 222 47% 11%;
+    --muted: #122814;
+    --muted-foreground: #a0aec0; /* Cool Gray */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --accent: #4caf50; /* A lighter, more vibrant green for accents */
+    --accent-foreground: #ffffff;
 
-    --accent: 96 56% 53%; /* #79c844 - Lighter Grau Green */
-    --accent-foreground: 222 47% 11%;
+    --destructive: #7f1d1d; /* Dark Red */
+    --destructive-foreground: #ffffff;
 
-    --destructive: 0 84.2% 60.2%; /* standard red */
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 100 65% 37%; /* primary green */
+    --border: #2e7d32;
+    --input: #1b4d2d;
+    --ring: #4caf50;
 
     --radius: 0.5rem;
-
-    /* Chart Colors */
-    --chart-1: 100 65% 37%;
-    --chart-2: 96 56% 53%;
-    --chart-3: 100 65% 27%;
-    --chart-4: 96 56% 43%;
-    --chart-5: 100 65% 47%;
-    
-    /* Sidebar Colors - Light Mode */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 100 65% 37%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 95%;
-    --sidebar-accent-foreground: 100 65% 17%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 100 65% 37%;
   }
 
   .dark {
-    /* Grau Tecnico Palette - Dark Mode */
-    --background: 210 20% 12%; /* dark gray-blue */
-    --foreground: 0 0% 98%;
-
-    --card: 210 20% 14%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 210 20% 12%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 96 56% 53%; /* Lighter Green */
-    --primary-foreground: 222 47% 11%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 100 65% 37%; /* Darker Green */
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 96 56% 53%;
-    
-    /* Chart Colors - Dark Mode */
-    --chart-1: 96 56% 53%;
-    --chart-2: 100 65% 37%;
-    --chart-3: 96 56% 63%;
-    --chart-4: 100 65% 47%;
-    --chart-5: 96 56% 73%;
-
-    /* Sidebar Colors - Dark Mode */
-    --sidebar-background: 210 20% 12%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 96 56% 53%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 217.2 32.6% 20%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 96 56% 53%;
+    /* All variables are already defined for the dark theme. */
   }
-}
 
-@layer base {
-  * {
-    @apply border-border;
-  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;

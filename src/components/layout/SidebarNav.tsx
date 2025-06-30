@@ -13,6 +13,7 @@ import {
   ListChecks,
   MonitorPlay,
   Search,
+  ChevronLeft,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -22,6 +23,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +40,7 @@ const navItems = [
 export default function SidebarNav() {
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+  const { state, toggleSidebar } = useSidebar();
 
   return (
     <>
@@ -76,10 +79,22 @@ export default function SidebarNav() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-         <div className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/70">
+      <SidebarFooter className="p-2 border-t border-sidebar-border mt-auto">
+         <div className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/70 text-center pb-2">
             © {currentYear} Academica
          </div>
+         <SidebarMenu>
+           <SidebarMenuItem>
+             <SidebarMenuButton 
+                onClick={toggleSidebar}
+                className="hidden md:flex"
+                tooltip={{children: state === 'expanded' ? 'Recolher' : 'Expandir', side: 'right'}}
+             >
+                <ChevronLeft className={cn("transition-transform duration-300", state === 'collapsed' && 'rotate-180')} />
+                <span className="group-data-[collapsible=icon]:hidden">Recolher</span>
+             </SidebarMenuButton>
+           </SidebarMenuItem>
+         </SidebarMenu>
       </SidebarFooter>
     </>
   );

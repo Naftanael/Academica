@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
 import SidebarNav from './SidebarNav';
@@ -11,7 +11,17 @@ interface AppShellProps {
 }
 
 export default function AppShell({ children }: AppShellProps) {
+  const [hasMounted, setHasMounted] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return null;
+  }
+
   const isTvRoute = pathname.startsWith('/tv-display');
 
   if (isTvRoute) {
@@ -20,7 +30,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <Sidebar collapsible="icon" variant="sidebar" side="left">
+      <Sidebar collapsible="icon" variant="sidebar" side="left" className="bg-transparent border-r border-border/20">
         <SidebarNav />
       </Sidebar>
       <SidebarInset>

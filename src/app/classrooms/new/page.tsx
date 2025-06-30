@@ -14,7 +14,7 @@ export default function NewClassroomPage() {
         description="Preencha os dados para cadastrar uma nova sala."
         icon={School}
         actions={
-          <Button variant="outline" asChild className="hover:bg-accent hover:text-accent-foreground">
+          <Button variant="outline" asChild>
             <Link href="/classrooms">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar para Lista
@@ -22,9 +22,9 @@ export default function NewClassroomPage() {
           </Button>
         }
       />
-      <Card className="max-w-2xl mx-auto shadow-lg rounded-lg">
+      <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="font-headline text-xl">Dados da Sala</CardTitle>
+          <CardTitle>Dados da Sala</CardTitle>
         </CardHeader>
         <CardContent>
           <NewClassroomForm />

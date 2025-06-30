@@ -18,7 +18,7 @@ export default async function NewEventReservationPage() {
         description="Preencha os dados para agendar uma reserva pontual para uma sala."
         icon={CalendarPlus}
         actions={
-          <Button variant="outline" asChild className="hover:bg-accent hover:text-accent-foreground">
+          <Button variant="outline" asChild>
             <Link href="/reservations">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar para Lista de Reservas
@@ -26,9 +26,9 @@ export default async function NewEventReservationPage() {
           </Button>
         }
       />
-      <Card className="max-w-2xl mx-auto shadow-lg rounded-lg">
+      <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="font-headline text-xl">Detalhes da Reserva de Evento</CardTitle>
+          <CardTitle>Detalhes da Reserva de Evento</CardTitle>
         </CardHeader>
         <CardContent>
           <NewEventReservationForm classrooms={classrooms} />

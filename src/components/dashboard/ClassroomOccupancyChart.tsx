@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -67,10 +67,11 @@ export default function ClassroomOccupancyChart({ data }: ClassroomOccupancyChar
           <p className="text-center text-muted-foreground py-8">Nenhuma ocupação de sala registrada para esta semana.</p>
         ) : (
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                accessibilityLayer 
-                data={chartDataPrepared} 
+                accessibilityLayer
+                data={chartDataPrepared}
+                width={535}
+                height={300}
                 margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -126,7 +127,6 @@ export default function ClassroomOccupancyChart({ data }: ClassroomOccupancyChar
                   radius={[4, 4, 0, 0]} 
                 />
               </BarChart>
-            </ResponsiveContainer>
           </ChartContainer>
         )}
       </CardContent>
