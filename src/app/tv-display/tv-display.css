@@ -116,29 +116,31 @@ header h1 {
 
 /* --- Variantes de Cor dos Cartões --- */
 /* Cada classe define um fundo e borda com cor e transparência específicas. */
+/* As cores são baseadas nas variáveis de tema de globals.css para consistência. */
 .card-fmc {
-    background-color: rgba(3, 169, 244, 0.15); /* Azul claro */
-    border-color: rgba(3, 169, 244, 0.4);
+    background-color: hsl(var(--primary) / 0.2);
+    border-color: hsl(var(--primary) / 0.5);
 }
 .card-rad {
-    background-color: rgba(139, 195, 74, 0.15); /* Verde claro */
-    border-color: rgba(139, 195, 74, 0.4);
+    background-color: hsl(var(--accent) / 0.2);
+    border-color: hsl(var(--accent) / 0.5);
 }
 .card-enf {
-    background-color: rgba(244, 67, 54, 0.15); /* Vermelho claro */
-    border-color: rgba(244, 67, 54, 0.4);
+    /* Usando a cor do popover para uma variação de verde */
+    background-color: hsl(var(--popover) / 0.2);
+    border-color: hsl(var(--popover) / 0.5);
 }
 .card-adm {
-    background-color: rgba(255, 193, 7, 0.15); /* Amarelo claro */
-    border-color: rgba(255, 193, 7, 0.4);
+    background-color: hsl(var(--secondary) / 0.2);
+    border-color: hsl(var(--secondary) / 0.5);
 }
 .card-default {
-    background-color: rgba(120, 144, 156, 0.15); /* Cinza */
-    border-color: rgba(120, 144, 156, 0.4);
+    background-color: hsl(var(--muted) / 0.4);
+    border-color: hsl(var(--border) / 0.3);
 }
 .card-unassigned {
-    background-color: rgba(150, 40, 40, 0.2); /* Vermelho escuro para erro */
-    border-color: rgba(200, 80, 80, 0.5);
+    background-color: hsl(var(--destructive) / 0.2);
+    border-color: hsl(var(--destructive) / 0.5);
 }
 
 
