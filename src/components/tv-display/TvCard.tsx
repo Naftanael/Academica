@@ -1,41 +1,42 @@
+
 import type { TvDisplayInfo } from '@/types';
 import { cn } from '@/lib/utils';
 
 /**
- * Gera um prefixo de classe CSS a partir do nome do curso/turma.
- * Isto permite estilizar os cartões de forma diferente com base no tipo de curso.
- * @param {string} groupName - O nome do grupo/turma, ex: "FMC10".
- * @returns {string} Um prefixo de classe como 'fmc', 'rad', 'enf', 'adm', ou 'default'.
+ * Generates a CSS class prefix from the course/class name.
+ * This allows styling the cards differently based on the course type.
+ * @param {string} groupName - The name of the group/class, ex: "FMC10".
+ * @returns {string} A class prefix such as 'fmc', 'rad', 'enf', 'adm', or 'default'.
  */
-const getCoursePrefix = (groupName: string): string => {
-  if (!groupName) return 'default';
+const getCourseColorClass = (groupName: string): string => {
+  if (!groupName) return 'bg-gray-500';
   const upperGroupName = groupName.toUpperCase();
-  if (upperGroupName.startsWith('FMC')) return 'fmc';
-  if (upperGroupName.startsWith('RAD')) return 'rad';
-  if (upperGroupName.startsWith('ENF')) return 'enf';
-  if (upperGroupName.startsWith('ADM')) return 'adm';
-  return 'default';
+  if (upperGroupName.startsWith('FMC')) return 'bg-blue-500';
+  if (upperGroupName.startsWith('RAD')) return 'bg-green-500';
+  if (upperGroupName.startsWith('ENF')) return 'bg-yellow-500';
+  if (upperGroupName.startsWith('ADM')) return 'bg-purple-500';
+  return 'bg-gray-500';
 };
 
 /**
- * Componente que renderiza um único cartão de informação para o painel de TV.
- * O seu estilo (cor, etc.) muda com base no tipo de curso e se uma sala está atribuída.
- * @param {{ item: TvDisplayInfo }} props - As propriedades do componente, contendo as informações da turma.
+ * Component that renders a single information card for the TV panel.
+ * Its style (color, etc.) changes based on the course type and whether a room is assigned.
+ * @param {{ item: TvDisplayInfo }} props - The component's properties, containing the class information.
  */
 export default function TvCard({ item }: { item: TvDisplayInfo }) {
   const isAssigned = item.classroomName !== 'Não Atribuída';
 
-  // Determina a classe de cor do cartão com base no curso.
-  // Se a sala não estiver atribuída, usa um estilo especial de 'não atribuído'.
+  // Determines the card's color class based on the course.
+  // If the room is not assigned, it uses a special 'unassigned' style.
   const cardColorClass = isAssigned
-    ? `card-${getCoursePrefix(item.groupName)}`
-    : 'card-unassigned';
+    ? getCourseColorClass(item.groupName)
+    : 'bg-red-500';
 
   return (
-    // O div principal do cartão, combinando classes base e de cor.
+    // The main card div, combining base and color classes.
     <div className={cn('card', cardColorClass)}>
       
-      {/* Secção de conteúdo principal do cartão (cresce para preencher o espaço) */}
+      {/* Main content section of the card (grows to fill the space) */}
       <div className="flex-grow">
         <div className="card-title">{item.groupName}</div>
         <div className={cn('card-value', { 'not-assigned': !isAssigned })}>
@@ -43,7 +44,7 @@ export default function TvCard({ item }: { item: TvDisplayInfo }) {
         </div>
       </div>
 
-      {/* Rodapé do cartão para informações secundárias */}
+      {/* Card footer for secondary information */}
       <div className="card-footer-info">
         {item.shift}
       </div>

@@ -25,8 +25,6 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 207 78% 53%;
     --radius: 0.5rem;
-
-    /* Sidebar Light Theme (for reference) */
     --sidebar: 220 15% 96%;
     --sidebar-foreground: 220 15% 25%;
     --sidebar-border: 220 15% 90%;
@@ -56,8 +54,6 @@
     --border: 217.2 32.6% 25.5%;
     --input: 217.2 32.6% 25.5%;
     --ring: 207 78% 53%;
-
-    /* Sidebar Dark Theme */
     --sidebar: 220 15% 10%;
     --sidebar-foreground: 210 40% 92%;
     --sidebar-border: 220 15% 18%;

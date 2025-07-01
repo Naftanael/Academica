@@ -1,6 +1,6 @@
 /**
  * @file src/components/tv-display/TvDisplayClient.tsx
- * @description Componente cliente para o painel de TV. Ele lida com a filtragem em tempo real e a exibição dos grupos de turmas.
+ * @description Client component for the TV panel. It handles real-time filtering and display of class groups.
  */
 'use client';
 
@@ -19,16 +19,16 @@ interface TvDisplayClientProps {
 }
 
 /**
- * Um hook personalizado para percorrer os anúncios.
- * @param {Announcement[]} announcements - A lista de anúncios a serem exibidos.
- * @param {number} interval - O tempo em milissegundos para exibir cada anúncio.
- * @returns {Announcement[]} A lista de anúncios a serem exibidos no momento (geralmente um de cada vez).
+ * A custom hook to cycle through announcements.
+ * @param {Announcement[]} announcements - The list of announcements to display.
+ * @param {number} interval - The time in milliseconds to display each announcement.
+ * @returns {Announcement[]} The list of announcements to be displayed at the moment (usually one at a time).
  */
 const useAnnouncements = (announcements: Announcement[], interval = 10000) => {
-    const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
+    const [, setCurrentAnnouncementIndex] = useState(0);
 
     useEffect(() => {
-        // A verificação robusta garante que o código não falhe se os anúncios forem nulos ou vazios.
+        // The robust check ensures that the code does not fail if the announcements are null or empty.
         if (!announcements || announcements.length <= 1) {
             return;
         }
@@ -42,7 +42,7 @@ const useAnnouncements = (announcements: Announcement[], interval = 10000) => {
 
     const visibleAnnouncements = useMemo(() => {
         if (!announcements || !announcements.length) return [];
-        // A animação de "ticker" pode lidar com múltiplos itens, então vamos fornecer todos e deixar o CSS cuidar disso.
+        // The "ticker" animation can handle multiple items, so let's provide all of them and let the CSS take care of it.
         return announcements;
     }, [announcements]);
 
@@ -51,41 +51,41 @@ const useAnnouncements = (announcements: Announcement[], interval = 10000) => {
 
 
 /**
- * Renderiza o ecrã principal da TV, filtrando e mostrando os grupos de turmas ativos com base na hora atual.
- * Este componente é responsável pelas interações do lado do cliente, como a atualização da hora a cada minuto.
+ * Renders the main TV screen, filtering and showing active class groups based on the current time.
+ * This component is responsible for client-side interactions, such as updating the time every minute.
  *
- * @param {TvDisplayClientProps} props - As props para o componente.
- * @returns {JSX.Element} A interface do painel de TV renderizada.
+ * @param {TvDisplayClientProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered TV panel interface.
  */
 export default function TvDisplayClient({ allGroups, announcements, lastPublished }: TvDisplayClientProps): JSX.Element {
-  // O estado `currentTime` é inicializado como nulo no servidor e definido no cliente.
-  // Isto evita erros de hidratação do React.
+  // The `currentTime` state is initialized as null on the server and defined on the client.
+  // This avoids React hydration errors.
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const visibleAnnouncements = useAnnouncements(announcements);
 
-  // O `useEffect` só é executado no cliente.
-  // Ele define a hora atual e, em seguida, configura um intervalo para atualizá-la a cada minuto.
+  // The `useEffect` is only executed on the client.
+  // It sets the current time and then sets an interval to update it every minute.
   useEffect(() => {
     setCurrentTime(new Date());
-    const interval = setInterval(() => setCurrentTime(new Date()), 60000); // Atualiza a cada minuto.
+    const interval = setInterval(() => setCurrentTime(new Date()), 60000); // Updates every minute.
     return () => clearInterval(interval);
   }, []);
 
-  // Filtra os grupos ativos com base na hora atual.
-  // `useMemo` garante que esta filtragem dispendiosa só seja executada quando os dados ou a hora mudam.
+  // Filters the active groups based on the current time.
+  // `useMemo` ensures that this expensive filtering is only executed when the data or time changes.
   const activeGroups = useMemo(() => {
-    // Se a hora atual ainda não foi definida, não exibe nenhum grupo.
+    // If the current time has not yet been set, it does not display any group.
     if (currentTime === null) {
       return [];
     }
-    // A lógica de filtragem principal é delegada a uma função de utilitário robusta.
+    // The main filtering logic is delegated to a robust utility function.
     return filterActiveGroups(allGroups, currentTime);
   }, [allGroups, currentTime]);
 
   return (
     <>
       <header>
-        <h1>Guia de Salas</h1>
+        <h1>Room Guide</h1>
         <LastUpdated lastPublished={lastPublished} />
       </header>
       <main className="cards-container">

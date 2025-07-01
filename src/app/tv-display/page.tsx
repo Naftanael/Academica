@@ -1,7 +1,7 @@
 /**
  * @file src/app/tv-display/page.tsx
- * @description Esta é a página principal do painel de TV. É um Componente de Servidor React (RSC)
- *              que agora apresenta um mecanismo de carregamento robusto e adaptável aos dados.
+ * @description This is the main page for the TV panel. It is a React Server Component (RSC)
+ *              that now features a robust and data-adaptive loading mechanism.
  */
 import { readData } from '@/lib/data-utils';
 import type { ClassGroup, Classroom, TvDisplayInfo, ClassGroupStatus, Announcement } from '@/types';
@@ -13,12 +13,12 @@ interface TvDisplayInfoWithStatus extends TvDisplayInfo {
 }
 
 /**
- * Uma função assíncrona do lado do servidor para buscar e processar dados para o painel de TV.
- * Esta função foi completamente refatorada para ser adaptável aos dados. Ela ajusta dinamicamente
- * o ano das datas dos grupos de turmas para corresponder ao ano atual, tornando os dados sempre relevantes.
+ * An asynchronous server-side function to fetch and process data for the TV panel.
+ * This function has been completely refactored to be data-adaptive. It dynamically adjusts
+ * the year of the class group dates to match the current year, making the data always relevant.
  *
  * @returns {Promise<{ data: TvDisplayInfoWithStatus[], announcements: Announcement[], lastPublished: string }>}
- *          Um objeto contendo a lista processada de grupos de turmas, anúncios e um timestamp.
+ *          An object containing the processed list of class groups, announcements, and a timestamp.
  */
 async function getTvDisplayData() {
   const [classGroups, classrooms, announcements] = await Promise.all([
@@ -30,37 +30,37 @@ async function getTvDisplayData() {
   const classroomMap = new Map(classrooms.map(c => [c.id, c.name]));
   const currentYear = new Date().getFullYear();
 
-  // Este é o núcleo da nova lógica robusta.
-  // Processamos cada grupo de turma para garantir que as suas datas sejam relevantes para o ano atual.
+  // This is the core of the new robust logic.
+  // We process each class group to ensure its dates are relevant to the current year.
   const adaptedClassGroups = classGroups.map(cg => {
     try {
-      // Cria novos objetos Date a partir das datas de início e fim originais.
+      // Creates new Date objects from the original start and end dates.
       const startDate = new Date(cg.startDate);
       const endDate = new Date(cg.endDate);
 
-      // Define dinamicamente o ano das datas de início e fim para o ano corrente.
-      // Isto torna os dados de demonstração intemporais e resolve a causa raiz do problema de exibição.
+      // Dynamically sets the year of the start and end dates to the current year.
+      // This makes the demonstration data timeless and resolves the root cause of the display issue.
       startDate.setFullYear(currentYear);
       endDate.setFullYear(currentYear);
 
-      // Retorna um novo objeto com as datas atualizadas e "vivas".
+      // Returns a new object with the updated and "live" dates.
       return {
         ...cg,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
       };
-    } catch (e) {
-      console.warn(`[TV Display] Data inválida para a turma ${cg.id}. A saltar.`);
+    } catch {
+      console.warn(`[TV Display] Invalid data for class ${cg.id}. Skipping.`);
       return null;
     }
-  }).filter((cg): cg is ClassGroup => cg !== null); // Filtra quaisquer turmas com datas inválidas.
+  }).filter((cg): cg is ClassGroup => cg !== null); // Filters out any classes with invalid dates.
 
   const tvData: TvDisplayInfoWithStatus[] = adaptedClassGroups
     .map(cg => ({
       id: cg.id,
       groupName: cg.name,
       shift: cg.shift,
-      classroomName: cg.assignedClassroomId ? (classroomMap.get(cg.assignedClassroomId) ?? 'Não Atribuída') : 'Não Atribuída',
+      classroomName: cg.assignedClassroomId ? (classroomMap.get(cg.assignedClassroomId) ?? 'Not Assigned') : 'Not Assigned',
       classDays: cg.classDays,
       startDate: cg.startDate,
       endDate: cg.endDate,
@@ -78,8 +78,8 @@ async function getTvDisplayData() {
 }
 
 /**
- * O componente principal para a rota `/tv-display`. Ele busca dados adaptados ao tempo no servidor
- * e os passa para o cliente para renderização.
+ * The main component for the `/tv-display` route. It fetches time-adapted data from the server
+ * and passes it to the client for rendering.
  */
 export default async function TvDisplayPage() {
     const { data, announcements, lastPublished } = await getTvDisplayData();

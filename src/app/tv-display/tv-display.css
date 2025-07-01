@@ -1,14 +1,14 @@
 /* 
   src/app/tv-display/tv-display.css
-  Este ficheiro contém todos os estilos específicos para o módulo do Painel de TV.
-  Ele define a aparência do layout geral, do cabeçalho, do contentor de cartões,
-  dos cartões individuais (com as suas variações de cor) e do rodapé de anúncios.
+  This file contains all the specific styles for the TV Panel module.
+  It defines the appearance of the general layout, the header, the card container,
+  the individual cards (with their color variations) and the announcement footer.
 */
 
-/* --- Layout Principal do Painel --- */
-/* Define o fundo com gradiente, a cor do texto e a altura total da tela. */
+/* --- Main Panel Layout --- */
+/* Defines the background with a gradient, the text color and the total height of the screen. */
 .dashboard {
-    background: linear-gradient(180deg, hsl(var(--background)) 0%, #0c0c0c 100%);
+    background: linear-gradient(180deg, #002b00 0%, #000000 100%); /* Dark green to black */
     color: hsl(var(--foreground));
     font-family: var(--font-poppins), sans-serif;
     height: 100vh;
@@ -17,25 +17,25 @@
     overflow: hidden;
 }
 
-/* --- Cabeçalho --- */
-/* Estiliza a barra superior que contém o título e a data de atualização. */
+/* --- Header --- */
+/* Styles the top bar that contains the title and the update date. */
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem 2.5rem;
-    background-color: rgba(10, 20, 10, 0.5); /* Fundo escuro e semitransparente */
+    background-color: rgba(10, 20, 10, 0.5); /* Dark and semi-transparent background */
     border-bottom: 1px solid hsl(var(--border) / 0.5);
-    backdrop-filter: blur(4px); /* Efeito de vidro fosco */
-    flex-shrink: 0; /* Garante que o cabeçalho não encolha */
+    backdrop-filter: blur(4px); /* Frosted glass effect */
+    flex-shrink: 0; /* Ensures that the header does not shrink */
 }
 
 header h1 {
     font-size: 2.5rem;
-    font-weight: 700; /* Texto mais forte */
+    font-weight: 700; /* Stronger text */
     color: hsl(var(--primary));
     letter-spacing: 1.5px;
-    text-shadow: 0 0 8px hsl(var(--primary) / 0.5); /* Adiciona um brilho suave */
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.5); /* Adds a soft glow */
 }
 
 .last-updated {
@@ -44,32 +44,32 @@ header h1 {
     text-align: right;
 }
 
-/* --- Contentor dos Cartões --- */
-/* A grelha (grid) que organiza e alinha todos os cartões na tela. */
+/* --- Card Container --- */
+/* The grid that organizes and aligns all the cards on the screen. */
 .cards-container {
-    flex-grow: 1; /* Ocupa todo o espaço vertical disponível */
+    flex-grow: 1; /* Occupies all available vertical space */
     padding: 2rem;
     display: grid;
-    /* Cria colunas responsivas: preenche com cartões de no mínimo 340px */
+    /* Creates responsive columns: fills with cards of at least 340px */
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     max-width: 100%;
     margin: 0 auto;
     gap: 2rem;
-    overflow-y: auto; /* Permite rolar se houver muitos cartões */
-    align-content: flex-start; /* Alinha os cartões ao topo */
+    overflow-y: auto; /* Allows scrolling if there are many cards */
+    align-content: flex-start; /* Aligns the cards to the top */
 }
 
-/* --- Estilo Base do Cartão (Design Renovado) --- */
-/* Define a aparência fundamental de um cartão de informação. */
+/* --- Base Card Style (Redesigned) --- */
+/* Defines the fundamental appearance of an information card. */
 .card {
     border-radius: 0.75rem; /* 12px */
     padding: 1.75rem; /* 28px */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border: 1px solid transparent; /* A cor da borda é definida por variantes */
+    border: 1px solid transparent; /* The border color is defined by variants */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    backdrop-filter: blur(10px); /* Efeito de vidro fosco mais intenso nos cartões */
+    backdrop-filter: blur(10px); /* More intense frosted glass effect on the cards */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
     min-height: 280px;
     overflow: hidden;
@@ -84,7 +84,7 @@ header h1 {
     font-size: 2rem;
     font-weight: 600;
     line-height: 1.2;
-    color: #ffffff; /* Texto sempre branco para alto contraste */
+    color: #ffffff; /* Always white text for high contrast */
     margin-bottom: 0.75rem;
 }
 
@@ -99,9 +99,9 @@ header h1 {
     justify-content: flex-start;
 }
 
-/* Estilo especial para quando uma sala não está atribuída */
+/* Special style for when a room is not assigned */
 .card-value.not-assigned {
-    color: #ffdddd; /* Vermelho claro para o texto de aviso */
+    color: #ffdddd; /* Light red for the warning text */
     font-size: 2.5rem;
     font-weight: 600;
 }
@@ -110,41 +110,11 @@ header h1 {
     margin-top: 1.5rem;
     font-size: 1.25rem;
     font-weight: 500;
-    color: #e0e0e0; /* Cinza claro para informação secundária */
+    color: #e0e0e0; /* Light gray for secondary information */
     text-align: right;
 }
 
-/* --- Variantes de Cor dos Cartões --- */
-/* Cada classe define um fundo e borda com cor e transparência específicas. */
-/* As cores são baseadas nas variáveis de tema de globals.css para consistência. */
-.card-fmc {
-    background-color: hsl(var(--primary) / 0.2);
-    border-color: hsl(var(--primary) / 0.5);
-}
-.card-rad {
-    background-color: hsl(var(--accent) / 0.2);
-    border-color: hsl(var(--accent) / 0.5);
-}
-.card-enf {
-    /* Usando a cor do popover para uma variação de verde */
-    background-color: hsl(var(--popover) / 0.2);
-    border-color: hsl(var(--popover) / 0.5);
-}
-.card-adm {
-    background-color: hsl(var(--secondary) / 0.2);
-    border-color: hsl(var(--secondary) / 0.5);
-}
-.card-default {
-    background-color: hsl(var(--muted) / 0.4);
-    border-color: hsl(var(--border) / 0.3);
-}
-.card-unassigned {
-    background-color: hsl(var(--destructive) / 0.2);
-    border-color: hsl(var(--destructive) / 0.5);
-}
-
-
-/* --- Estilos de Fallback (Quando não há aulas) --- */
+/* --- Fallback Styles (When there are no classes) --- */
 .no-classes-card {
     display: flex;
     flex-direction: column;
@@ -152,7 +122,7 @@ header h1 {
     align-items: center;
     height: 100%;
     text-align: center;
-    grid-column: 1 / -1; /* Ocupa toda a largura da grelha */
+    grid-column: 1 / -1; /* Occupies the entire width of the grid */
     background-color: rgba(18, 40, 20, 0.5);
     border: 1px solid hsl(var(--border) / 0.2);
     border-radius: 0.75rem;
@@ -177,7 +147,7 @@ header h1 {
     color: hsl(var(--muted-foreground));
 }
 
-/* --- Rodapé de Anúncios (Ticker) --- */
+/* --- Announcement Footer (Ticker) --- */
 .announcements-ticker-container {
   position: fixed;
   bottom: 0;
@@ -206,14 +176,14 @@ header h1 {
 }
 
 .announcement-item .priority-urgente {
-  color: #ff5252; /* Vermelho para urgente */
+  color: #ff5252; /* Red for urgent */
   font-weight: bold;
   margin-right: 10px;
   text-transform: uppercase;
 }
 
 .announcement-item .priority-normal {
-  color: #ffc107; /* Amarelo para normal */
+  color: #ffc107; /* Yellow for normal */
   font-weight: bold;
   margin-right: 10px;
   text-transform: uppercase;
@@ -228,7 +198,7 @@ header h1 {
     color: #e0e0e0;
 }
 
-/* Animação do letreiro */
+/* Ticker animation */
 @keyframes ticker-animation {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
