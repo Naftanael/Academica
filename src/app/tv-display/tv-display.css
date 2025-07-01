@@ -1,11 +1,11 @@
 .dashboard {
-    background-color: #0d1a0f; /* Verde escuro do tema */
-    color: #ffffff;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: var(--font-poppins), sans-serif;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Evita a rolagem do corpo */
+    overflow: hidden;
 }
 
 header {
@@ -13,81 +13,106 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2.5rem;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: hsl(var(--card));
     border-bottom: 1px solid hsl(var(--border));
 }
 
 header h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 600;
-    color: #ffffff;
+    color: hsl(var(--primary));
     letter-spacing: 1px;
 }
 
 .last-updated {
     font-size: 1rem;
-    color: #a0aec0; /* Cor de primeiro plano silenciada */
+    color: hsl(var(--muted-foreground));
 }
 
 .cards-container {
     flex-grow: 1;
     padding: 1.5rem;
     display: grid;
-    /* Alterado para limitar a largura máxima dos cartões e centrá-los. */
-    grid-template-columns: repeat(auto-fit, minmax(320px, 380px));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    max-width: 1920px;
+    margin: 0 auto;
     justify-content: center;
     gap: 1.5rem;
     overflow-y: auto;
 }
 
+/* --- Card Redesign --- */
 .card {
+    background-color: hsl(var(--card));
     border-radius: 0.75rem;
     padding: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0, 0, 0, 0.23);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    text-align: center;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    text-align: left;
+    border: 1px solid hsl(var(--border));
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px hsla(var(--primary) / 0.1);
+    border-color: hsl(var(--primary));
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background-color: hsl(var(--secondary));
+    transition: background-color 0.2s ease-in-out;
 }
 
 .card-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 600;
     line-height: 1.2;
-    margin-bottom: 0.75rem;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    color: hsl(var(--foreground));
+    margin-bottom: 0.5rem;
 }
 
 .card-value {
-    font-size: 4rem;
+    font-size: 4.5rem;
     font-weight: 700;
+    line-height: 1;
+    color: hsl(var(--primary));
     flex-grow: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+    justify-content: flex-start;
 }
 
 .card-value.not-assigned {
-    color: #ff5252;
-    font-size: 2.5rem;
+    color: hsl(var(--destructive));
+    font-size: 2rem;
 }
 
-/* Cores específicas do curso com gradientes e leve transparência */
-.card-fmc { background: linear-gradient(145deg, rgba(25, 118, 210, 0.9), rgba(3, 169, 244, 0.9)); }
-.card-rad { background: linear-gradient(145deg, rgba(76, 175, 80, 0.9), rgba(139, 195, 74, 0.9)); }
-.card-enf { background: linear-gradient(145deg, rgba(211, 47, 47, 0.9), rgba(244, 67, 54, 0.9)); }
-.card-adm { background: linear-gradient(145deg, rgba(255, 167, 38, 0.9), rgba(255, 193, 7, 0.9)); }
-.card-default { background: linear-gradient(145deg, rgba(96, 125, 139, 0.9), rgba(120, 144, 156, 0.9)); }
+/* Color bar styles */
+.card-fmc::before { background-color: #03A9F4; }
+.card-rad::before { background-color: #8BC34A; }
+.card-enf::before { background-color: #F44336; }
+.card-adm::before { background-color: #FFC107; }
+.card-default::before { background-color: #78909c; }
 
+.card-footer-info {
+    margin-top: 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-align: right;
+}
+
+/* --- Fallback and Ticker Styles (remain the same) --- */
 .no-classes-card {
     display: flex;
     flex-direction: column;

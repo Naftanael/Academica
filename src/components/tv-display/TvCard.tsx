@@ -1,4 +1,3 @@
-
 import type { TvDisplayInfo } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -22,9 +21,14 @@ export default function TvCard({ item }: { item: TvDisplayInfo }) {
 
   return (
     <div className={cn('card', courseClass)}>
-      <div className="card-title">{item.groupName}</div>
-      <div className={cn('card-value', { 'not-assigned': !isAssigned })}>
-        {item.classroomName}
+      <div>
+        <div className="card-title">{item.groupName}</div>
+        <div className={cn('card-value', { 'not-assigned': !isAssigned })}>
+          {item.classroomName}
+        </div>
+      </div>
+      <div className="card-footer-info">
+        {item.shift}
       </div>
     </div>
   );
