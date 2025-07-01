@@ -1,10 +1,10 @@
 /**
  * @file src/app/tv-display/page.tsx
- * @description This is the main page for the TV display. It's a React Server Component (RSC)
- *              that now features a robust, data-adaptive loading mechanism.
+ * @description Esta é a página principal do painel de TV. É um Componente de Servidor React (RSC)
+ *              que agora apresenta um mecanismo de carregamento robusto e adaptável aos dados.
  */
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, Classroom, TvDisplayInfo, ClassGroupStatus } from '@/types';
+import type { ClassGroup, Classroom, TvDisplayInfo, ClassGroupStatus, Announcement } from '@/types';
 import TvDisplayClient from '@/components/tv-display/TvDisplayClient';
 import './tv-display.css';
 import ClientRefresher from '@/components/tv-display/ClientRefresher';
@@ -14,41 +14,47 @@ interface TvDisplayInfoWithStatus extends TvDisplayInfo {
 }
 
 /**
- * An asynchronous server-side function to fetch and process data for the TV display.
- * This function has been completely refactored to be data-adaptive. It dynamically adjusts
- * the year of the class group dates to match the current year, making the data always relevant.
+ * Uma função assíncrona do lado do servidor para buscar e processar dados para o painel de TV.
+ * Esta função foi completamente refatorada para ser adaptável aos dados. Ela ajusta dinamicamente
+ * o ano das datas dos grupos de turmas para corresponder ao ano atual, tornando os dados sempre relevantes.
  *
- * @returns {Promise<{ data: TvDisplayInfoWithStatus[], lastPublished: string }>}
- *          An object containing the processed list of class groups and a timestamp.
+ * @returns {Promise<{ data: TvDisplayInfoWithStatus[], announcements: Announcement[], lastPublished: string }>}
+ *          Um objeto contendo a lista processada de grupos de turmas, anúncios e um timestamp.
  */
 async function getTvDisplayData() {
-  const [classGroups, classrooms] = await Promise.all([
+  const [classGroups, classrooms, announcements] = await Promise.all([
     readData<ClassGroup>('classgroups.json'),
     readData<Classroom>('classrooms.json'),
+    readData<Announcement>('announcements.json'),
   ]);
 
   const classroomMap = new Map(classrooms.map(c => [c.id, c.name]));
   const currentYear = new Date().getFullYear();
 
-  // This is the core of the new robust logic.
-  // We process each class group to ensure its dates are relevant to the current year.
+  // Este é o núcleo da nova lógica robusta.
+  // Processamos cada grupo de turma para garantir que as suas datas sejam relevantes para o ano atual.
   const adaptedClassGroups = classGroups.map(cg => {
-    // Create new Date objects from the original start and end dates.
-    const startDate = new Date(cg.startDate);
-    const endDate = new Date(cg.endDate);
+    try {
+      // Cria novos objetos Date a partir das datas de início e fim originais.
+      const startDate = new Date(cg.startDate);
+      const endDate = new Date(cg.endDate);
 
-    // Dynamically set the year of the start and end dates to the current year.
-    // This makes the demo data timeless and solves the root cause of the display issue.
-    startDate.setFullYear(currentYear);
-    endDate.setFullYear(currentYear);
+      // Define dinamicamente o ano das datas de início e fim para o ano corrente.
+      // Isto torna os dados de demonstração intemporais e resolve a causa raiz do problema de exibição.
+      startDate.setFullYear(currentYear);
+      endDate.setFullYear(currentYear);
 
-    // Return a new object with the updated, "live" dates.
-    return {
-      ...cg,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-    };
-  });
+      // Retorna um novo objeto com as datas atualizadas e "vivas".
+      return {
+        ...cg,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      };
+    } catch (e) {
+      console.warn(`[TV Display] Data inválida para a turma ${cg.id}. A saltar.`);
+      return null;
+    }
+  }).filter((cg): cg is ClassGroup => cg !== null); // Filtra quaisquer turmas com datas inválidas.
 
   const tvData: TvDisplayInfoWithStatus[] = adaptedClassGroups
     .map(cg => ({
@@ -63,23 +69,26 @@ async function getTvDisplayData() {
     }))
     .sort((a, b) => ((a.classroomName ?? 'Z') > (b.classroomName ?? 'Z') ? 1 : -1));
 
+  const publishedAnnouncements = announcements.filter(a => a.published);
+
   return {
     data: tvData,
+    announcements: publishedAnnouncements,
     lastPublished: new Date().toISOString(),
   };
 }
 
 /**
- * The main component for the `/tv-display` route. It fetches time-adapted data on the server
- * and passes it to the client for rendering.
+ * O componente principal para a rota `/tv-display`. Ele busca dados adaptados ao tempo no servidor
+ * e os passa para o cliente para renderização.
  */
 export default async function TvDisplayPage() {
-    const { data, lastPublished } = await getTvDisplayData();
+    const { data, announcements, lastPublished } = await getTvDisplayData();
 
     return (
         <>
             <ClientRefresher />
-            <TvDisplayClient allGroups={data} lastPublished={lastPublished} />
+            <TvDisplayClient allGroups={data} announcements={announcements} lastPublished={lastPublished} />
         </>
     );
 }

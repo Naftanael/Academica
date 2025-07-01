@@ -3,12 +3,12 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutos
 
 /**
- * This is a lightweight client component that simply forces a server-side
- * data refresh periodically, ensuring the TV panel stays up to date without
- * a full page reload.
+ * Este é um componente de cliente leve que simplesmente força uma
+ * atualização de dados do lado do servidor periodicamente, garantindo que o painel de TV
+ * permaneça atualizado sem um recarregamento completo da página.
  */
 export default function ClientRefresher() {
   const router = useRouter();
@@ -18,9 +18,9 @@ export default function ClientRefresher() {
       router.refresh();
     }, REFRESH_INTERVAL_MS);
 
-    // Cleanup the timer if the component is unmounted.
+    // Limpa o temporizador se o componente for desmontado.
     return () => clearInterval(timer);
   }, [router]);
 
-  return null; // This component renders nothing.
+  return null; // Este componente não renderiza nada.
 }

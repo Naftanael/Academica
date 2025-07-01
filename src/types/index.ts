@@ -84,8 +84,8 @@ export type OccupancyItem =
 export interface TvDisplayInfo {
   id: string;
   groupName: string;
-  shift: string;
-  classroomName: string | null;
+  shift: PeriodOfDay;
+  classroomName: string; // Should always be a string, e.g. "Sala 1" or "Não Atribuída"
   classDays: DayOfWeek[];
   startDate: string;
   endDate: string;

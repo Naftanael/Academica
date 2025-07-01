@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "mckp9uee-jmp99rw",
+    "title": "Uso do jaleco",
+    "content": "E obrigatório o uso do jaleco em aulas práticas.",
+    "author": "Coordenação de Enfermagem",
+    "type": "Notícia",
+    "priority": "Normal",
+    "published": true,
+    "createdAt": "2025-07-01T15:46:11Z"
+  }
+]
