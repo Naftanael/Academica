@@ -83,7 +83,7 @@ export default function TvDisplayClient({ allGroups, announcements, lastPublishe
   }, [allGroups, currentTime]);
 
   return (
-    <div className="dashboard">
+    <>
       <header>
         <h1>Guia de Salas</h1>
         <LastUpdated lastPublished={lastPublished} />
@@ -96,6 +96,6 @@ export default function TvDisplayClient({ allGroups, announcements, lastPublishe
         )}
       </main>
       <AnnouncementsTicker announcements={visibleAnnouncements} />
-    </div>
+    </>
   );
 }

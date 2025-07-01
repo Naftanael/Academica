@@ -6,7 +6,6 @@
 import { readData } from '@/lib/data-utils';
 import type { ClassGroup, Classroom, TvDisplayInfo, ClassGroupStatus, Announcement } from '@/types';
 import TvDisplayClient from '@/components/tv-display/TvDisplayClient';
-import './tv-display.css';
 import ClientRefresher from '@/components/tv-display/ClientRefresher';
 
 interface TvDisplayInfoWithStatus extends TvDisplayInfo {
