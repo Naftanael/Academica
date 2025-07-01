@@ -1,5 +1,5 @@
 .dashboard {
-    background-color: hsl(var(--background));
+    background: linear-gradient(to bottom, hsl(var(--background)), #000);
     color: hsl(var(--foreground));
     font-family: var(--font-poppins), sans-serif;
     height: 100vh;
