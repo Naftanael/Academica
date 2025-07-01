@@ -28,24 +28,27 @@ const useAnnouncements = (announcements: Announcement[], interval = 10000) => {
     const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
 
     useEffect(() => {
-        if (announcements.length > 1) {
-            const announcementInterval = setInterval(() => {
-                setCurrentAnnouncementIndex((prevIndex) => (prevIndex + 1) % announcements.length);
-            }, interval);
-
-            return () => clearInterval(announcementInterval);
+        // A verificação robusta garante que o código não falhe se os anúncios forem nulos ou vazios.
+        if (!announcements || announcements.length <= 1) {
+            return;
         }
+        
+        const announcementInterval = setInterval(() => {
+            setCurrentAnnouncementIndex((prevIndex) => (prevIndex + 1) % announcements.length);
+        }, interval);
+
+        return () => clearInterval(announcementInterval);
     }, [announcements, interval]);
 
     const visibleAnnouncements = useMemo(() => {
-        if (!announcements.length) return [];
-        // Animação de "ticker" pode lidar com múltiplos itens, então vamos fornecer todos e deixar o CSS cuidar disso.
-        // Para uma exibição de um único item, poderíamos retornar [anuncios[currentAnnouncementIndex]].
+        if (!announcements || !announcements.length) return [];
+        // A animação de "ticker" pode lidar com múltiplos itens, então vamos fornecer todos e deixar o CSS cuidar disso.
         return announcements;
     }, [announcements]);
 
     return visibleAnnouncements;
 };
+
 
 /**
  * Renderiza o ecrã principal da TV, filtrando e mostrando os grupos de turmas ativos com base na hora atual.
@@ -55,10 +58,13 @@ const useAnnouncements = (announcements: Announcement[], interval = 10000) => {
  * @returns {JSX.Element} A interface do painel de TV renderizada.
  */
 export default function TvDisplayClient({ allGroups, announcements, lastPublished }: TvDisplayClientProps): JSX.Element {
+  // O estado `currentTime` é inicializado como nulo no servidor e definido no cliente.
+  // Isto evita erros de hidratação do React.
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const visibleAnnouncements = useAnnouncements(announcements);
 
-  // Define a hora atual quando o componente é montado no cliente.
+  // O `useEffect` só é executado no cliente.
+  // Ele define a hora atual e, em seguida, configura um intervalo para atualizá-la a cada minuto.
   useEffect(() => {
     setCurrentTime(new Date());
     const interval = setInterval(() => setCurrentTime(new Date()), 60000); // Atualiza a cada minuto.
@@ -66,11 +72,13 @@ export default function TvDisplayClient({ allGroups, announcements, lastPublishe
   }, []);
 
   // Filtra os grupos ativos com base na hora atual.
-  // A lógica de filtragem principal é delegada a uma função de utilitário robusta.
+  // `useMemo` garante que esta filtragem dispendiosa só seja executada quando os dados ou a hora mudam.
   const activeGroups = useMemo(() => {
+    // Se a hora atual ainda não foi definida, não exibe nenhum grupo.
     if (currentTime === null) {
       return [];
     }
+    // A lógica de filtragem principal é delegada a uma função de utilitário robusta.
     return filterActiveGroups(allGroups, currentTime);
   }, [allGroups, currentTime]);
 
