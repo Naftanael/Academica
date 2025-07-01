@@ -33,7 +33,9 @@ header h1 {
     flex-grow: 1;
     padding: 1.5rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    /* Alterado para limitar a largura máxima dos cartões e centrá-los. */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 380px));
+    justify-content: center;
     gap: 1.5rem;
     overflow-y: auto;
 }
