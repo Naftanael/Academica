@@ -1,5 +1,14 @@
+/* 
+  src/app/tv-display/tv-display.css
+  Este ficheiro contém todos os estilos específicos para o módulo do Painel de TV.
+  Ele define a aparência do layout geral, do cabeçalho, do contentor de cartões,
+  dos cartões individuais (com as suas variações de cor) e do rodapé de anúncios.
+*/
+
+/* --- Layout Principal do Painel --- */
+/* Define o fundo com gradiente, a cor do texto e a altura total da tela. */
 .dashboard {
-    background: linear-gradient(to bottom, hsl(var(--background)), #000);
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, #0c0c0c 100%);
     color: hsl(var(--foreground));
     font-family: var(--font-poppins), sans-serif;
     height: 100vh;
@@ -8,150 +17,175 @@
     overflow: hidden;
 }
 
+/* --- Cabeçalho --- */
+/* Estiliza a barra superior que contém o título e a data de atualização. */
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2.5rem;
-    background-color: hsl(var(--card));
-    border-bottom: 1px solid hsl(var(--border));
+    padding: 1.25rem 2.5rem;
+    background-color: rgba(10, 20, 10, 0.5); /* Fundo escuro e semitransparente */
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    backdrop-filter: blur(4px); /* Efeito de vidro fosco */
+    flex-shrink: 0; /* Garante que o cabeçalho não encolha */
 }
 
 header h1 {
-    font-size: 2.2rem;
-    font-weight: 600;
+    font-size: 2.5rem;
+    font-weight: 700; /* Texto mais forte */
     color: hsl(var(--primary));
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.5); /* Adiciona um brilho suave */
 }
 
 .last-updated {
     font-size: 1rem;
     color: hsl(var(--muted-foreground));
+    text-align: right;
 }
 
+/* --- Contentor dos Cartões --- */
+/* A grelha (grid) que organiza e alinha todos os cartões na tela. */
 .cards-container {
-    flex-grow: 1;
-    padding: 1.5rem;
+    flex-grow: 1; /* Ocupa todo o espaço vertical disponível */
+    padding: 2rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    max-width: 1920px;
+    /* Cria colunas responsivas: preenche com cartões de no mínimo 340px */
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    max-width: 100%;
     margin: 0 auto;
-    justify-content: center;
-    gap: 1.5rem;
-    overflow-y: auto;
+    gap: 2rem;
+    overflow-y: auto; /* Permite rolar se houver muitos cartões */
+    align-content: flex-start; /* Alinha os cartões ao topo */
 }
 
-/* --- Card Redesign --- */
+/* --- Estilo Base do Cartão (Design Renovado) --- */
+/* Define a aparência fundamental de um cartão de informação. */
 .card {
-    background-color: hsl(var(--card));
-    border-radius: 0.75rem;
-    padding: 1.5rem;
+    border-radius: 0.75rem; /* 12px */
+    padding: 1.75rem; /* 28px */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    text-align: left;
-    border: 1px solid hsl(var(--border));
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
-    position: relative;
+    border: 1px solid transparent; /* A cor da borda é definida por variantes */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(10px); /* Efeito de vidro fosco mais intenso nos cartões */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    min-height: 280px;
     overflow: hidden;
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px hsla(var(--primary) / 0.1);
-    border-color: hsl(var(--primary));
-}
-
-.card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 6px;
-    background-color: hsl(var(--secondary));
-    transition: background-color 0.2s ease-in-out;
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .card-title {
-    font-size: 1.75rem;
+    font-size: 2rem;
     font-weight: 600;
     line-height: 1.2;
-    color: hsl(var(--foreground));
-    margin-bottom: 0.5rem;
+    color: #ffffff; /* Texto sempre branco para alto contraste */
+    margin-bottom: 0.75rem;
 }
 
 .card-value {
-    font-size: 4.5rem;
+    font-size: 5.5rem;
     font-weight: 700;
     line-height: 1;
-    color: hsl(var(--primary));
+    color: #ffffff;
     flex-grow: 1;
     display: flex;
     align-items: center;
     justify-content: flex-start;
 }
 
+/* Estilo especial para quando uma sala não está atribuída */
 .card-value.not-assigned {
-    color: hsl(var(--destructive));
-    font-size: 2rem;
+    color: #ffdddd; /* Vermelho claro para o texto de aviso */
+    font-size: 2.5rem;
+    font-weight: 600;
 }
 
-/* Color bar styles */
-.card-fmc::before { background-color: #03A9F4; }
-.card-rad::before { background-color: #8BC34A; }
-.card-enf::before { background-color: #F44336; }
-.card-adm::before { background-color: #FFC107; }
-.card-default::before { background-color: #78909c; }
-
 .card-footer-info {
-    margin-top: 1rem;
-    font-size: 1rem;
+    margin-top: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 500;
-    color: hsl(var(--muted-foreground));
+    color: #e0e0e0; /* Cinza claro para informação secundária */
     text-align: right;
 }
 
-/* --- Fallback and Ticker Styles (remain the same) --- */
+/* --- Variantes de Cor dos Cartões --- */
+/* Cada classe define um fundo e borda com cor e transparência específicas. */
+.card-fmc {
+    background-color: rgba(3, 169, 244, 0.15); /* Azul claro */
+    border-color: rgba(3, 169, 244, 0.4);
+}
+.card-rad {
+    background-color: rgba(139, 195, 74, 0.15); /* Verde claro */
+    border-color: rgba(139, 195, 74, 0.4);
+}
+.card-enf {
+    background-color: rgba(244, 67, 54, 0.15); /* Vermelho claro */
+    border-color: rgba(244, 67, 54, 0.4);
+}
+.card-adm {
+    background-color: rgba(255, 193, 7, 0.15); /* Amarelo claro */
+    border-color: rgba(255, 193, 7, 0.4);
+}
+.card-default {
+    background-color: rgba(120, 144, 156, 0.15); /* Cinza */
+    border-color: rgba(120, 144, 156, 0.4);
+}
+.card-unassigned {
+    background-color: rgba(150, 40, 40, 0.2); /* Vermelho escuro para erro */
+    border-color: rgba(200, 80, 80, 0.5);
+}
+
+
+/* --- Estilos de Fallback (Quando não há aulas) --- */
 .no-classes-card {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100%;
-    color: #777;
     text-align: center;
-    grid-column: 1 / -1;
-    background-color: rgba(0,0,0,0.2);
+    grid-column: 1 / -1; /* Ocupa toda a largura da grelha */
+    background-color: rgba(18, 40, 20, 0.5);
+    border: 1px solid hsl(var(--border) / 0.2);
     border-radius: 0.75rem;
+    min-height: 400px;
 }
 
 .message-icon {
     margin-bottom: 1.5rem;
-    color: #555;
+    color: hsl(var(--primary));
+    opacity: 0.8;
 }
 
 .message-text {
-    font-size: 2em;
+    font-size: 2.2em;
     font-weight: 600;
+    color: hsl(var(--foreground));
 }
 
 .message-subtext {
-    font-size: 1.2em;
-    margin-top: 0.5rem;
-    color: #666;
+    font-size: 1.3em;
+    margin-top: 0.75rem;
+    color: hsl(var(--muted-foreground));
 }
 
+/* --- Rodapé de Anúncios (Ticker) --- */
 .announcements-ticker-container {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(5px);
   color: white;
   overflow: hidden;
-  padding: 12px 0;
+  padding: 14px 0;
   border-top: 1px solid hsl(var(--border));
   z-index: 20;
 }
@@ -163,21 +197,21 @@ header h1 {
 }
 
 .announcement-item {
-  margin-right: 70px; /* Mais espaço entre os itens */
-  font-size: 1.1rem;
+  margin-right: 70px; 
+  font-size: 1.25rem;
   display: inline-flex;
   align-items: center;
 }
 
 .announcement-item .priority-urgente {
-  color: #ff5252;
+  color: #ff5252; /* Vermelho para urgente */
   font-weight: bold;
   margin-right: 10px;
   text-transform: uppercase;
 }
 
 .announcement-item .priority-normal {
-  color: #ffc107;
+  color: #ffc107; /* Amarelo para normal */
   font-weight: bold;
   margin-right: 10px;
   text-transform: uppercase;
@@ -192,6 +226,7 @@ header h1 {
     color: #e0e0e0;
 }
 
+/* Animação do letreiro */
 @keyframes ticker-animation {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
