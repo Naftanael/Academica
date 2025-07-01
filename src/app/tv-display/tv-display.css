@@ -100,14 +100,14 @@
 
 /* --- Cores Temáticas dos Cards --- */
 /*
-  As cores foram atualizadas para degradês mais vivos, sem transparência,
+  As cores foram atualizadas para degradês mais vivos, com uma leve transparência,
   para melhorar o contraste e a vibração visual no painel.
 */
-.card-fmc { background: linear-gradient(to right, #34d399, #10b981); } /* Emerald */
-.card-rad { background: linear-gradient(to right, #60a5fa, #3b82f6); } /* Blue */
-.card-enf { background: linear-gradient(to right, #fbbf24, #f59e0b); } /* Amber */
-.card-adm { background: linear-gradient(to right, #c084fc, #a855f7); } /* Purple */
-.card-default { background: linear-gradient(to right, #9ca3af, #6b7280); } /* Gray */
+.card-fmc { background: linear-gradient(to right, rgba(52, 211, 153, 0.9), rgba(16, 185, 129, 0.9)); } /* Emerald */
+.card-rad { background: linear-gradient(to right, rgba(96, 165, 250, 0.9), rgba(59, 130, 246, 0.9)); } /* Blue */
+.card-enf { background: linear-gradient(to right, rgba(251, 191, 36, 0.9), rgba(245, 158, 11, 0.9)); } /* Amber */
+.card-adm { background: linear-gradient(to right, rgba(192, 132, 252, 0.9), rgba(168, 85, 247, 0.9)); } /* Purple */
+.card-default { background: linear-gradient(to right, rgba(156, 163, 175, 0.9), rgba(107, 114, 128, 0.9)); } /* Gray */
 
 
 /* --- Mensagem de "Nenhuma Turma" --- */
