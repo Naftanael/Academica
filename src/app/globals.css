@@ -5,67 +5,70 @@
 
 @layer base {
   :root {
-    --background: 210 29% 96%; /* #f0f4f8 - Light Gray */
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 207 78% 53%; /* #3490dc - Vibrant Blue */
+    --primary: 207 78% 53%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 23 100% 60%; /* #ff8533 - Warm Orange */
+    --accent: 23 100% 60%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 207 78% 53%;
-
     --radius: 0.5rem;
+
+    /* Sidebar Light Theme (for reference) */
+    --sidebar: 220 15% 96%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-border: 220 15% 90%;
+    --sidebar-accent: 220 15% 90%;
+    --sidebar-accent-foreground: 220 15% 15%;
+    --sidebar-primary: 207 78% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 220 15% 15%;
     --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
+    --card: 220 15% 20%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
+    --popover: 220 15% 10%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 207 78% 53%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 217.2 32.6% 22.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 23 100% 60%;
+    --accent: 23 90% 55%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 25.5%;
+    --input: 217.2 32.6% 25.5%;
     --ring: 207 78% 53%;
-  }
 
+    /* Sidebar Dark Theme */
+    --sidebar: 220 15% 10%;
+    --sidebar-foreground: 210 40% 92%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-accent: 220 15% 22%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-primary: 207 78% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
