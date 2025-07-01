@@ -1,3 +1,4 @@
+
 export type DayOfWeek = 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
 export type PeriodOfDay = 'Manhã' | 'Tarde' | 'Noite';
 
@@ -95,4 +96,19 @@ export interface TvDisplayInfo {
 export interface PublishedTvData {
   data: TvDisplayInfo[];
   publishedDate: string;
+}
+
+// Types for Announcements module
+export type AnnouncementType = 'Notícia' | 'Comunicado';
+export type AnnouncementPriority = 'Normal' | 'Urgente';
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  createdAt: string; // ISO Date string
+  type: AnnouncementType;
+  priority: AnnouncementPriority;
+  published: boolean;
 }
