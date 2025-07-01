@@ -1,29 +1,44 @@
 [
   {
-    "id": "mchspzhj-2q8lka9",
+    "id": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c",
     "classGroupId": "mbqkrhum-c8k98u0",
+    "classroomId": "new-sala-12-aaabbbnnn",
+    "startTime": "08:00",
+    "endTime": "11:00",
+    "daysOfWeek": [
+      "Terça",
+      "Quarta",
+      "Quinta"
+    ],
+    "startDate": "2024-02-01T00:00:00Z",
+    "endDate": "2024-12-31T23:59:59Z"
+  },
+  {
+    "id": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a",
+    "classGroupId": "cg-2024-001",
     "classroomId": "new-sala-1-aaabbbccc",
-    "startDate": "2024-07-02",
-    "endDate": "2024-08-05",
-    "shift": "Manhã",
-    "purpose": "Química"
+    "startTime": "08:00",
+    "endTime": "11:00",
+    "daysOfWeek": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
+    "startDate": "2024-02-01T00:00:00Z",
+    "endDate": "2024-12-31T23:59:59Z"
   },
   {
-    "id": "mcihgpe0-znfvzld",
-    "classGroupId": "imgdata-006-fmc08",
-    "classroomId": "new-sala-6-aaabbbhhh",
-    "startDate": "2024-06-29",
-    "endDate": "2024-07-09",
-    "shift": "Manhã",
-    "purpose": "Deontologia e Ética Profissional"
-  },
-  {
-    "id": "mcii2ham-len2pi4",
-    "classGroupId": "imgdata2-001-fmc06",
-    "classroomId": "new-sala-9-aaabbbkkk",
-    "startDate": "2024-06-29",
-    "endDate": "2024-07-09",
-    "shift": "Noite",
-    "purpose": "Homeopatia"
+    "id": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e",
+    "classGroupId": "cg-2024-003",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "startTime": "19:00",
+    "endTime": "22:00",
+    "daysOfWeek": [
+      "Segunda",
+      "Quarta",
+      "Sexta"
+    ],
+    "startDate": "2024-02-01T00:00:00Z",
+    "endDate": "2024-12-31T23:59:59Z"
   }
 ]

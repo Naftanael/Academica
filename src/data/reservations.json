@@ -1,2 +1,137 @@
-
-[]
+[
+  {
+    "id": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c-2024-02-06",
+    "recurringReservationId": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c",
+    "classGroupId": "mbqkrhum-c8k98u0",
+    "classroomId": "new-sala-12-aaabbbnnn",
+    "date": "2024-02-06",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c-2024-02-07",
+    "recurringReservationId": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c",
+    "classGroupId": "mbqkrhum-c8k98u0",
+    "classroomId": "new-sala-12-aaabbbnnn",
+    "date": "2024-02-07",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c-2024-02-08",
+    "recurringReservationId": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c",
+    "classGroupId": "mbqkrhum-c8k98u0",
+    "classroomId": "new-sala-12-aaabbbnnn",
+    "date": "2024-02-08",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c-2024-02-13",
+    "recurringReservationId": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c",
+    "classGroupId": "mbqkrhum-c8k98u0",
+    "classroomId": "new-sala-12-aaabbbnnn",
+    "date": "2024-02-13",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c-2024-02-14",
+    "recurringReservationId": "e98e749c-8e7c-4f7e-8c38-3b5f2d6b3e1c",
+    "classGroupId": "mbqkrhum-c8k98u0",
+    "classroomId": "new-sala-12-aaabbbnnn",
+    "date": "2024-02-14",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a-2024-02-02",
+    "recurringReservationId": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a",
+    "classGroupId": "cg-2024-001",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-02",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a-2024-02-05",
+    "recurringReservationId": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a",
+    "classGroupId": "cg-2024-001",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-05",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a-2024-02-07",
+    "recurringReservationId": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a",
+    "classGroupId": "cg-2024-001",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-07",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a-2024-02-09",
+    "recurringReservationId": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a",
+    "classGroupId": "cg-2024-001",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-09",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a-2024-02-12",
+    "recurringReservationId": "a9a3f2b7-8d9e-4c7c-9b8a-9f8a3c8e1b3a",
+    "classGroupId": "cg-2024-001",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-12",
+    "startTime": "08:00",
+    "endTime": "11:00"
+  },
+  {
+    "id": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e-2024-02-02",
+    "recurringReservationId": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e",
+    "classGroupId": "cg-2024-003",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-02",
+    "startTime": "19:00",
+    "endTime": "22:00"
+  },
+  {
+    "id": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e-2024-02-05",
+    "recurringReservationId": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e",
+    "classGroupId": "cg-2024-003",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-05",
+    "startTime": "19:00",
+    "endTime": "22:00"
+  },
+  {
+    "id": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e-2024-02-07",
+    "recurringReservationId": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e",
+    "classGroupId": "cg-2024-003",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-07",
+    "startTime": "19:00",
+    "endTime": "22:00"
+  },
+  {
+    "id": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e-2024-02-09",
+    "recurringReservationId": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e",
+    "classGroupId": "cg-2024-003",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-09",
+    "startTime": "19:00",
+    "endTime": "22:00"
+  },
+  {
+    "id": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e-2024-02-12",
+    "recurringReservationId": "f3b3e3e3-3e3e-4c3c-8c3c-3e3e3e3e3e3e",
+    "classGroupId": "cg-2024-003",
+    "classroomId": "new-sala-1-aaabbbccc",
+    "date": "2024-02-12",
+    "startTime": "19:00",
+    "endTime": "22:00"
+  }
+]
