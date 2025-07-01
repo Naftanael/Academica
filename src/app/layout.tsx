@@ -16,7 +16,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} dark`} suppressHydrationWarning>
       <body className="font-body antialiased">
         <AppShell>{children}</AppShell>
         <Toaster />
