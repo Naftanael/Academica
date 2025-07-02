@@ -81,7 +81,7 @@ header h1 {
 }
 
 .card-title {
-    font-size: 2rem;
+    font-size: 4rem;
     font-weight: 600;
     line-height: 1.2;
     color: #ffffff; /* Always white text for high contrast */
@@ -89,7 +89,7 @@ header h1 {
 }
 
 .card-value {
-    font-size: 5.5rem;
+    font-size: 3rem;
     font-weight: 700;
     line-height: 1;
     color: #ffffff;

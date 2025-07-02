@@ -35,7 +35,6 @@ import { createRecurringReservation } from '@/lib/actions/recurring_reservations
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
 import { cn } from '@/lib/utils';
-import { CLASS_GROUP_SHIFTS } from '@/lib/constants';
 
 interface NewRecurringReservationFormProps {
   classGroups: ClassGroup[];
@@ -68,7 +67,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
       classroomId: undefined,
       startDate: format(new Date(), 'yyyy-MM-dd'),
       numberOfClasses: 1,
-      shift: undefined,
       purpose: '',
     },
   });
@@ -81,9 +79,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     if (watchedClassGroupId) {
       const classGroup = classGroups.find(cg => cg.id === watchedClassGroupId);
       setSelectedClassGroup(classGroup);
-      if (classGroup) {
-        form.setValue('shift', classGroup.shift);
-      }
     } else {
       setSelectedClassGroup(undefined);
     }
@@ -271,7 +266,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
                       {classGroups.length === 0 && <SelectItem value="no-cg" disabled>Nenhuma turma cadastrada</SelectItem>}
                       {classGroups.map((cg) => (
                         <SelectItem key={cg.id} value={cg.id}>
-                          {cg.name} ({cg.shift})
+                          {cg.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -382,32 +377,6 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
             <span>{calculationResultText}</span>
           </div>
         )}
-
-        <FormField
-          control={form.control}
-          name="shift"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Turno da Reserva</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ''}>
-                <FormControl>
-                  <SelectTrigger disabled>
-                    <SelectValue placeholder="Selecione o turno para a reserva" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {CLASS_GROUP_SHIFTS.map((shiftOption) => (
-                    <SelectItem key={shiftOption} value={shiftOption}>
-                      {shiftOption}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>O turno é definido automaticamente com base na turma selecionada.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         
         <div className="flex justify-end">
           <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">

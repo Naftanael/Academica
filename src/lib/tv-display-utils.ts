@@ -70,10 +70,10 @@ function isValidDate(dateStr: string | null | undefined): boolean {
  */
 export function filterActiveGroups(allGroups: ClientTvDisplayInfo[], currentTime: Date): ClientTvDisplayInfo[] {
   // Primeiro, determina a data e o turno lógicos corretos a serem usados para todas as verificações.
-  const { effectiveDate, effectiveShift } = getEffectiveShiftAndDate(currentTime);
+  const { effectiveDate } = getEffectiveShiftAndDate(currentTime);
 
   // Se não houver um turno válido (por exemplo, a função retornou nulo), nenhuma turma pode estar ativa.
-  if (!effectiveShift || !Array.isArray(allGroups)) {
+  if (!Array.isArray(allGroups)) {
     return [];
   }
 
@@ -83,9 +83,6 @@ export function filterActiveGroups(allGroups: ClientTvDisplayInfo[], currentTime
   return allGroups.filter(group => {
     // Condição 1: O grupo deve estar marcado como "Em Andamento".
     const isActive = group.status === 'Em Andamento';
-
-    // Condição 2: O turno do grupo deve corresponder ao turno lógico atual.
-    const isCorrectShift = group.shift === effectiveShift;
 
     // Condição 3: O dia lógico atual deve ser um dos dias de aula programados do grupo.
     const isCorrectDay = Array.isArray(group.classDays) && group.classDays.includes(effectiveDayName);
@@ -100,6 +97,6 @@ export function filterActiveGroups(allGroups: ClientTvDisplayInfo[], currentTime
       });
 
     // Um grupo é exibido apenas se todas as quatro condições forem verdadeiras.
-    return isActive && isCorrectShift && isCorrectDay && isInDateRange;
+    return isActive && isCorrectDay && isInDateRange;
   });
 }

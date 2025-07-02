@@ -3,17 +3,13 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { CLASS_GROUP_SHIFTS, CLASS_GROUP_STATUSES, DAYS_OF_WEEK } from '@/lib/constants';
+import { CLASS_GROUP_STATUSES, DAYS_OF_WEEK } from '@/lib/constants';
 import { readData, writeData, generateId } from '@/lib/data-utils';
 import type { ClassGroup, ClassGroupStatus, ClassroomRecurringReservation } from '@/types';
 import { formatISO, addMonths } from 'date-fns';
 
 const classGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, {
-    required_error: "Selecione um turno.",
-    invalid_type_error: "Turno inválido.",
-  }),
   classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   year: z.coerce.number({invalid_type_error: "Ano deve ser um número."}).optional(),
@@ -33,9 +29,6 @@ const classGroupFormSchema = z.object({
 
 const classGroupEditFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, {
-    required_error: "Selecione um turno.",
-  }),
   classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
@@ -61,7 +54,6 @@ export async function createClassGroup(values: ClassGroupFormValues) {
     const newClassGroup: ClassGroup = {
       id: generateId(),
       name: validatedValues.name,
-      shift: validatedValues.shift,
       classDays: validatedValues.classDays,
       year: validatedValues.year || now.getFullYear(),
       status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
@@ -102,7 +94,6 @@ export async function updateClassGroup(id: string, values: ClassGroupEditFormVal
     classGroups[classGroupIndex] = {
       ...existingClassGroup,
       name: validatedValues.name,
-      shift: validatedValues.shift,
       classDays: validatedValues.classDays,
     };
 

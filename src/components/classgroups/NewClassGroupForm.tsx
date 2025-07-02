@@ -33,15 +33,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { createClassGroup } from '@/lib/actions/classgroups';
-import { CLASS_GROUP_SHIFTS, DAYS_OF_WEEK, CLASS_GROUP_STATUSES } from '@/lib/constants';
+import { DAYS_OF_WEEK, CLASS_GROUP_STATUSES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 
 const newClassGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(CLASS_GROUP_SHIFTS, {
-    required_error: "Selecione um turno.",
-  }),
   classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   year: z.coerce.number({ invalid_type_error: "Ano deve ser um número." })
@@ -73,7 +70,6 @@ export default function NewClassGroupForm() {
     resolver: zodResolver(newClassGroupFormSchema),
     defaultValues: {
       name: '',
-      shift: undefined,
       classDays: [],
       year: currentYear,
       status: 'Planejada',
@@ -134,29 +130,6 @@ export default function NewClassGroupForm() {
                 <Input placeholder="Ex: 3º Técnico em Farmácia" {...field} />
               </FormControl>
               <FormDescription>Identifique a turma com um nome claro.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="shift"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Turno</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um turno" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {CLASS_GROUP_SHIFTS.map(shiftValue => (
-                    <SelectItem key={shiftValue} value={shiftValue}>{shiftValue}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <FormMessage />
             </FormItem>
           )}

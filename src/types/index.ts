@@ -18,7 +18,6 @@ export interface ClassGroup {
   id: string;
   name: string;
   year: number;
-  shift: PeriodOfDay;
   status: ClassGroupStatus;
   startDate: string; // ISO Date string
   endDate: string; // ISO Date string
@@ -32,7 +31,6 @@ export interface ClassroomRecurringReservation {
   classroomId: string;
   startDate: string; // ISO Date string YYYY-MM-DD
   endDate: string; // ISO Date string YYYY-MM-DD
-  shift: PeriodOfDay;
   purpose: string;
 }
 
@@ -84,7 +82,6 @@ export type OccupancyItem =
 export interface TvDisplayInfo {
   id: string;
   groupName: string;
-  shift: PeriodOfDay;
   classroomName: string; // Should always be a string, e.g. "Sala 1" or "Não Atribuída"
   classDays: DayOfWeek[];
   startDate: string;

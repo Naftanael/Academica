@@ -43,11 +43,6 @@ export default function TvCard({ item }: { item: TvDisplayInfo }) {
           {item.classroomName}
         </div>
       </div>
-
-      {/* Card footer for secondary information */}
-      <div className="card-footer-info">
-        {item.shift}
-      </div>
     </div>
   );
 }

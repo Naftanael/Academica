@@ -53,7 +53,7 @@ async function getDashboardData(): Promise<DashboardData> {
         const tempEndDate = parseISO(cg.endDate);
         if (isValid(tempEndDate)) {
             parsedEndDate = tempEndDate;
-            formattedEndDate = format(parsedEndDate, 'dd/MM/yyyy', { locale: ptBR });
+            formattedEndDate = format(tempEndDate, 'dd/MM/yyyy', { locale: ptBR });
         }
       } catch (e) {
          console.warn(`Dashboard: Could not parse endDate "${cg.endDate}" for class group ${cg.id}.`, e);
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
                         {cg.nearEnd && <Badge variant="destructive">Perto do Fim</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {cg.shift} - {cg.year}
+                        {cg.year}
                       </p>
                     </CardHeader>
                     <CardContent className="space-y-2">

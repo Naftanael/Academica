@@ -22,7 +22,6 @@ export default function TvDisplayCard({ group }: { group: TvDisplayInfo }) {
     >
       <div className="text-xl font-bold text-gray-800 mb-2">{group.classroomName}</div>
       <div className="text-lg text-gray-700">{group.groupName}</div>
-      <div className="text-md text-gray-600 self-end">{group.shift}</div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassroomRecurringReservation, DayOfWeek, PeriodOfDay } from '@/types';
+import type { ClassroomRecurringReservation, DayOfWeek } from '@/types';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import { z } from 'zod';
 import { getClassGroups } from './classgroups';
@@ -110,10 +110,6 @@ export async function createRecurringReservation(values: RecurringReservationFor
         continue;
       }
       
-      if (existingRes.shift !== validatedValues.shift) {
-        continue;
-      }
-
       const existingResClassGroup = allClassGroups.find(cg => cg.id === existingRes.classGroupId);
       if (!existingResClassGroup) {
         console.warn(`Turma ${existingRes.classGroupId} da reserva existente ${existingRes.id} não encontrada. Pulando checagem de conflito para esta reserva.`);
@@ -130,7 +126,7 @@ export async function createRecurringReservation(values: RecurringReservationFor
           
           return {
             success: false,
-            message: `Conflito: A sala "${conflictingClassroomName}" já está reservada para a turma "${conflictingTurmaName}" no turno da "${validatedValues.shift}" nos dias de (${formattedCommonDays}) durante o período de ${format(existingResStartDate, 'dd/MM/yyyy')} a ${format(existingResEndDate, 'dd/MM/yyyy')} ou parte dele.`,
+            message: `Conflito: A sala "${conflictingClassroomName}" já está reservada para a turma "${conflictingTurmaName}" nos dias de (${formattedCommonDays}) durante o período de ${format(existingResStartDate, 'dd/MM/yyyy')} a ${format(existingResEndDate, 'dd/MM/yyyy')} ou parte dele.`,
           };
       }
     }
@@ -141,7 +137,6 @@ export async function createRecurringReservation(values: RecurringReservationFor
       classroomId: validatedValues.classroomId,
       startDate: validatedValues.startDate, 
       endDate: format(newResEndDate, 'yyyy-MM-dd'),
-      shift: validatedValues.shift as PeriodOfDay,
       purpose: validatedValues.purpose,
     };
 

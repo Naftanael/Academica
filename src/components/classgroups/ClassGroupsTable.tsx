@@ -39,7 +39,7 @@ export default function ClassGroupsTable({ classGroups, classrooms }: ClassGroup
         <CardContent>
           {classGroups.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              <UsersRound className="mx-auto h-12 w-12 mb-4 text-primary" />
+              <UsersRound className="mx-auto h-12 w-12 text-primary" />
               <p className="text-lg">Nenhuma turma cadastrada ainda.</p>
               <Button asChild variant="link" className="mt-2 text-primary">
                 <Link href="/classgroups/new">
@@ -53,7 +53,6 @@ export default function ClassGroupsTable({ classGroups, classrooms }: ClassGroup
                 <TableHeader>
                   <TableRow>
                     <TableHead className="font-semibold">Nome</TableHead>
-                    <TableHead className="font-semibold">Turno</TableHead>
                     <TableHead className="font-semibold">Dias de Aula</TableHead>
                     <TableHead className="font-semibold">Status</TableHead>
                     <TableHead className="font-semibold">Ano</TableHead>
@@ -81,7 +80,6 @@ export default function ClassGroupsTable({ classGroups, classrooms }: ClassGroup
                     return (
                     <TableRow key={cg.id} className="hover:bg-muted/50">
                       <TableCell className="font-medium text-foreground">{cg.name}</TableCell>
-                      <TableCell>{cg.shift}</TableCell>
                       <TableCell>
                         {cg.classDays && cg.classDays.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
