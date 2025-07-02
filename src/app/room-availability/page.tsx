@@ -1,7 +1,7 @@
 
 import PageHeader from '@/components/shared/PageHeader';
 import { CalendarDays, School } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
 import { getEventReservations } from '@/lib/actions/event_reservations';
@@ -19,33 +19,28 @@ export default async function RoomAvailabilityPage() {
     <TooltipProvider>
       <PageHeader
         title="Disponibilidade de Salas"
-        description="Selecione uma intervalo de datas para visualizar a ocupação das salas de aula."
+        description="Selecione uma sala da lista para visualizar sua agenda semanal detalhada."
         icon={CalendarDays}
       />
-      <Card className="shadow-lg rounded-lg">
-        <CardHeader>
-          <CardTitle className="font-headline text-xl">Filtro e Quadro de Ocupação Semanal</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {classrooms.length === 0 ? (
+      
+      {classrooms.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
             <div className="text-center text-muted-foreground py-8">
               <School className="mx-auto h-12 w-12 mb-4 text-primary" />
               <p className="text-lg">Nenhuma sala de aula cadastrada.</p>
               <p className="text-sm mt-2">Cadastre salas para visualizar a disponibilidade.</p>
             </div>
-          ) : (
-            <RoomAvailabilityDisplay 
-              initialClassrooms={classrooms} 
-              initialClassGroups={classGroups} 
-              initialEventReservations={eventReservations}
-              initialRecurringReservations={recurringReservations}
-            />
-          )}
-           <p className="text-xs text-muted-foreground mt-6">
-            Nota: Este quadro reflete a ocupação com base nos dias de aula das turmas, reservas recorrentes e reservas de eventos pontuais no período selecionado.
-          </p>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <RoomAvailabilityDisplay 
+          initialClassrooms={classrooms} 
+          initialClassGroups={classGroups} 
+          initialEventReservations={eventReservations}
+          initialRecurringReservations={recurringReservations}
+        />
+      )}
     </TooltipProvider>
   );
 }
