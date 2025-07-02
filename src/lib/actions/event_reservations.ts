@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { EventReservation } from '@/types';
+import type { EventReservation, ClassGroup } from '@/types';
 import { eventReservationFormSchema, type EventReservationFormValues } from '@/lib/schemas/event_reservations';
 import { getRecurringReservations } from './recurring_reservations';
 import { getClassGroups } from './classgroups';
@@ -98,13 +98,13 @@ export async function createEventReservation(values: EventReservationFormValues)
       if (newEventDate >= recurringStartDate && newEventDate <= recurringEndDate) {
         const classGroup = allClassGroups.find(cg => cg.id === recurringRes.classGroupId);
         if (classGroup && Array.isArray(classGroup.classDays) && classGroup.classDays.includes(newEventDayOfWeekPt)) {
-          const shiftTimeRange = SHIFT_TIME_RANGES[recurringRes.shift];
+          const shiftTimeRange = SHIFT_TIME_RANGES[classGroup.shift];
           if (timeRangesOverlap(validatedValues.startTime, validatedValues.endTime, shiftTimeRange.start, shiftTimeRange.end)) {
             const classroomName = allClassrooms.find(c => c.id === validatedValues.classroomId)?.name || validatedValues.classroomId;
             const turmaName = classGroup.name;
             return {
               success: false,
-              message: `Conflito: A sala "${classroomName}" tem uma reserva recorrente para a turma "${turmaName}" no turno da "${recurringRes.shift}" (${newEventDayOfWeekPt}, ${shiftTimeRange.start}-${shiftTimeRange.end}) que coincide com o horário deste evento.`
+              message: `Conflito: A sala "${classroomName}" tem uma reserva recorrente para a turma "${turmaName}" no turno da "${classGroup.shift}" (${newEventDayOfWeekPt}, ${shiftTimeRange.start}-${shiftTimeRange.end}) que coincide com o horário deste evento.`
             };
           }
         }

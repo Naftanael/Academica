@@ -33,12 +33,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { createClassGroup } from '@/lib/actions/classgroups';
-import { DAYS_OF_WEEK, CLASS_GROUP_STATUSES } from '@/lib/constants';
+import { DAYS_OF_WEEK, CLASS_GROUP_STATUSES, PERIODS_OF_DAY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { CheckedState } from '@radix-ui/react-checkbox';
+import type { PeriodOfDay } from '@/types';
 
 const newClassGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
+  shift: z.enum(PERIODS_OF_DAY, { required_error: "Selecione um turno para a turma." }),
   classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   year: z.coerce.number({ invalid_type_error: "Ano deve ser um número." })
@@ -86,7 +88,7 @@ export default function NewClassGroupForm() {
       endDate: values.endDate ? formatISO(values.endDate) : undefined,
     };
 
-    const result = await createClassGroup(submissionValues);
+    const result = await createClassGroup(submissionValues as any);
     setIsPending(false);
 
     if (result.success) {
@@ -130,6 +132,30 @@ export default function NewClassGroupForm() {
                 <Input placeholder="Ex: 3º Técnico em Farmácia" {...field} />
               </FormControl>
               <FormDescription>Identifique a turma com um nome claro.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="shift"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Turno</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o turno da turma" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {PERIODS_OF_DAY.map(period => (
+                    <SelectItem key={period} value={period}>{period}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>O turno em que a turma ocorre.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

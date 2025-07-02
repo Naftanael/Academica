@@ -7,6 +7,7 @@ import { getClassGroups } from '@/lib/actions/classgroups';
 import { getEventReservations } from '@/lib/actions/event_reservations';
 import { getRecurringReservations } from '@/lib/actions/recurring_reservations';
 import RoomAvailabilityDisplay from '@/components/room-availability/RoomAvailabilityDisplay';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default async function RoomAvailabilityPage() {
   const classrooms = await getClassrooms();
@@ -15,7 +16,7 @@ export default async function RoomAvailabilityPage() {
   const recurringReservations = await getRecurringReservations();
 
   return (
-    <>
+    <TooltipProvider>
       <PageHeader
         title="Disponibilidade de Salas"
         description="Selecione uma intervalo de datas para visualizar a ocupação das salas de aula."
@@ -45,6 +46,6 @@ export default async function RoomAvailabilityPage() {
           </p>
         </CardContent>
       </Card>
-    </>
+    </TooltipProvider>
   );
 }

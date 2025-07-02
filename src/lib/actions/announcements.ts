@@ -44,6 +44,7 @@ export async function createAnnouncement(values: AnnouncementFormValues) {
     await writeData('announcements.json', announcements);
 
     revalidatePath('/announcements');
+    revalidatePath('/tv-display');
     return { success: true, message: 'Anúncio criado com sucesso!', data: newAnnouncement };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -72,6 +73,7 @@ export async function updateAnnouncement(id: string, values: AnnouncementFormVal
     await writeData('announcements.json', announcements);
     revalidatePath('/announcements');
     revalidatePath(`/announcements/${id}/edit`);
+    revalidatePath('/tv-display');
     return { success: true, message: 'Anúncio atualizado com sucesso!', data: announcements[index] };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -90,6 +92,7 @@ export async function deleteAnnouncement(id: string) {
     await writeData('announcements.json', announcements);
     
     revalidatePath('/announcements');
+    revalidatePath('/tv-display');
     return { success: true, message: 'Anúncio excluído com sucesso!' };
   } catch (error) {
     console.error(`Failed to delete announcement ${id}:`, error);

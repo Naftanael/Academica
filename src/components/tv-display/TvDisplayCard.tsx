@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils';
 // Helper to get a consistent color class from the group name for styling
 const getCourseColorClass = (groupName: string) => {
   const upperCaseGroupName = groupName.toUpperCase();
-  if (upperCaseGroupName.includes('FMC')) return 'bg-blue-200';
-  if (upperCaseGroupName.includes('RAD')) return 'bg-green-200';
-  if (upperCaseGroupName.includes('ENF')) return 'bg-red-200';
-  if (upperCaseGroupName.includes('ADM')) return 'bg-yellow-200';
+  if (upperCaseGroupName.includes('FMC')) return 'bg-yellow-200';
+  if (upperCaseGroupName.includes('RAD')) return 'bg-red-200';
+  if (upperCaseGroupName.includes('ENF')) return 'bg-green-200';
+  if (upperCaseGroupName.includes('ADM')) return 'bg-blue-200';
   return 'bg-gray-200';
 };
 

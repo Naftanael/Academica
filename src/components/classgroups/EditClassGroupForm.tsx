@@ -19,15 +19,23 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
 import { updateClassGroup } from '@/lib/actions/classgroups';
-import { DAYS_OF_WEEK } from '@/lib/constants';
+import { DAYS_OF_WEEK, PERIODS_OF_DAY } from '@/lib/constants';
 import type { ClassGroup } from '@/types';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
+  shift: z.enum(PERIODS_OF_DAY, { required_error: "Selecione um turno." }),
   classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
 });
@@ -47,6 +55,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: classGroup.name,
+      shift: classGroup.shift,
       classDays: classGroup.classDays || [],
     },
   });
@@ -92,6 +101,30 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
 
         <FormField
           control={form.control}
+          name="shift"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Turno</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o turno da turma" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {PERIODS_OF_DAY.map(period => (
+                    <SelectItem key={period} value={period}>{period}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>O turno em que a turma ocorre.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="classDays"
           render={() => (
             <FormItem>
@@ -118,9 +151,9 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                               checked={field.value?.includes(day)}
                               onCheckedChange={(checked: CheckedState) => {
                                 return checked
-                                  ? field.onChange([...field.value, day])
+                                  ? field.onChange([...(field.value || []), day])
                                   : field.onChange(
-                                      field.value?.filter(
+                                      (field.value || []).filter(
                                         (value) => value !== day
                                       )
                                     );

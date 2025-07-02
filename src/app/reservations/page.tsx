@@ -36,6 +36,7 @@ interface EnrichedRecurringReservation extends ClassroomRecurringReservation {
   classGroupDays: DayOfWeek[];
   formattedStartDate: string;
   formattedEndDate: string;
+  shift: string;
 }
 
 interface EnrichedEventReservation extends EventReservation {
@@ -52,7 +53,7 @@ export default async function ReservationsPage() {
   const classGroups = await getClassGroups();
 
   const classroomMap = new Map(classrooms.map(c => [c.id, c.name]));
-  const classGroupMap = new Map(classGroups.map(cg => [cg.id, { name: cg.name, classDays: cg.classDays }]));
+  const classGroupMap = new Map(classGroups.map(cg => [cg.id, { name: cg.name, classDays: cg.classDays, shift: cg.shift }]));
 
   const enrichedRecurringReservations: EnrichedRecurringReservation[] = recurringReservationsData.map(res => {
     const classGroupDetails = classGroupMap.get(res.classGroupId);
@@ -62,6 +63,7 @@ export default async function ReservationsPage() {
       classroomName: classroomMap.get(res.classroomId) || 'Sala desconhecida',
       classGroupName: classGroupDetails?.name || 'Turma desconhecida',
       classGroupDays: classGroupDetails?.classDays || [],
+      shift: classGroupDetails?.shift || 'Turno Indefinido',
       formattedStartDate: formatSimpleDate(res.startDate),
       formattedEndDate: formatSimpleDate(res.endDate),
     };

@@ -33,9 +33,10 @@ header {
 header h1 {
     font-size: 2.5rem;
     font-weight: 700; /* Stronger text */
-    color: hsl(var(--primary));
+    color: white;
     letter-spacing: 1.5px;
     text-shadow: 0 0 8px hsl(var(--primary) / 0.5); /* Adds a soft glow */
+    padding: 5px;
 }
 
 .last-updated {
@@ -71,7 +72,7 @@ header h1 {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     backdrop-filter: blur(10px); /* More intense frosted glass effect on the cards */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
-    min-height: 280px;
+    min-height: 200px;
     overflow: hidden;
 }
 

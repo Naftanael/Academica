@@ -10,6 +10,7 @@ import { format, parseISO, differenceInDays, isValid, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import ClassroomOccupancyChart from '@/components/dashboard/ClassroomOccupancyChart';
+import ExportTvDisplayButton from '@/components/dashboard/ExportTvDisplayButton';
 
 async function getDashboardData(): Promise<DashboardData> {
   const classrooms = await readData<Classroom>('classrooms.json');
@@ -117,11 +118,14 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageHeader
-        title="Dashboard"
-        description={`Bem-vindo(a) ao Painel Academica. Hoje é ${format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`}
-        icon={LayoutDashboard}
-      />
+      <div className="flex justify-between items-center">
+        <PageHeader
+          title="Dashboard"
+          description={`Bem-vindo(a) ao Painel Academica. Hoje é ${format(currentDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`}
+          icon={LayoutDashboard}
+        />
+        <ExportTvDisplayButton />
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {statItems.map((item) => (
@@ -132,7 +136,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-foreground">{item.value}</div>
-            </CardContent>
+            </CardContent>,
           </Card>
         ))}
       </div>

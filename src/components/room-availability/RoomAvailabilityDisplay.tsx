@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { timeRangesOverlap, dateRangesOverlap } from '@/lib/utils';
 import type { Classroom, ClassGroup, DayOfWeek, PeriodOfDay, EventReservation, ClassroomRecurringReservation, OccupancyItem } from '@/types';
 import { DAYS_OF_WEEK, PERIODS_OF_DAY, JS_DAYS_OF_WEEK_MAP_TO_PT, SHIFT_TIME_RANGES } from '@/lib/constants';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface RoomAvailabilityDisplayProps {
   initialClassrooms: Classroom[];
@@ -162,7 +162,7 @@ export default function RoomAvailabilityDisplay({
 
       if (dateRangesOverlap(resStart, resEnd, startDate, endDate)) {
         classGroup.classDays.forEach(day => {
-          const key = `${res.classroomId}-${day}-${res.shift}`;
+          const key = `${res.classroomId}-${day}-${classGroup.shift}`;
           addOccupation(key, { type: 'recurring', data: res });
         });
       }
@@ -206,7 +206,6 @@ export default function RoomAvailabilityDisplay({
   }
 
   return (
-    <TooltipProvider>
       <div>
         <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 border rounded-lg items-end bg-card">
           <div className="flex-1">
@@ -335,6 +334,5 @@ export default function RoomAvailabilityDisplay({
           </div>
         )}
       </div>
-    </TooltipProvider>
   );
 }

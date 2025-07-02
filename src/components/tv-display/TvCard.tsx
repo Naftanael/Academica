@@ -11,10 +11,10 @@ import { cn } from '@/lib/utils';
 const getCourseColorClass = (groupName: string): string => {
   if (!groupName) return 'bg-gray-500';
   const upperGroupName = groupName.toUpperCase();
-  if (upperGroupName.startsWith('FMC')) return 'bg-blue-500';
-  if (upperGroupName.startsWith('RAD')) return 'bg-green-500';
-  if (upperGroupName.startsWith('ENF')) return 'bg-yellow-500';
-  if (upperGroupName.startsWith('ADM')) return 'bg-purple-500';
+  if (upperGroupName.startsWith('FMC')) return 'bg-yellow-500';
+  if (upperGroupName.startsWith('RAD')) return 'bg-purple-500';
+  if (upperGroupName.startsWith('ENF')) return 'bg-green-500';
+  if (upperGroupName.startsWith('ADM')) return 'bg-blue-500';
   return 'bg-gray-500';
 };
 
