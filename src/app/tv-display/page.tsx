@@ -4,20 +4,16 @@
  *              that now features a robust and data-adaptive loading mechanism.
  */
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, Classroom, TvDisplayInfo, ClassGroupStatus, Announcement } from '@/types';
+import type { ClassGroup, Classroom, TvDisplayInfo, Announcement } from '@/types';
 import TvDisplayClient from '@/components/tv-display/TvDisplayClient';
 import ClientRefresher from '@/components/tv-display/ClientRefresher';
-
-interface TvDisplayInfoWithStatus extends TvDisplayInfo {
-  status: ClassGroupStatus;
-}
 
 /**
  * An asynchronous server-side function to fetch and process data for the TV panel.
  * This function has been completely refactored to be data-adaptive. It dynamically adjusts
  * the year of the class group dates to match the current year, making the data always relevant.
  *
- * @returns {Promise<{ data: TvDisplayInfoWithStatus[], announcements: Announcement[], lastPublished: string }>}
+ * @returns {Promise<{ data: TvDisplayInfo[], announcements: Announcement[], lastPublished: string }>}
  *          An object containing the processed list of class groups, announcements, and a timestamp.
  */
 async function getTvDisplayData() {
@@ -55,7 +51,7 @@ async function getTvDisplayData() {
     }
   }).filter((cg): cg is ClassGroup => cg !== null); // Filters out any classes with invalid dates.
 
-  const tvData: TvDisplayInfoWithStatus[] = adaptedClassGroups
+  const tvData: TvDisplayInfo[] = adaptedClassGroups
     .map(cg => ({
       id: cg.id,
       groupName: cg.name,

@@ -1,4 +1,3 @@
-
 export type DayOfWeek = 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
 export type PeriodOfDay = 'Manhã' | 'Tarde' | 'Noite';
 
@@ -17,6 +16,7 @@ export type ClassGroupStatus = 'Planejada' | 'Em Andamento' | 'Concluída' | 'Ca
 export interface ClassGroup {
   id: string;
   name: string;
+  shift: PeriodOfDay;
   year: number;
   status: ClassGroupStatus;
   startDate: string; // ISO Date string
@@ -82,6 +82,7 @@ export type OccupancyItem =
 export interface TvDisplayInfo {
   id: string;
   groupName: string;
+  shift: PeriodOfDay;
   classroomName: string; // Should always be a string, e.g. "Sala 1" or "Não Atribuída"
   classDays: DayOfWeek[];
   startDate: string;
