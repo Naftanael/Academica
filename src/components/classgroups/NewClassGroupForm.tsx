@@ -36,18 +36,16 @@ import type { CheckedState } from '@radix-ui/react-checkbox';
 import { Textarea } from '../ui/textarea';
 import { classGroupCreateSchema } from '@/lib/schemas/classgroups';
 import type { ClassGroup } from '@/types';
+import { useRouter } from 'next/navigation';
 
 const saturdayShiftNote = 'Transferir aula de Sábado (Noite) para o turno da Tarde.';
 
 const daysOfWeek = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] as const;
 
-interface NewClassGroupFormProps {
-  onClassGroupCreated: (newClassGroup: ClassGroup) => void;
-}
-
-export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroupFormProps) {
+export default function NewClassGroupForm() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const router = useRouter();
+  const [isSubmitting, startTransition] = React.useTransition();
 
   const form = useForm<z.infer<typeof classGroupCreateSchema>>({
     resolver: zodResolver(classGroupCreateSchema),
@@ -67,11 +65,15 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
   const showSaturdayNote = watchedClassDays.includes('Sábado') && watchedShift === 'Noite';
 
   async function onSubmit(values: z.infer<typeof classGroupCreateSchema>) {
-    setIsSubmitting(true);
-    try {
+    startTransition(async () => {
       const result = await createClassGroup(values);
       if (result.success && result.data) {
-        onClassGroupCreated(result.data);
+        toast({
+          title: "Sucesso",
+          description: result.message,
+        });
+        router.push('/classgroups');
+        router.refresh();
       } else {
         toast({
           title: 'Erro',
@@ -79,15 +81,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      toast({
-        title: 'Erro Inesperado',
-        description: 'Ocorreu um erro ao criar a turma. Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   }
 
   return (
@@ -162,6 +156,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                         selected={field.value ? parseISO(field.value) : undefined}
                         onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                         initialFocus
+                        fromDate={new Date('2022-01-01')}
                       />
                     </PopoverContent>
                   </Popover>
@@ -201,6 +196,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                         selected={field.value ? parseISO(field.value) : undefined}
                         onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                         initialFocus
+                        fromDate={new Date('2022-01-01')}
                       />
                     </PopoverContent>
                   </Popover>
@@ -281,14 +277,31 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                 </FormItem>
             )}
         />
+         <div className="flex items-center space-x-2">
+            <Checkbox id="saturday-shift" onCheckedChange={(checked) => {
+                 if (checked) {
+                    const currentNotes = form.getValues('notes');
+                    const newNotes = currentNotes ? `${currentNotes}\n${saturdayShiftNote}` : saturdayShiftNote;
+                    form.setValue('notes', newNotes, { shouldValidate: true });
+                 }
+            }}/>
+            <label
+                htmlFor="saturday-shift"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+                {saturdayShiftNote}
+            </label>
+        </div>
+
 
         <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
                 <Save className="mr-2 h-4 w-4" />
-                {isSubmitting ? 'Criando Turma...' : 'Criar e Avançar'}
+                {isSubmitting ? 'Salvando...' : 'Criar Turma'}
             </Button>
         </div>
       </form>
     </Form>
   );
 }
+

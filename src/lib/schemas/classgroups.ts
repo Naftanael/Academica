@@ -7,7 +7,7 @@ const dateStringSchema = z.string().refine((val) => isValid(parseISO(val)), {
     message: "Formato de data inválido.",
 });
 
-export const classGroupCreateSchema = z.object({
+const baseClassGroupSchema = z.object({
   name: z.string().min(1, "O nome da turma é obrigatório."),
   shift: z.enum(["Manhã", "Tarde", "Noite"], {
     required_error: "O turno é obrigatório.",
@@ -21,8 +21,8 @@ export const classGroupCreateSchema = z.object({
     path: ["endDate"],
 });
 
+// Schema for creating a class group
+export const classGroupCreateSchema = baseClassGroupSchema;
 
-export const classGroupEditSchema = classGroupCreateSchema.extend({
-    // A edição não precisa de um ID no formulário, mas a ação do servidor precisa.
-    // Para consistência do formulário, o schema de edição é igual ao de criação.
-});
+// Schema for editing a class group (same as create for now, but can be extended separately)
+export const classGroupEditSchema = baseClassGroupSchema;
