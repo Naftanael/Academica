@@ -3,10 +3,14 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { readData, writeData, generateId } from '@/lib/data-utils';
+// Importa a instância do Firestore que inicializamos
+import { db } from '@/lib/firebase/admin';
+// Importa tipos e schemas existentes
 import type { Announcement } from '@/types';
 import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
-import { formatISO } from 'date-fns';
+// Note: generateId e formatISO não serão mais necessários aqui, pois o Firestore gerencia IDs e Timestamps
+// import { generateId } from '@/lib/data-utils'; // Não será usado para IDs do Firestore
+// import { formatISO } from 'date-fns'; // O Firestore usa seus próprios Timestamps
 
 export async function getAnnouncements(): Promise<Announcement[]> {
   try {
