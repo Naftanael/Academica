@@ -398,8 +398,8 @@ const SidebarSeparator = React.forwardRef<
 SidebarSeparator.displayName = "SidebarSeparator"
 
 const SidebarContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
+  React.ElementRef<typeof ScrollArea>,
+  React.ComponentProps<typeof ScrollArea>
 >(({ className, ...props }, ref) => {
   return (
     <ScrollArea

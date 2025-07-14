@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Classroom, ClassGroup, DayOfWeek } from '@/types';
-import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton'; // Keep the original import here
+import { DeleteClassroomButton } from '@/components/classrooms/DeleteClassroomButton';
 import { EditClassroomButton } from '@/components/classrooms/EditClassroomButton';
 import { JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { getCurrentShift } from '@/lib/utils'; // Import from utils
+import { getCurrentShift } from '@/lib/utils';
 import {
   Tooltip,
   TooltipContent,
@@ -105,7 +105,7 @@ export default function ClassroomsDisplay({ classrooms, classGroups }: Classroom
 
 
   return (
-    <TooltipProvider>
+    <>
       {classrooms.length === 0 ? (
         <Card className="shadow-lg rounded-lg">
           <CardContent>
@@ -156,17 +156,19 @@ export default function ClassroomsDisplay({ classrooms, classGroups }: Classroom
                         Em Manutenção
                       </Badge>
                       {room.maintenanceReason && (
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <p className="text-xs text-amber-700 dark:text-amber-300 mt-1.5 cursor-help underline decoration-dotted decoration-amber-500/50 hover:decoration-amber-500">
-                              Motivo: {room.maintenanceReason.substring(0, 40)}{room.maintenanceReason.length > 40 ? '...' : ''}
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="max-w-xs bg-popover text-popover-foreground p-2 border shadow-md rounded-md">
-                            <p className="font-semibold mb-1">Motivo da Manutenção:</p>
-                            <p className="text-xs">{room.maintenanceReason}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <TooltipProvider>
+                          <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1.5 cursor-help underline decoration-dotted decoration-amber-500/50 hover:decoration-amber-500">
+                                Motivo: {room.maintenanceReason.substring(0, 40)}{room.maintenanceReason.length > 40 ? '...' : ''}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-xs bg-popover text-popover-foreground p-2 border shadow-md rounded-md">
+                              <p className="font-semibold mb-1">Motivo da Manutenção:</p>
+                              <p className="text-xs">{room.maintenanceReason}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                     </>
                   )}
@@ -218,6 +220,6 @@ export default function ClassroomsDisplay({ classrooms, classGroups }: Classroom
           })}
         </div>
       )}
-    </TooltipProvider>
+    </>
   );
 }

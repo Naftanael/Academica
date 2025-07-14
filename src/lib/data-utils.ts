@@ -1,6 +1,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 const defaultDataPath = path.join(process.cwd(), 'src', 'data');
 const dataDirFromEnv = process.env.DATA_DIR;
@@ -32,7 +33,11 @@ export async function readData<T>(filename: string): Promise<T[]> {
     try {
       parsedData = JSON.parse(jsonData);
     } catch (parseError) {
-      console.error(`[data-utils] Failed to parse JSON from "${filename}". Error: ${(parseError as Error).message}.`);
+      if (parseError instanceof SyntaxError) {
+        console.error(`[data-utils] Failed to parse JSON from "${filename}" due to a syntax error: ${parseError.message}.`);
+      } else {
+        console.error(`[data-utils] An unexpected error occurred during JSON parsing of "${filename}": ${(parseError as Error).message}.`);
+      }
       return [];
     }
     
@@ -45,9 +50,7 @@ export async function readData<T>(filename: string): Promise<T[]> {
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
-      // In a read-only production environment, we cannot create the file.
-      // Log the issue and return an empty array. The app should handle this gracefully.
-      console.warn(`[data-utils] File "${filename}" not found. Returning an empty array as it cannot be created in this environment.`);
+      console.warn(`[data-utils] File "${filename}" not found. Returning an empty array.`);
       return [];
     }
     console.error(`[data-utils] Error reading data from "${filename}":`, nodeError.message);
@@ -60,24 +63,28 @@ export async function readData<T>(filename: string): Promise<T[]> {
  * @param filename The name of the JSON file.
  * @param data The array of data to write.
  */
-export async function writeData<T>(filename: string, data: T[]): Promise<void> {
+export async function writeData<T>(filename: string, data: T[]): Promise<{ success: boolean; message?: string }> {
   const filePath = path.join(dataDir, filename);
 
   try {
+    if (!Array.isArray(data)) {
+      throw new Error("Data to be written must be an array.");
+    }
     await fs.mkdir(dataDir, { recursive: true });
     const jsonData = JSON.stringify(data, null, 2);
     await fs.writeFile(filePath, jsonData, 'utf-8');
+    return { success: true };
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     console.error(`[data-utils] Error writing data to "${filename}":`, nodeError.message);
-    throw error;
+    return { success: false, message: nodeError.message };
   }
 }
 
 /**
- * Generates a unique ID string.
+ * Generates a unique ID string using UUID v4.
  * @returns A unique ID.
  */
 export function generateId(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`;
+  return uuidv4();
 }

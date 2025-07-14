@@ -15,6 +15,7 @@ import {
   Search,
   ChevronLeft,
   Megaphone,
+  HardDrive,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -37,6 +38,7 @@ const navItems = [
   { href: '/student-search', label: 'Consulta Aluno', icon: Search },
   { href: '/announcements', label: 'Anúncios', icon: Megaphone },
   { href: '/tv-display', label: 'Painel TV', icon: MonitorPlay },
+  { href: '/backup', label: 'Backup', icon: HardDrive },
 ];
 
 export default function SidebarNav() {

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { readData, writeData, generateId } from '@/lib/data-utils';
 import type { Classroom, ClassGroup, EventReservation, ClassroomRecurringReservation } from '@/types';
 import { classroomCreateSchema, classroomEditSchema, type ClassroomCreateValues, type ClassroomEditFormValues } from '@/lib/schemas/classrooms';
+import { createLock, releaseLock } from './locks';
 
 export async function getClassrooms(): Promise<Classroom[]> {
   try {
@@ -17,6 +18,7 @@ export async function getClassrooms(): Promise<Classroom[]> {
 }
 
 export async function createClassroom(values: ClassroomCreateValues) {
+  const lock = await createLock('classrooms.json');
   try {
     const validatedValues = classroomCreateSchema.parse(values);
     const classrooms = await readData<Classroom>('classrooms.json');
@@ -46,10 +48,13 @@ export async function createClassroom(values: ClassroomCreateValues) {
     }
     console.error('Failed to create classroom:', error);
     return { success: false, message: 'Erro interno ao criar sala de aula.' };
+  } finally {
+    await releaseLock('classrooms.json', lock);
   }
 }
 
 export async function updateClassroom(id: string, values: ClassroomEditFormValues) {
+  const lock = await createLock('classrooms.json');
   try {
     const validatedValues = classroomEditSchema.parse(values);
     const classrooms = await readData<Classroom>('classrooms.json');
@@ -85,10 +90,13 @@ export async function updateClassroom(id: string, values: ClassroomEditFormValue
     }
     console.error(`Failed to update classroom ${id}:`, error);
     return { success: false, message: 'Erro interno ao atualizar sala de aula.' };
+  } finally {
+    await releaseLock('classrooms.json', lock);
   }
 }
 
 export async function deleteClassroom(id: string) {
+  const lock = await createLock('classrooms.json');
   try {
     const classGroups = await readData<ClassGroup>('classgroups.json');
     if (classGroups.some(cg => cg.assignedClassroomId === id)) {
@@ -124,6 +132,8 @@ export async function deleteClassroom(id: string) {
   } catch (error) {
     console.error(`Failed to delete classroom ${id}:`, error);
     return { success: false, message: 'Erro interno ao excluir sala de aula.' };
+  } finally {
+    await releaseLock('classrooms.json', lock);
   }
 }
 
