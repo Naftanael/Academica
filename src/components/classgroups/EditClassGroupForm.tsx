@@ -4,9 +4,10 @@
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Save } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -27,20 +28,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { updateClassGroup } from '@/lib/actions/classgroups';
-import { DAYS_OF_WEEK, PERIODS_OF_DAY } from '@/lib/constants';
+import { DAYS_OF_WEEK, CLASS_GROUP_STATUSES, PERIODS_OF_DAY } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 import type { ClassGroup } from '@/types';
 import type { CheckedState } from '@radix-ui/react-checkbox';
-
-const formSchema = z.object({
-  name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(PERIODS_OF_DAY, { required_error: "Selecione um turno." }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK))
-    .min(1, { message: "Selecione pelo menos um dia da semana." }),
-});
-
-type EditClassGroupFormValues = z.infer<typeof formSchema>;
+import { classGroupEditSchema, type ClassGroupEditValues } from '@/lib/schemas/classgroups';
+import { CalendarIcon } from 'lucide-react';
+import { Textarea } from '../ui/textarea';
 
 interface EditClassGroupFormProps {
   classGroup: ClassGroup;
@@ -49,36 +47,40 @@ interface EditClassGroupFormProps {
 export default function EditClassGroupForm({ classGroup }: EditClassGroupFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [isPending, setIsPending] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
 
-  const form = useForm<EditClassGroupFormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ClassGroupEditValues>({
+    resolver: zodResolver(classGroupEditSchema),
     defaultValues: {
       name: classGroup.name,
       shift: classGroup.shift,
       classDays: classGroup.classDays || [],
+      year: classGroup.year,
+      status: classGroup.status,
+      startDate: parseISO(classGroup.startDate),
+      endDate: parseISO(classGroup.endDate),
+      notes: classGroup.notes || '',
     },
   });
 
-  const onSubmit = async (values: EditClassGroupFormValues) => {
-    setIsPending(true);
-    const result = await updateClassGroup(classGroup.id, values);
-    setIsPending(false);
-
-    if (result.success) {
-      toast({
-        title: 'Turma atualizada!',
-        description: result.message || 'A turma foi editada com sucesso.',
-      });
-      router.push('/classgroups');
-      router.refresh();
-    } else {
-      toast({
-        title: 'Erro ao atualizar',
-        description: result.message || 'Verifique os dados ou tente novamente.',
-        variant: 'destructive',
-      });
-    }
+  const onSubmit = (values: ClassGroupEditValues) => {
+    startTransition(async () => {
+      const result = await updateClassGroup(classGroup.id, values);
+      if (result.success) {
+        toast({
+          title: 'Turma atualizada!',
+          description: result.message || 'A turma foi editada com sucesso.',
+        });
+        router.push('/classgroups');
+        router.refresh();
+      } else {
+        toast({
+          title: 'Erro ao atualizar',
+          description: result.message || 'Verifique os dados ou tente novamente.',
+          variant: 'destructive',
+        });
+      }
+    });
   };
 
   return (
@@ -91,9 +93,9 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
             <FormItem>
               <FormLabel>Nome da Turma</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: 3º Técnico em Farmácia" {...field} />
+                <Input placeholder="Ex: FMC10 - Téc. em Farmácia" {...field} />
               </FormControl>
-              <FormDescription>Identifique a turma com um nome claro.</FormDescription>
+              <FormDescription>Identifique a turma com um nome claro e um prefixo do curso (ex: FMC, RAD, ENF).</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -169,6 +171,146 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                   />
                 ))}
               </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="year"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ano</FormLabel>
+              <FormControl>
+                <Input type="number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {CLASS_GROUP_STATUSES.map(statusValue => (
+                    <SelectItem key={statusValue} value={statusValue}>{statusValue}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Data de Início</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: ptBR })
+                          ) : (
+                            <span>Escolha uma data</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                        locale={ptBR}
+                        fromDate={new Date(2022, 0, 1)}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Data de Término</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: ptBR })
+                          ) : (
+                            <span>Escolha uma data</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => {
+                            const startDate = form.getValues("startDate");
+                            return startDate ? date < startDate : false;
+                        }}
+                        initialFocus
+                        locale={ptBR}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observações</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Ex: Necessidades especiais, ajustes de horário, etc."
+                  {...field}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

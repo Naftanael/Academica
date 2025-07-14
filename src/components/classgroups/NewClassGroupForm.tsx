@@ -4,10 +4,9 @@
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { PlusCircle, Calendar as CalendarIconLucide } from 'lucide-react';
-import { format, formatISO } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
@@ -36,44 +35,19 @@ import { createClassGroup } from '@/lib/actions/classgroups';
 import { DAYS_OF_WEEK, CLASS_GROUP_STATUSES, PERIODS_OF_DAY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { CheckedState } from '@radix-ui/react-checkbox';
-import type { PeriodOfDay } from '@/types';
 import { Textarea } from '../ui/textarea';
-
-const newClassGroupFormSchema = z.object({
-  name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(PERIODS_OF_DAY, { required_error: "Selecione um turno para a turma." }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK))
-    .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  year: z.coerce.number({ invalid_type_error: "Ano deve ser um número." })
-                 .min(2022, { message: "O ano não pode ser anterior a 2022."})
-                 .max(new Date().getFullYear() + 10, { message: "Ano muito no futuro."})
-                 .optional(),
-  status: z.enum(CLASS_GROUP_STATUSES).optional(),
-  startDate: z.date({ required_error: "Data de início é obrigatória."}),
-  endDate: z.date({ required_error: "Data de término é obrigatória."}),
-  notes: z.string().optional(),
-}).refine(data => {
-  if (data.startDate && data.endDate) {
-    return data.startDate <= data.endDate;
-  }
-  return true;
-}, {
-  message: "A data de início não pode ser posterior à data de término.",
-  path: ["endDate"],
-});
-
-type NewClassGroupFormValues = z.infer<typeof newClassGroupFormSchema>;
+import { classGroupCreateSchema, type ClassGroupCreateValues } from '@/lib/schemas/classgroups';
 
 const saturdayShiftNote = 'Transferir aula de Sábado (Noite) para o turno da Tarde.';
 
 export default function NewClassGroupForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isPending, setIsPending] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
   const currentYear = new Date().getFullYear();
 
-  const form = useForm<NewClassGroupFormValues>({
-    resolver: zodResolver(newClassGroupFormSchema),
+  const form = useForm<ClassGroupCreateValues>({
+    resolver: zodResolver(classGroupCreateSchema),
     defaultValues: {
       name: '',
       classDays: [],
@@ -95,51 +69,44 @@ export default function NewClassGroupForm() {
     if (checked) {
         if (!currentNotes.includes(saturdayShiftNote)) {
             const newNotes = currentNotes ? `${currentNotes}\n${saturdayShiftNote}` : saturdayShiftNote;
-            form.setValue('notes', newNotes);
+            form.setValue('notes', newNotes, { shouldValidate: true });
         }
     } else {
         const newNotes = currentNotes.replace(saturdayShiftNote, '').replace('\n\n', '\n').trim();
-        form.setValue('notes', newNotes);
+        form.setValue('notes', newNotes, { shouldValidate: true });
     }
   };
 
-  const onSubmit = async (values: NewClassGroupFormValues) => {
-    setIsPending(true);
-    const submissionValues = {
-      ...values,
-      startDate: values.startDate ? formatISO(values.startDate) : undefined,
-      endDate: values.endDate ? formatISO(values.endDate) : undefined,
-    };
-
-    const result = await createClassGroup(submissionValues as any);
-    setIsPending(false);
-
-    if (result.success) {
-      toast({
-        title: 'Turma criada!',
-        description: result.message || 'A nova turma foi cadastrada com sucesso.',
-      });
-      router.push('/classgroups');
-      router.refresh();
-    } else {
-      if (result.errors) {
-        Object.entries(result.errors).forEach(([field, errorMessages]) => {
-          const message = Array.isArray(errorMessages) ? errorMessages.join(', ') : String(errorMessages);
-          form.setError(field as keyof NewClassGroupFormValues, { type: 'manual', message });
-        });
-         toast({
-          title: 'Erro de Validação',
-          description: result.message || "Por favor, corrija os campos destacados.",
-          variant: 'destructive',
-        });
-      } else {
+  const onSubmit = (values: ClassGroupCreateValues) => {
+    startTransition(async () => {
+      const result = await createClassGroup(values);
+      if (result.success) {
         toast({
-          title: 'Erro ao criar turma',
-          description: result.message || 'Verifique os dados ou tente novamente.',
-          variant: 'destructive',
+          title: 'Turma criada!',
+          description: result.message || 'A nova turma foi cadastrada com sucesso.',
         });
+        router.push('/classgroups');
+        router.refresh();
+      } else {
+        if (result.errors) {
+          Object.entries(result.errors).forEach(([field, errorMessages]) => {
+            const message = Array.isArray(errorMessages) ? errorMessages.join(', ') : String(errorMessages);
+            form.setError(field as keyof ClassGroupCreateValues, { type: 'manual', message });
+          });
+          toast({
+            title: 'Erro de Validação',
+            description: result.message || "Por favor, corrija os campos destacados.",
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Erro ao criar turma',
+            description: result.message || 'Verifique os dados ou tente novamente.',
+            variant: 'destructive',
+          });
+        }
       }
-    }
+    });
   };
 
   return (
@@ -152,9 +119,9 @@ export default function NewClassGroupForm() {
             <FormItem>
               <FormLabel>Nome da Turma</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: 3º Técnico em Farmácia" {...field} />
+                <Input placeholder="Ex: FMC10 - Téc. em Farmácia" {...field} />
               </FormControl>
-              <FormDescription>Identifique a turma com um nome claro.</FormDescription>
+              <FormDescription>Identifique a turma com um nome claro e um prefixo do curso (ex: FMC, RAD, ENF).</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -166,7 +133,7 @@ export default function NewClassGroupForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Turno</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o turno da turma" />
@@ -211,13 +178,12 @@ export default function NewClassGroupForm() {
                             <Checkbox
                               checked={field.value?.includes(day)}
                               onCheckedChange={(checked: CheckedState) => {
-                                return checked
-                                  ? field.onChange([...(field.value || []), day])
-                                  : field.onChange(
-                                      (field.value || []).filter(
-                                        (value) => value !== day
-                                      )
+                                const newSelection = checked
+                                  ? [...(field.value || []), day]
+                                  : (field.value || []).filter(
+                                      (value) => value !== day
                                     );
+                                field.onChange(newSelection);
                               }}
                             />
                           </FormControl>
@@ -242,7 +208,7 @@ export default function NewClassGroupForm() {
             <FormItem>
               <FormLabel>Ano</FormLabel>
               <FormControl>
-                <Input type="number" placeholder={`Ex: ${currentYear}`} {...field} onChange={event => field.onChange(event.target.value === '' ? undefined : +event.target.value)} value={field.value ?? ''}/>
+                <Input type="number" placeholder={`Ex: ${currentYear}`} {...field} />
               </FormControl>
               <FormDescription>Ano de início/vigência da turma.</FormDescription>
               <FormMessage />
@@ -256,7 +222,7 @@ export default function NewClassGroupForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o status inicial" />

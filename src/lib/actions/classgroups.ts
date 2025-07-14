@@ -3,153 +3,18 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { CLASS_GROUP_STATUSES, DAYS_OF_WEEK, PERIODS_OF_DAY } from '@/lib/constants';
 import { readData, writeData, generateId } from '@/lib/data-utils';
-import type { ClassGroup, ClassGroupStatus, ClassroomRecurringReservation, PeriodOfDay } from '@/types';
-import { formatISO, addMonths } from 'date-fns';
-
-const classGroupFormSchema = z.object({
-  name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(PERIODS_OF_DAY, { required_error: "Selecione um turno." }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK))
-    .min(1, { message: "Selecione pelo menos um dia da semana." }),
-  year: z.coerce.number({invalid_type_error: "Ano deve ser um número."}).optional(),
-  status: z.enum(CLASS_GROUP_STATUSES).optional(),
-  startDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de início inválida."}),
-  endDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de término inválida."}),
-  notes: z.string().optional(),
-}).refine(data => {
-  if (data.startDate && data.endDate) {
-    return new Date(data.startDate) <= new Date(data.endDate);
-  }
-  return true;
-}, {
-  message: "A data de início não pode ser posterior à data de término.",
-  path: ["endDate"],
-});
-
-
-const classGroupEditFormSchema = z.object({
-  name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
-  shift: z.enum(PERIODS_OF_DAY, { required_error: "Selecione um turno." }),
-  classDays: z.array(z.enum(DAYS_OF_WEEK))
-    .min(1, { message: "Selecione pelo menos um dia da semana." }),
-});
-
-export type ClassGroupFormValues = z.infer<typeof classGroupFormSchema>;
-type ClassGroupEditFormValues = z.infer<typeof classGroupEditFormSchema>;
+import type { ClassGroup, ClassroomRecurringReservation, EventReservation } from '@/types';
+import { classGroupCreateSchema, classGroupEditSchema, type ClassGroupCreateValues, type ClassGroupEditValues } from '@/lib/schemas/classgroups';
+import { formatISO } from 'date-fns';
 
 export async function getClassGroups(): Promise<ClassGroup[]> {
   try {
-    return await readData<ClassGroup>('classgroups.json');
+    const groups = await readData<ClassGroup>('classgroups.json');
+    return groups.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
     console.error('Failed to get class groups:', error);
     return [];
-  }
-}
-
-export async function createClassGroup(values: ClassGroupFormValues) {
-  try {
-    const validatedValues = classGroupFormSchema.parse(values);
-    const classGroups = await readData<ClassGroup>('classgroups.json');
-    const now = new Date();
-
-    const newClassGroup: ClassGroup = {
-      id: generateId(),
-      name: validatedValues.name,
-      shift: validatedValues.shift,
-      classDays: validatedValues.classDays,
-      year: validatedValues.year || now.getFullYear(),
-      status: (validatedValues.status || 'Planejada') as ClassGroupStatus,
-      startDate: validatedValues.startDate || formatISO(now),
-      endDate: validatedValues.endDate || formatISO(addMonths(now, 1)),
-      assignedClassroomId: undefined,
-      notes: validatedValues.notes || '',
-    };
-
-    classGroups.push(newClassGroup);
-    await writeData<ClassGroup>('classgroups.json', classGroups);
-
-    revalidatePath('/turmas');
-    revalidatePath('/disponibilidade-salas');
-    revalidatePath('/painel-tv');
-    revalidatePath('/');
-    return { success: true, message: 'Turma criada com sucesso!', data: newClassGroup };
-
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: 'Erro de validação ao criar turma.', errors: error.flatten().fieldErrors };
-    }
-    console.error('Failed to create class group:', error);
-    return { success: false, message: 'Erro interno ao criar turma.' };
-  }
-}
-
-export async function updateClassGroup(id: string, values: ClassGroupEditFormValues) {
-  try {
-    const validatedValues = classGroupEditFormSchema.parse(values);
-    const classGroups = await readData<ClassGroup>('classgroups.json');
-    const classGroupIndex = classGroups.findIndex(cg => cg.id === id);
-
-    if (classGroupIndex === -1) {
-      return { success: false, message: 'Turma não encontrada para atualização.' };
-    }
-
-    const existingClassGroup = classGroups[classGroupIndex];
-    classGroups[classGroupIndex] = {
-      ...existingClassGroup,
-      name: validatedValues.name,
-      shift: validatedValues.shift,
-      classDays: validatedValues.classDays,
-    };
-
-    await writeData<ClassGroup>('classgroups.json', classGroups);
-
-    revalidatePath('/turmas');
-    revalidatePath(`/turmas/${id}/editar`);
-    revalidatePath('/disponibilidade-salas');
-    revalidatePath('/painel-tv');
-    revalidatePath('/');
-    return { success: true, message: 'Turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
-
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: 'Erro de validação ao atualizar turma.', errors: error.flatten().fieldErrors };
-    }
-    console.error(`Failed to update class group ${id}:`, error);
-    return { success: false, message: 'Erro interno ao atualizar turma.' };
-  }
-}
-
-export async function deleteClassGroup(id: string) {
-  try {
-    const classGroups = await readData<ClassGroup>('classgroups.json');
-    const classGroupIndex = classGroups.findIndex(cg => cg.id === id);
-
-    if (classGroupIndex === -1) {
-      return { success: false, message: 'Turma não encontrada para exclusão.' };
-    }
-
-    // Remove the class group
-    classGroups.splice(classGroupIndex, 1);
-    await writeData<ClassGroup>('classgroups.json', classGroups);
-
-    // Also remove any recurring reservations associated with this class group
-    const recurringReservations = await readData<ClassroomRecurringReservation>('recurring_reservations.json');
-    const remainingReservations = recurringReservations.filter(r => r.classGroupId !== id);
-    if (remainingReservations.length < recurringReservations.length) {
-        await writeData('recurring_reservations.json', remainingReservations);
-    }
-
-    revalidatePath('/turmas');
-    revalidatePath('/disponibilidade-salas');
-    revalidatePath('/painel-tv');
-    revalidatePath('/reservas');
-    revalidatePath('/');
-    return { success: true, message: 'Turma e reservas associadas foram excluídas com sucesso!' };
-  } catch (error) {
-    console.error(`Failed to delete class group ${id}:`, error);
-    return { success: false, message: 'Erro interno ao excluir turma.' };
   }
 }
 
@@ -163,6 +28,104 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | undefi
   }
 }
 
+export async function createClassGroup(values: ClassGroupCreateValues) {
+  try {
+    const validatedValues = classGroupCreateSchema.parse(values);
+    const classGroups = await readData<ClassGroup>('classgroups.json');
+
+    const newClassGroup: ClassGroup = {
+      id: generateId(),
+      name: validatedValues.name,
+      shift: validatedValues.shift,
+      classDays: validatedValues.classDays,
+      year: validatedValues.year,
+      status: validatedValues.status,
+      startDate: formatISO(validatedValues.startDate, { representation: 'date' }),
+      endDate: formatISO(validatedValues.endDate, { representation: 'date' }),
+      notes: validatedValues.notes || '',
+      assignedClassroomId: undefined,
+    };
+
+    classGroups.push(newClassGroup);
+    await writeData('classgroups.json', classGroups);
+
+    revalidatePath('/classgroups');
+    revalidatePath('/dashboard');
+    revalidatePath('/');
+    return { success: true, message: 'Turma criada com sucesso!', data: newClassGroup };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, message: 'Erro de validação ao criar turma.', errors: error.flatten().fieldErrors };
+    }
+    console.error('Failed to create class group:', error);
+    return { success: false, message: 'Erro interno ao criar turma.' };
+  }
+}
+
+export async function updateClassGroup(id: string, values: ClassGroupEditValues) {
+  try {
+    const validatedValues = classGroupEditSchema.parse(values);
+    const classGroups = await readData<ClassGroup>('classgroups.json');
+    const classGroupIndex = classGroups.findIndex(cg => cg.id === id);
+
+    if (classGroupIndex === -1) {
+      return { success: false, message: 'Turma não encontrada para atualização.' };
+    }
+
+    const existingClassGroup = classGroups[classGroupIndex];
+    classGroups[classGroupIndex] = {
+      ...existingClassGroup,
+      ...validatedValues,
+    };
+
+    await writeData('classgroups.json', classGroups);
+
+    revalidatePath('/classgroups');
+    revalidatePath(`/classgroups/${id}/edit`);
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display');
+    revalidatePath('/');
+    return { success: true, message: 'Turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, message: 'Erro de validação ao atualizar turma.', errors: error.flatten().fieldErrors };
+    }
+    console.error(`Failed to update class group ${id}:`, error);
+    return { success: false, message: 'Erro interno ao atualizar turma.' };
+  }
+}
+
+export async function deleteClassGroup(id: string) {
+  try {
+    const recurringReservations = await readData<ClassroomRecurringReservation>('recurring_reservations.json');
+    if (recurringReservations.some(r => r.classGroupId === id)) {
+        return { success: false, message: 'Não é possível excluir. A turma tem reservas recorrentes associadas.' };
+    }
+
+    // While event reservations are not directly tied to class groups, a future implementation might
+    // so it is good practice to leave a check here if that relationship is added later.
+
+    const classGroups = await readData<ClassGroup>('classgroups.json');
+    const updatedClassGroups = classGroups.filter(cg => cg.id !== id);
+
+    if (classGroups.length === updatedClassGroups.length) {
+      return { success: false, message: 'Turma não encontrada para exclusão.' };
+    }
+
+    await writeData('classgroups.json', updatedClassGroups);
+
+    revalidatePath('/classgroups');
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display');
+    revalidatePath('/reservations');
+    revalidatePath('/');
+    return { success: true, message: 'Turma excluída com sucesso!' };
+  } catch (error) {
+    console.error(`Failed to delete class group ${id}:`, error);
+    return { success: false, message: 'Erro interno ao excluir turma.' };
+  }
+}
+
 export async function assignClassroomToClassGroup(classGroupId: string, newClassroomId: string | null) {
   try {
     const classGroups = await readData<ClassGroup>('classgroups.json');
@@ -173,14 +136,13 @@ export async function assignClassroomToClassGroup(classGroupId: string, newClass
     }
 
     classGroups[classGroupIndex].assignedClassroomId = newClassroomId === null ? undefined : newClassroomId;
-    await writeData<ClassGroup>('classgroups.json', classGroups);
+    await writeData('classgroups.json', classGroups);
 
-    revalidatePath('/turmas');
-    revalidatePath('/disponibilidade-salas');
-    revalidatePath('/painel-tv');
+    revalidatePath('/classgroups');
+    revalidatePath('/room-availability');
+    revalidatePath('/tv-display');
     revalidatePath('/');
     return { success: true, message: 'Sala da turma atualizada com sucesso!', data: classGroups[classGroupIndex] };
-
   } catch (error) {
     console.error(`Failed to assign classroom to class group ${classGroupId}:`, error);
     return { success: false, message: 'Erro interno ao atribuir sala à turma.' };
