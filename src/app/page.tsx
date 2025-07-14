@@ -1,16 +1,59 @@
 
 import { readData } from '@/lib/data-utils';
-import type { ClassGroup, DashboardStats, Classroom, DayOfWeek, ClassGroupWithDates, DailyOccupancy, DashboardData } from '@/types';
+import type { ClassGroup, DashboardStats, Classroom, DayOfWeek, ClassGroupWithDates, DailyOccupancy, DashboardData, CategorizedClassGroups } from '@/types';
 import PageHeader from '@/components/shared/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard } from 'lucide-react';
+import { CalendarClock, Presentation, UsersRound, TrendingUp, LayoutDashboard, Pill, ScanLine, Stethoscope, Briefcase, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays, isValid, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DAYS_OF_WEEK } from '@/lib/constants';
 import ClassroomOccupancyChart from '@/components/dashboard/ClassroomOccupancyChart';
 import ExportTvDisplayButton from '@/components/dashboard/ExportTvDisplayButton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// Mapeamento de prefixos de curso para nomes e ícones
+const courseCategories = [
+  { name: 'Téc. em Farmácia', prefix: 'FMC', icon: Pill },
+  { name: 'Téc. em Radiologia', prefix: 'RAD', icon: ScanLine },
+  { name: 'Téc. em Enfermagem', prefix: 'ENF', icon: Stethoscope },
+  { name: 'Administração', prefix: 'ADM', icon: Briefcase },
+  { name: 'Cuidador de Idoso', prefix: 'CDI', icon: UsersRound },
+  { name: 'Outros', prefix: 'OTHERS', icon: BookOpen } // Categoria para cursos não mapeados
+];
+
+// Helper para extrair o número do nome da turma para ordenação
+const extractNumber = (name: string) => {
+    const match = name.match(/\d+/);
+    return match ? parseInt(match[0], 10) : Infinity;
+};
+
+// Helper para categorizar e ordenar as turmas
+const categorizeAndSortClassGroups = (classGroups: ClassGroupWithDates[]): CategorizedClassGroups => {
+    const categorized: CategorizedClassGroups = new Map();
+    courseCategories.forEach(c => categorized.set(c.name, []));
+
+    classGroups.forEach(cg => {
+        const category = courseCategories.find(c => c.prefix !== 'OTHERS' && cg.name.toUpperCase().startsWith(c.prefix));
+        if (category) {
+            categorized.get(category.name)?.push(cg);
+        } else {
+            categorized.get('Outros')?.push(cg);
+        }
+    });
+
+    // Ordena as turmas dentro de cada categoria e remove categorias vazias
+    for (const [key, groups] of categorized.entries()) {
+        if (groups.length === 0) {
+            categorized.delete(key);
+        } else {
+            groups.sort((a, b) => extractNumber(a.name) - extractNumber(b.name));
+        }
+    }
+
+    return categorized;
+};
 
 async function getDashboardData(): Promise<DashboardData> {
   const classrooms = await readData<Classroom>('classrooms.json');
@@ -75,6 +118,8 @@ async function getDashboardData(): Promise<DashboardData> {
       nearEnd,
     };
   });
+  
+  const categorizedActiveClassGroups = categorizeAndSortClassGroups(detailedActiveClassGroups);
 
   const classroomMap = new Map(classrooms.map(room => [room.id, room]));
   const dailyOccupancyCounts: { [key in DayOfWeek]: number } = {
@@ -102,12 +147,15 @@ async function getDashboardData(): Promise<DashboardData> {
     turmas: dailyOccupancyCounts[day],
   }));
 
-  return { stats, activeClassGroups: detailedActiveClassGroups, currentDate, classroomOccupancyChartData };
+  return { stats, activeClassGroups: detailedActiveClassGroups, currentDate, classroomOccupancyChartData, categorizedActiveClassGroups };
 }
 
 
 export default async function DashboardPage() {
-  const { stats, activeClassGroups, currentDate, classroomOccupancyChartData }: DashboardData = await getDashboardData();
+  const { stats, activeClassGroups, currentDate, classroomOccupancyChartData, categorizedActiveClassGroups }: DashboardData = await getDashboardData();
+  
+  const categoryOrder = courseCategories.map(c => c.name);
+  const sortedCategories = Array.from(categorizedActiveClassGroups?.keys() || []).sort((a,b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
 
   const statItems = [
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, className: 'text-primary' },
@@ -136,7 +184,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-foreground">{item.value}</div>
-            </CardContent>,
+            </CardContent>
           </Card>
         ))}
       </div>
@@ -149,36 +197,54 @@ export default async function DashboardPage() {
         <Card className="shadow-lg rounded-lg">
           <CardHeader>
             <CardTitle className="text-xl font-semibold font-headline">Turmas em Andamento ({activeClassGroups.length})</CardTitle>
+            <CardDescription>Turmas ativas agrupadas por curso.</CardDescription>
           </CardHeader>
           <CardContent>
-            {activeClassGroups.length === 0 ? (
+            {activeClassGroups.length === 0 || !categorizedActiveClassGroups || categorizedActiveClassGroups.size === 0 ? (
               <div className="p-6 text-center text-muted-foreground">
                 Nenhuma turma em andamento no momento.
               </div>
             ) : (
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {activeClassGroups.map((cg: ClassGroupWithDates) => (
-                  <Card key={cg.id} className={`shadow-md hover:shadow-lg transition-shadow duration-300 rounded-md ${cg.nearEnd ? 'border-2 border-destructive' : 'border-border'}`}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg font-semibold font-headline">{cg.name}</CardTitle>
-                        {cg.nearEnd && <Badge variant="destructive">Perto do Fim</Badge>}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {cg.year}
-                      </p>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <p className="text-sm">
-                        <span className="font-medium">Período:</span> {cg.formattedStartDate} - {cg.formattedEndDate}
-                      </p>
-                      <Link href={`/classgroups/${cg.id}/edit`} className="text-sm text-primary hover:underline block mt-2 font-medium">
-                        Ver Detalhes / Editar
-                      </Link>
-                    </CardContent>
-                  </Card>
+              <Tabs defaultValue={sortedCategories[0]} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                  {sortedCategories.map(categoryName => {
+                     const category = courseCategories.find(c => c.name === categoryName);
+                     return (
+                        <TabsTrigger key={categoryName} value={categoryName}>
+                          {category?.icon && <category.icon className="mr-2 h-4 w-4" />}
+                          {categoryName}
+                        </TabsTrigger>
+                     )
+                  })}
+                </TabsList>
+                {sortedCategories.map(categoryName => (
+                    <TabsContent key={categoryName} value={categoryName}>
+                        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 pt-4">
+                            {(categorizedActiveClassGroups?.get(categoryName) || []).map((cg: ClassGroupWithDates) => (
+                            <Card key={cg.id} className={`shadow-md hover:shadow-lg transition-shadow duration-300 rounded-md ${cg.nearEnd ? 'border-2 border-destructive' : 'border-border'}`}>
+                                <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <CardTitle className="text-lg font-semibold font-headline">{cg.name}</CardTitle>
+                                    {cg.nearEnd && <Badge variant="destructive">Perto do Fim</Badge>}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    {cg.year} - {cg.shift}
+                                </p>
+                                </CardHeader>
+                                <CardContent className="space-y-2">
+                                <p className="text-sm">
+                                    <span className="font-medium">Período:</span> {cg.formattedStartDate} - {cg.formattedEndDate}
+                                </p>
+                                <Link href={`/classgroups/${cg.id}/edit`} className="text-sm text-primary hover:underline block mt-2 font-medium">
+                                    Ver Detalhes / Editar
+                                </Link>
+                                </CardContent>
+                            </Card>
+                            ))}
+                        </div>
+                    </TabsContent>
                 ))}
-              </div>
+              </Tabs>
             )}
           </CardContent>
         </Card>

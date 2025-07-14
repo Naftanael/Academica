@@ -67,11 +67,14 @@ export interface DailyOccupancy {
   turmas: number;
 }
 
+export type CategorizedClassGroups = Map<string, ClassGroupWithDates[]>;
+
 export interface DashboardData {
   stats: DashboardStats;
   activeClassGroups: ClassGroupWithDates[];
   currentDate: Date;
   classroomOccupancyChartData: DailyOccupancy[];
+  categorizedActiveClassGroups?: CategorizedClassGroups;
 }
 
 // Type for Room Availability Display
