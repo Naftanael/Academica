@@ -17,8 +17,8 @@ const docToClassGroup = (doc: FirebaseFirestore.DocumentSnapshot): ClassGroup =>
         throw new Error(`Document data not found for doc with id ${doc.id}`);
     }
 
-    const startDate = data.startDate instanceof Timestamp ? data.startDate.toDate().toISOString() : new Date(data.startDate).toISOString();
-    const endDate = data.endDate instanceof Timestamp ? data.endDate.toDate().toISOString() : new Date(data.endDate).toISOString();
+    const startDate = data.startDate instanceof Timestamp ? data.startDate.toDate().toISOString() : data.startDate;
+    const endDate = data.endDate instanceof Timestamp ? data.endDate.toDate().toISOString() : data.endDate;
 
     return {
         id: doc.id,
@@ -62,12 +62,21 @@ export async function createClassGroup(values: z.infer<typeof classGroupCreateSc
         const newClassGroupRef = classGroupsCollection.doc();
         const newClassGroupData = {
           ...validatedValues,
+          startDate: new Date(validatedValues.startDate),
+          endDate: new Date(validatedValues.endDate),
           year: new Date().getFullYear(),
           status: 'Planejada' as const,
           createdAt: FieldValue.serverTimestamp(),
         };
         transaction.set(newClassGroupRef, newClassGroupData);
-        return { id: newClassGroupRef.id, ...newClassGroupData };
+        // Return a plain object that can be serialized, converting dates back to ISO strings
+        return {
+          id: newClassGroupRef.id,
+          ...validatedValues, // original validated values are serializable
+          year: newClassGroupData.year,
+          status: newClassGroupData.status,
+          createdAt: new Date().toISOString(), // optimistic timestamp
+        };
     });
 
     revalidatePath('/classgroups');
@@ -91,7 +100,13 @@ export async function updateClassGroup(id: string, values: z.infer<typeof classG
             if (!doc.exists) {
                 throw new Error("Turma não encontrada.");
             }
-            transaction.update(docRef, validatedValues);
+            // Convert date strings to Date objects for Firestore
+            const updateData = {
+                ...validatedValues,
+                startDate: new Date(validatedValues.startDate),
+                endDate: new Date(validatedValues.endDate),
+            };
+            transaction.update(docRef, updateData);
         });
         
         revalidatePath('/classgroups');
@@ -109,15 +124,23 @@ export async function updateClassGroup(id: string, values: z.infer<typeof classG
 
 export async function deleteClassGroup(id: string): Promise<{ success: boolean; message: string }> {
   try {
-    await db.runTransaction(async (transaction) => {
-        const docRef = classGroupsCollection.doc(id);
-        const doc = await transaction.get(docRef);
-        if (doc.exists) {
-            transaction.delete(docRef);
-        }
-    });
+    const classGroupDoc = await classGroupsCollection.doc(id).get();
+    if (!classGroupDoc.exists) {
+        return { success: false, message: "Turma não encontrada." };
+    }
+
+    const recurringReservationsQuery = db.collection('recurring_reservations').where('classGroupId', '==', id);
+    const recurringReservationsSnapshot = await recurringReservationsQuery.get();
+
+    if (!recurringReservationsSnapshot.empty) {
+        return { success: false, message: "Não é possível excluir. A turma possui reservas recorrentes associadas." };
+    }
+      
+    await classGroupsCollection.doc(id).delete();
     
     revalidatePath('/classgroups');
+    revalidatePath('/'); // Revalidate dashboard as well
+    revalidatePath('/room-availability');
     return { success: true, message: "Turma excluída com sucesso." };
   } catch (error) {
     console.error("Failed to delete class group from Firestore:", error);
@@ -134,12 +157,10 @@ export async function assignClassroomToClassGroup(classGroupId: string, classroo
                 throw new Error("Turma não encontrada.");
             }
 
-            const updateData: { assignedClassroomId: string | null; status?: 'Planejada' } = {
+            const updateData: { assignedClassroomId: string | null } = {
                 assignedClassroomId: classroomId ?? null,
             };
-            if (classroomId) {
-                updateData.status = 'Planejada';
-            }
+            
             transaction.update(docRef, updateData);
         });
         

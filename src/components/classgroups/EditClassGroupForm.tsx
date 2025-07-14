@@ -53,7 +53,8 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     resolver: zodResolver(classGroupEditSchema),
     defaultValues: {
       ...classGroup,
-      // Ensure notes is a string, not null or undefined
+      startDate: classGroup.startDate ? format(parseISO(classGroup.startDate), 'yyyy-MM-dd') : '',
+      endDate: classGroup.endDate ? format(parseISO(classGroup.endDate), 'yyyy-MM-dd') : '',
       notes: classGroup.notes ?? '',
     },
   });
@@ -160,7 +161,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                       <Calendar
                         mode="single"
                         selected={field.value ? parseISO(field.value) : undefined}
-                        onSelect={(date) => field.onChange(date?.toISOString())}
+                        onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                         initialFocus
                       />
                     </PopoverContent>
@@ -199,7 +200,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                       <Calendar
                         mode="single"
                         selected={field.value ? parseISO(field.value) : undefined}
-                        onSelect={(date) => field.onChange(date?.toISOString())}
+                        onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                         initialFocus
                       />
                     </PopoverContent>

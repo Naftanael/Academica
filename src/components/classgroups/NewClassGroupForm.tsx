@@ -55,9 +55,8 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
       name: '',
       classDays: [],
       shift: 'Manhã',
-      startDate: new Date().toISOString(),
-      endDate: new Date().toISOString(),
-      status: 'Planejada',
+      startDate: format(new Date(), 'yyyy-MM-dd'),
+      endDate: format(new Date(), 'yyyy-MM-dd'),
       notes: '',
     },
   });
@@ -161,7 +160,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                       <Calendar
                         mode="single"
                         selected={field.value ? parseISO(field.value) : undefined}
-                        onSelect={(date) => field.onChange(date?.toISOString())}
+                        onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                         initialFocus
                       />
                     </PopoverContent>
@@ -200,7 +199,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                       <Calendar
                         mode="single"
                         selected={field.value ? parseISO(field.value) : undefined}
-                        onSelect={(date) => field.onChange(date?.toISOString())}
+                        onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                         initialFocus
                       />
                     </PopoverContent>
