@@ -63,12 +63,11 @@ async function getDashboardData(): Promise<DashboardData> {
   currentDate.setHours(0, 0, 0, 0);
 
   const activeClassGroupsData = classGroups.filter(cg => cg.status === 'Em Andamento');
-  const plannedClassGroups = classGroups.filter(cg => cg.status === 'Planejada');
 
   const stats: DashboardStats = {
     totalClassGroups: classGroups.length,
     activeClassGroups: activeClassGroupsData.length,
-    plannedClassGroups: plannedClassGroups.length,
+    plannedClassGroups: classGroups.filter(cg => cg.status === 'Planejada').length,
     totalClassrooms: classrooms.length,
   };
 
