@@ -208,10 +208,11 @@ export default async function DashboardPage() {
                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                   {sortedCategories.map(categoryName => {
                      const category = courseCategories.find(c => c.name === categoryName);
+                     const count = (categorizedActiveClassGroups?.get(categoryName) || []).length;
                      return (
                         <TabsTrigger key={categoryName} value={categoryName}>
                           {category?.icon && <category.icon className="mr-2 h-4 w-4" />}
-                          {categoryName}
+                          {categoryName} {count > 0 && <span className="ml-1.5 text-xs opacity-80">({count})</span>}
                         </TabsTrigger>
                      )
                   })}
