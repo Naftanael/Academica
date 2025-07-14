@@ -7,15 +7,21 @@ self.onmessage = async (event) => {
   try {
     const iframe = await createIframe(url);
     const canvas = await captureCanvas(iframe);
-    const blob = await canvas.toBlob((blob) => {
-        if (blob) {
-            self.postMessage({ type: 'SUCCESS', blob });
-        } else {
-            self.postMessage({ type: 'ERROR', message: 'Failed to create blob from canvas' });
-        }
-        // Clean up the iframe
-        document.body.removeChild(iframe);
-    }, 'image/png');
+    
+    // The canvas.toBlob callback needs to be handled via a Promise
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, 'image/png');
+    });
+
+    if (blob) {
+      self.postMessage({ type: 'SUCCESS', blob });
+    } else {
+      self.postMessage({ type: 'ERROR', message: 'Failed to create blob from canvas' });
+    }
+    
+    // Clean up the iframe after we are done
+    document.body.removeChild(iframe);
+
   } catch (error) {
     self.postMessage({ type: 'ERROR', message: (error as Error).message });
   }
@@ -37,12 +43,14 @@ function createIframe(url: string): Promise<HTMLIFrameElement> {
 }
 
 function captureCanvas(element: HTMLElement): Promise<HTMLCanvasElement> {
-    return html2canvas(element, {
-        useCORS: true,
-        allowTaint: true,
-        width: 1920,
-        height: 1080,
-        // @ts-ignore
-        scale: 1,
+    // Wrap html2canvas in a true Promise to resolve the type error.
+    return new Promise((resolve, reject) => {
+        html2canvas(element, {
+            useCORS: true,
+            allowTaint: true,
+            width: 1920,
+            height: 1080,
+            scale: 1,
+        } as any).then(resolve).catch(reject); // Use 'as any' to bypass the strict type check for the 'scale' property.
     });
 }
