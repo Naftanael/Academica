@@ -11,12 +11,7 @@ import { classGroupCreateSchema, classGroupEditSchema } from "@/lib/schemas/clas
 
 export async function getClassGroups(): Promise<ClassGroup[]> {
   try {
-    const data = await readData('classgroups.json');
-    if (!data) {
-        return [];
-    }
-     const classGroups: ClassGroup[] = JSON.parse(data as unknown as string);
-
+    const classGroups = await readData<ClassGroup>('classgroups.json');
     return classGroups;
   } catch (error) {
     console.error("Failed to read or parse class groups data:", error);
