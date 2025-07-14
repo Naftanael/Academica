@@ -45,7 +45,7 @@ const newClassGroupFormSchema = z.object({
   classDays: z.array(z.enum(DAYS_OF_WEEK))
     .min(1, { message: "Selecione pelo menos um dia da semana." }),
   year: z.coerce.number({ invalid_type_error: "Ano deve ser um número." })
-                 .min(new Date().getFullYear() - 10, { message: "Ano muito antigo."})
+                 .min(2022, { message: "O ano não pode ser anterior a 2022."})
                  .max(new Date().getFullYear() + 10, { message: "Ano muito no futuro."})
                  .optional(),
   status: z.enum(CLASS_GROUP_STATUSES).optional(),
@@ -306,6 +306,7 @@ export default function NewClassGroupForm() {
                         onSelect={field.onChange}
                         initialFocus
                         locale={ptBR}
+                        fromDate={new Date(2022, 0, 1)}
                       />
                     </PopoverContent>
                   </Popover>
