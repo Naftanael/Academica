@@ -28,7 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Save } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { createClassGroup } from '@/lib/actions/classgroups';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +39,7 @@ import type { ClassGroup } from '@/types';
 
 const saturdayShiftNote = 'Transferir aula de Sábado (Noite) para o turno da Tarde.';
 
-const daysOfWeek = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const daysOfWeek = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] as const;
 
 interface NewClassGroupFormProps {
   onClassGroupCreated: (newClassGroup: ClassGroup) => void;
@@ -55,8 +55,8 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
       name: '',
       classDays: [],
       shift: 'Manhã',
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
       status: 'Planejada',
       notes: '',
     },
@@ -149,7 +149,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: ptBR })
+                            format(parseISO(field.value), 'PPP', { locale: ptBR })
                           ) : (
                             <span>Escolha uma data</span>
                           )}
@@ -160,8 +160,8 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                        selected={field.value ? parseISO(field.value) : undefined}
+                        onSelect={(date) => field.onChange(date?.toISOString())}
                         initialFocus
                       />
                     </PopoverContent>
@@ -188,7 +188,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: ptBR })
+                            format(parseISO(field.value), 'PPP', { locale: ptBR })
                           ) : (
                             <span>Escolha uma data</span>
                           )}
@@ -199,8 +199,8 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                        selected={field.value ? parseISO(field.value) : undefined}
+                        onSelect={(date) => field.onChange(date?.toISOString())}
                         initialFocus
                       />
                     </PopoverContent>

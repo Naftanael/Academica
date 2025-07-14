@@ -53,7 +53,7 @@ export default function NewClassGroupView() {
   const dummyClassGroup: ClassGroup = {
     id: 'temp-id',
     name: 'Nova Turma',
-    assignedClassroomId: selectedClassroom?.id || null,
+    assignedClassroomId: selectedClassroom?.id || undefined,
     // Add other required fields with default values
     shift: 'Manhã',
     year: new Date().getFullYear(),
@@ -61,6 +61,7 @@ export default function NewClassGroupView() {
     startDate: new Date().toISOString(),
     endDate: new Date().toISOString(),
     classDays: [],
+    notes: '',
   };
 
   return (

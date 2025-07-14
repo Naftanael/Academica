@@ -3,6 +3,7 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // Importa a instância do Firestore
 import { db } from '@/lib/firebase/admin';
@@ -37,109 +38,138 @@ export async function getClassrooms(): Promise<Classroom[]> {
 }
 
 export async function createClassroom(values: ClassroomCreateValues) {
-  try {
-    const validatedValues = classroomCreateSchema.parse(values);
-    const newClassroomData = {
-      ...validatedValues,
-      createdAt: new Date(),
-    };
-    const docRef = await classroomsCollection.add(newClassroomData);
-    const newDoc = await docRef.get();
-    const createdClassroom = {
-       id: newDoc.id,
-       ...newDoc.data(),
-    } as Classroom;
+    try {
+        const validatedValues = classroomCreateSchema.parse(values);
 
-    revalidatePath('/classrooms');
-    revalidatePath('/room-availability');
-    revalidatePath('/tv-display');
-    revalidatePath('/');
-    return { success: true, message: 'Sala de aula criada com sucesso!', data: createdClassroom };
+        const newClassroom = await db.runTransaction(async (transaction) => {
+            const existingClassroomQuery = classroomsCollection.where('name', '==', validatedValues.name);
+            const existingClassroomSnapshot = await transaction.get(existingClassroomQuery);
 
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: 'Erro de validação ao criar sala.', errors: error.flatten().fieldErrors };
+            if (!existingClassroomSnapshot.empty) {
+                throw new Error('Já existe uma sala de aula com este nome.');
+            }
+
+            const newClassroomRef = classroomsCollection.doc();
+            const newClassroomData = {
+                ...validatedValues,
+                createdAt: FieldValue.serverTimestamp(),
+            };
+
+            transaction.set(newClassroomRef, newClassroomData);
+            return { id: newClassroomRef.id, ...newClassroomData };
+        });
+
+        revalidatePath('/classrooms');
+        revalidatePath('/room-availability');
+        revalidatePath('/tv-display');
+        revalidatePath('/');
+        return { success: true, message: 'Sala de aula criada com sucesso!', data: newClassroom as Classroom };
+
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return { success: false, message: 'Erro de validação ao criar sala.', errors: error.flatten().fieldErrors };
+        }
+        console.error('Failed to create classroom:', error);
+        return { success: false, message: (error as Error).message || 'Erro interno ao criar sala de aula.' };
     }
-    console.error('Failed to create classroom:', error);
-    return { success: false, message: 'Erro interno ao criar sala de aula.' };
-  }
 }
 
 export async function updateClassroom(id: string, values: ClassroomEditFormValues) {
-  try {
-    const validatedValues = classroomEditSchema.parse(values);
-    const docRef = classroomsCollection.doc(id);
+    try {
+        const validatedValues = classroomEditSchema.parse(values);
+        const docRef = classroomsCollection.doc(id);
 
-    const doc = await docRef.get();
-    if (!doc.exists) {
-        return { success: false, message: 'Sala não encontrada para atualização.' };
+        await db.runTransaction(async (transaction) => {
+            const doc = await transaction.get(docRef);
+            if (!doc.exists) {
+                throw new Error('Sala não encontrada para atualização.');
+            }
+
+            if (validatedValues.name && validatedValues.name !== doc.data()?.name) {
+                const existingClassroomQuery = classroomsCollection.where('name', '==', validatedValues.name);
+                const existingClassroomSnapshot = await transaction.get(existingClassroomQuery);
+                if (!existingClassroomSnapshot.empty) {
+                    throw new Error('Já existe uma sala de aula com este nome.');
+                }
+            }
+
+            const updatedData = {
+                ...validatedValues,
+                isUnderMaintenance: validatedValues.isUnderMaintenance ?? doc.data()?.isUnderMaintenance ?? false,
+                maintenanceReason: validatedValues.isUnderMaintenance ? (validatedValues.maintenanceReason || '') : '',
+            };
+
+            transaction.update(docRef, updatedData);
+        });
+
+        revalidatePath('/classrooms');
+        revalidatePath(`/classrooms/${id}/edit`);
+        revalidatePath('/room-availability');
+        revalidatePath('/tv-display');
+        revalidatePath('/');
+        return { success: true, message: 'Sala de aula atualizada com sucesso!' };
+
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return { success: false, message: 'Erro de validação ao atualizar sala.', errors: error.flatten().fieldErrors };
+        }
+        console.error(`Failed to update classroom ${id}:`, error);
+        return { success: false, message: (error as Error).message || 'Erro interno ao atualizar sala de aula.' };
     }
-
-    const updatedData = {
-       name: validatedValues.name,
-       capacity: validatedValues.capacity,
-       isUnderMaintenance: validatedValues.isUnderMaintenance ?? doc.data()?.isUnderMaintenance ?? false,
-       maintenanceReason: validatedValues.isUnderMaintenance ? (validatedValues.maintenanceReason || '') : '',
-    };
-
-    await docRef.update(updatedData);
-
-    revalidatePath('/classrooms');
-    revalidatePath(`/classrooms/${id}/edit`);
-    revalidatePath('/room-availability');
-    revalidatePath('/tv-display');
-    revalidatePath('/');
-    return { success: true, message: 'Sala de aula atualizada com sucesso!' };
-
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: 'Erro de validação ao atualizar sala.', errors: error.flatten().fieldErrors };
-    }
-    console.error(`Failed to update classroom ${id}:`, error);
-    return { success: false, message: 'Erro interno ao atualizar sala de aula.' };
-  }
 }
+
 
 export async function deleteClassroom(id: string) {
-  try {
-    // Verifica se a sala está atribuída a alguma turma
-    const classGroupSnapshot = await classGroupsCollection.where('assignedClassroomId', '==', id).limit(1).get();
-    if (!classGroupSnapshot.empty) {
-      return { success: false, message: 'Não é possível excluir a sala. Ela está atribuída a uma ou mais turmas.' };
+    try {
+        await db.runTransaction(async (transaction) => {
+            const docRef = classroomsCollection.doc(id);
+            const doc = await transaction.get(docRef);
+
+            if (!doc.exists) {
+                // Se o documento não existe, não há nada a fazer.
+                return;
+            }
+
+            const classGroupQuery = classGroupsCollection.where('assignedClassroomId', '==', id).limit(1);
+            const eventReservationQuery = eventReservationsCollection.where('classroomId', '==', id).limit(1);
+            const recurringReservationQuery = recurringReservationsCollection.where('classroomId', '==', id).limit(1);
+
+            const [
+                classGroupSnapshot,
+                eventReservationSnapshot,
+                recurringReservationSnapshot
+            ] = await Promise.all([
+                transaction.get(classGroupQuery),
+                transaction.get(eventReservationQuery),
+                transaction.get(recurringReservationQuery)
+            ]);
+
+            if (!classGroupSnapshot.empty) {
+                throw new Error('Não é possível excluir a sala. Ela está atribuída a uma ou mais turmas.');
+            }
+            if (!eventReservationSnapshot.empty) {
+                throw new Error('Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas de eventos.');
+            }
+            if (!recurringReservationSnapshot.empty) {
+                throw new Error('Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas recorrentes.');
+            }
+
+            transaction.delete(docRef);
+        });
+
+        revalidatePath('/classrooms');
+        revalidatePath('/room-availability');
+        revalidatePath('/tv-display');
+        revalidatePath('/reservations');
+        revalidatePath('/');
+        return { success: true, message: 'Sala de aula excluída com sucesso!' };
+
+    } catch (error) {
+        console.error(`Failed to delete classroom ${id}:`, error);
+        return { success: false, message: (error as Error).message || 'Erro interno ao excluir sala de aula.' };
     }
-
-    // Verifica se a sala está sendo usada em alguma reserva de evento
-    const eventReservationsSnapshot = await eventReservationsCollection.where('classroomId', '==', id).limit(1).get();
-    if (!eventReservationsSnapshot.empty) {
-        return { success: false, message: 'Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas de eventos.' };
-    }
-
-    // Verifica se a sala está sendo usada em alguma reserva recorrente
-    const recurringReservationsSnapshot = await recurringReservationsCollection.where('classroomId', '==', id).limit(1).get();
-    if (!recurringReservationsSnapshot.empty) {
-        return { success: false, message: 'Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas recorrentes.' };
-    }
-
-    const docRef = classroomsCollection.doc(id);
-    const doc = await docRef.get();
-     if (!doc.exists) {
-       console.warn(`Attempted to delete non-existent classroom with ID: ${id}`);
-       return { success: true, message: 'Sala de aula já não existia.' };
-     }
-
-    await docRef.delete();
-
-    revalidatePath('/classrooms');
-    revalidatePath('/room-availability');
-    revalidatePath('/tv-display');
-    revalidatePath('/reservations');
-    revalidatePath('/');
-    return { success: true, message: 'Sala de aula excluída com sucesso!' };
-  } catch (error) {
-    console.error(`Failed to delete classroom ${id}:`, error);
-    return { success: false, message: 'Erro interno ao excluir sala de aula.' };
-  }
 }
+
 
 export async function getClassroomById(id: string): Promise<Classroom | undefined> {
   try {
@@ -155,6 +185,8 @@ export async function getClassroomById(id: string): Promise<Classroom | undefine
       isUnderMaintenance: classroomData?.isUnderMaintenance ?? false,
       resources: classroomData?.resources ?? [],
       maintenanceReason: classroomData?.maintenanceReason ?? '',
+      createdAt: classroomData?.createdAt.toDate(),
+      updatedAt: classroomData?.updatedAt?.toDate()
     } as Classroom;
 
   } catch (error) {

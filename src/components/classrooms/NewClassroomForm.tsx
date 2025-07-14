@@ -21,9 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { createClassroom } from '@/lib/actions/classrooms';
 import { classroomCreateSchema, type ClassroomCreateValues } from '@/lib/schemas/classrooms';
-
 
 export default function NewClassroomForm() {
   const router = useRouter();
@@ -34,10 +32,9 @@ export default function NewClassroomForm() {
     resolver: zodResolver(classroomCreateSchema),
     defaultValues: {
       name: '',
-      capacity: undefined, 
+      capacity: undefined,
       isUnderMaintenance: false,
       maintenanceReason: '',
-      // resources and isLab are optional and not form fields here, so they'll be undefined
     },
   });
 
@@ -45,38 +42,56 @@ export default function NewClassroomForm() {
 
   async function onSubmit(values: ClassroomCreateValues) {
     setIsPending(true);
-    const result = await createClassroom(values);
-    setIsPending(false);
-
-    if (result.success) {
-      toast({
-        title: 'Sucesso!',
-        description: result.message,
-        variant: 'default',
+    try {
+      const response = await fetch('/api/classrooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
       });
-      router.push('/classrooms');
-    } else {
-      if (result.errors) {
-        Object.entries(result.errors).forEach(([field, errors]) => {
-          if (errors) {
-             form.setError(field as keyof ClassroomCreateValues, {
-              type: 'manual',
-              message: Array.isArray(errors) ? errors.join(', ') : String(errors),
-            });
-          }
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Sucesso!',
+          description: 'Sala de aula criada com sucesso!',
+          variant: 'default',
         });
-         toast({
-          title: 'Erro de Validação',
-          description: "Por favor, corrija os campos destacados.",
-          variant: 'destructive',
-        });
+        router.push('/classrooms');
+        router.refresh(); 
       } else {
-         toast({
-          title: 'Erro ao criar sala',
-          description: result.message || 'Ocorreu um erro inesperado.',
-          variant: 'destructive',
-        });
+        if (response.status === 400 && result.errors) {
+          Object.entries(result.errors).forEach(([field, errors]) => {
+            if (errors) {
+               form.setError(field as keyof ClassroomCreateValues, {
+                type: 'manual',
+                message: Array.isArray(errors) ? errors.join(', ') : String(errors),
+              });
+            }
+          });
+          toast({
+            title: 'Erro de Validação',
+            description: "Por favor, corrija os campos destacados.",
+            variant: 'destructive',
+          });
+        } else {
+           toast({
+            title: 'Erro ao criar sala',
+            description: result.message || 'Ocorreu um erro inesperado.',
+            variant: 'destructive',
+          });
+        }
       }
+    } catch (error) {
+      toast({
+        title: 'Erro de Rede',
+        description: 'Não foi possível conectar ao servidor.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPending(false);
     }
   }
 

@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -6,7 +7,8 @@ import type { ClassroomRecurringReservation, DayOfWeek, ClassGroup } from '@/typ
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import { z } from 'zod';
 import { dateRangesOverlap } from '@/lib/utils';
-import { parseISO, format, addDays, getDay, isAfter } from 'date-fns';
+import { parseISO, format, addDays, getDay } from 'date-fns';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const recurringReservationsCollection = db.collection('recurring_reservations');
 const classGroupsCollection = db.collection('classgroups');
@@ -23,9 +25,8 @@ function calculateEndDate(startDate: Date, classDays: DayOfWeek[], numberOfClass
   currentDate.setHours(0, 0, 0, 0);
   let classesCount = 0;
   let lastClassDate = new Date(currentDate);
-  let guard = 0;
 
-  while (classesCount < numberOfClasses && guard < 730) { // 2-year guard
+  while (classesCount < numberOfClasses) {
     if (numericalClassDays.includes(getDay(currentDate))) {
       classesCount++;
       lastClassDate = new Date(currentDate);
@@ -33,7 +34,6 @@ function calculateEndDate(startDate: Date, classDays: DayOfWeek[], numberOfClass
     if (classesCount < numberOfClasses) {
         currentDate = addDays(currentDate, 1);
     }
-    guard++;
   }
   return lastClassDate;
 }
@@ -52,52 +52,50 @@ export async function createRecurringReservation(values: RecurringReservationFor
   try {
     const validatedValues = recurringReservationFormSchema.parse(values);
     
-    const classGroupDoc = await classGroupsCollection.doc(validatedValues.classGroupId).get();
-    if (!classGroupDoc.exists) {
-      return { success: false, message: 'Turma da nova reserva não encontrada.' };
-    }
-    const newReservationClassGroup = classGroupDoc.data() as ClassGroup;
-    
-    const newResStartDate = parseISO(validatedValues.startDate);
-    const newResEndDate = calculateEndDate(newResStartDate, newReservationClassGroup.classDays, validatedValues.numberOfClasses);
-
-    // Query for potential conflicts only for the same classroom
-    const conflictQuery = recurringReservationsCollection.where('classroomId', '==', validatedValues.classroomId);
-    const snapshot = await conflictQuery.get();
-
-    for (const doc of snapshot.docs) {
-      const existingRes = doc.data() as ClassroomRecurringReservation;
-      const existingResStartDate = parseISO(existingRes.startDate);
-      const existingResEndDate = parseISO(existingRes.endDate);
-
-      // Check if date ranges overlap
-      if (dateRangesOverlap(newResStartDate, newResEndDate, existingResStartDate, existingResEndDate)) {
-        const existingResClassGroupDoc = await classGroupsCollection.doc(existingRes.classGroupId).get();
-        if (!existingResClassGroupDoc.exists) continue;
-        
-        const existingResClassGroup = existingResClassGroupDoc.data() as ClassGroup;
-        const commonClassDays = newReservationClassGroup.classDays.filter(day => 
-            existingResClassGroup.classDays?.includes(day)
-        );
-
-        if (commonClassDays.length > 0) {
-          return {
-            success: false,
-            message: `Conflito: A sala já está reservada para a turma "${existingResClassGroup.name}" em dias (${commonClassDays.join(', ')}) que se sobrepõem ao período solicitado.`,
-          };
+    await db.runTransaction(async (transaction) => {
+        const classGroupDoc = await transaction.get(classGroupsCollection.doc(validatedValues.classGroupId));
+        if (!classGroupDoc.exists) {
+            throw new Error('Turma da nova reserva não encontrada.');
         }
-      }
-    }
+        const newReservationClassGroup = classGroupDoc.data() as ClassGroup;
+        
+        const newResStartDate = parseISO(validatedValues.startDate);
+        const newResEndDate = calculateEndDate(newResStartDate, newReservationClassGroup.classDays, validatedValues.numberOfClasses);
 
-    const newReservation: Omit<ClassroomRecurringReservation, 'id'> = {
-      classGroupId: validatedValues.classGroupId,
-      classroomId: validatedValues.classroomId,
-      startDate: validatedValues.startDate, 
-      endDate: format(newResEndDate, 'yyyy-MM-dd'),
-      purpose: validatedValues.purpose,
-    };
+        const conflictQuery = recurringReservationsCollection.where('classroomId', '==', validatedValues.classroomId);
+        const snapshot = await transaction.get(conflictQuery);
 
-    await recurringReservationsCollection.add(newReservation);
+        for (const doc of snapshot.docs) {
+            const existingRes = doc.data() as ClassroomRecurringReservation;
+            const existingResStartDate = parseISO(existingRes.startDate);
+            const existingResEndDate = parseISO(existingRes.endDate);
+
+            if (dateRangesOverlap(newResStartDate, newResEndDate, existingResStartDate, existingResEndDate)) {
+                const existingResClassGroupDoc = await transaction.get(classGroupsCollection.doc(existingRes.classGroupId));
+                if (!existingResClassGroupDoc.exists) continue;
+                
+                const existingResClassGroup = existingResClassGroupDoc.data() as ClassGroup;
+                const commonClassDays = newReservationClassGroup.classDays.filter(day => 
+                    existingResClassGroup.classDays?.includes(day)
+                );
+
+                if (commonClassDays.length > 0) {
+                    throw new Error(`Conflito: A sala já está reservada para a turma "${existingResClassGroup.name}" em dias (${commonClassDays.join(', ')}) que se sobrepõem ao período solicitado.`);
+                }
+            }
+        }
+
+        const newReservationRef = recurringReservationsCollection.doc();
+        const newReservation: Omit<ClassroomRecurringReservation, 'id'> = {
+            classGroupId: validatedValues.classGroupId,
+            classroomId: validatedValues.classroomId,
+            startDate: validatedValues.startDate, 
+            endDate: format(newResEndDate, 'yyyy-MM-dd'),
+            purpose: validatedValues.purpose,
+            createdAt: FieldValue.serverTimestamp(),
+        };
+        transaction.set(newReservationRef, newReservation);
+    });
 
     revalidatePath('/reservations');
     revalidatePath('/room-availability'); 
@@ -108,18 +106,19 @@ export async function createRecurringReservation(values: RecurringReservationFor
       return { success: false, message: 'Erro de validação.', errors: error.flatten().fieldErrors };
     }
     console.error('Failed to create recurring reservation in Firestore:', error);
-    return { success: false, message: 'Erro interno ao criar reserva recorrente.' };
+    return { success: false, message: (error as Error).message || 'Erro interno ao criar reserva recorrente.' };
   }
 }
 
 export async function deleteRecurringReservation(id: string) {
   try {
-    const docRef = recurringReservationsCollection.doc(id);
-    const doc = await docRef.get();
-    if (!doc.exists) {
-      return { success: false, message: 'Reserva recorrente não encontrada.' };
-    }
-    await docRef.delete();
+    await db.runTransaction(async (transaction) => {
+        const docRef = recurringReservationsCollection.doc(id);
+        const doc = await transaction.get(docRef);
+        if (doc.exists) {
+            transaction.delete(docRef);
+        }
+    });
 
     revalidatePath('/reservations');
     revalidatePath('/room-availability'); 
