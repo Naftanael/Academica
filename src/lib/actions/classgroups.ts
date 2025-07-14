@@ -58,27 +58,34 @@ export async function createClassGroup(values: z.infer<typeof classGroupCreateSc
   try {
     const validatedValues = classGroupCreateSchema.parse(values);
     
-    const newClassGroup = await db.runTransaction(async (transaction) => {
-        const newClassGroupRef = classGroupsCollection.doc();
-        const newClassGroupData = {
-          ...validatedValues,
-          startDate: new Date(validatedValues.startDate),
-          endDate: new Date(validatedValues.endDate),
-          year: new Date().getFullYear(),
-          status: 'Planejada' as const,
-          createdAt: FieldValue.serverTimestamp(),
-        };
-        transaction.set(newClassGroupRef, newClassGroupData);
-        // Return a plain object that can be serialized, converting dates back to ISO strings
-        return {
-          id: newClassGroupRef.id,
-          ...validatedValues, // original validated values are serializable
-          year: newClassGroupData.year,
-          status: newClassGroupData.status,
-          createdAt: new Date().toISOString(), // optimistic timestamp
-        };
-    });
+    // Check for duplicate name before starting the transaction
+    const existingGroupQuery = classGroupsCollection.where('name', '==', validatedValues.name);
+    const existingGroupSnapshot = await existingGroupQuery.get();
 
+    if (!existingGroupSnapshot.empty) {
+      return { success: false, message: 'Já existe uma turma com este nome.' };
+    }
+
+    const newClassGroupRef = classGroupsCollection.doc();
+    const newClassGroupData = {
+      ...validatedValues,
+      startDate: new Date(validatedValues.startDate),
+      endDate: new Date(validatedValues.endDate),
+      year: new Date().getFullYear(),
+      status: 'Planejada' as const,
+      createdAt: FieldValue.serverTimestamp(),
+    };
+    
+    await newClassGroupRef.set(newClassGroupData);
+
+    const newClassGroup = {
+      id: newClassGroupRef.id,
+      ...validatedValues,
+      year: newClassGroupData.year,
+      status: newClassGroupData.status,
+      createdAt: new Date().toISOString(), // optimistic timestamp for return
+    };
+    
     revalidatePath('/classgroups');
     return { success: true, message: "Turma adicionada com sucesso.", data: newClassGroup as unknown as ClassGroup };
   } catch (error) {
@@ -89,6 +96,7 @@ export async function createClassGroup(values: z.infer<typeof classGroupCreateSc
     return { success: false, message: "Falha ao adicionar a turma." };
   }
 }
+
 
 export async function updateClassGroup(id: string, values: z.infer<typeof classGroupEditSchema>): Promise<{ success: boolean; message: string }> {
     try {
