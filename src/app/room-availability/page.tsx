@@ -18,8 +18,8 @@ export default async function RoomAvailabilityPage() {
   return (
     <TooltipProvider>
       <PageHeader
-        title="Disponibilidade de Salas"
-        description="Selecione uma sala da lista para visualizar sua agenda semanal detalhada."
+        title="Disponibilidade de Salas por Dia"
+        description="Selecione uma data para visualizar o status de ocupação de todas as salas."
         icon={CalendarDays}
       />
       
