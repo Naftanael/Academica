@@ -2,24 +2,26 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import PageHeader from '@/components/shared/PageHeader';
 import { UsersRound, ArrowLeft, Home, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import EditClassGroupForm from '@/components/classgroups/EditClassGroupForm';
+import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm';
 import { ChangeClassroomDialog } from '@/components/classgroups/ChangeClassroomDialog';
-import type { ClassGroup, Classroom } from '@/types';
+import type { Classroom, ClassGroup } from '@/types';
 import { getClassrooms } from '@/lib/actions/classrooms';
+import { assignClassroomToClassGroup } from '@/lib/actions/classgroups';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
-interface EditClassGroupViewProps {
-  classGroup: ClassGroup | undefined;
-}
-
-export default function EditClassGroupView({ classGroup }: EditClassGroupViewProps) {
+export default function NewClassGroupView() {
   const [classrooms, setClassrooms] = React.useState<Classroom[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [selectedClassroom, setSelectedClassroom] = React.useState<Classroom | null>(null);
+  const router = useRouter();
+  const { toast } = useToast();
 
   React.useEffect(() => {
     async function fetchClassrooms() {
@@ -29,7 +31,6 @@ export default function EditClassGroupView({ classGroup }: EditClassGroupViewPro
         setClassrooms(fetchedClassrooms);
       } catch (error) {
         console.error("Failed to fetch classrooms:", error);
-        // Optionally, set an error state and show a toast
       } finally {
         setLoading(false);
       }
@@ -37,36 +38,36 @@ export default function EditClassGroupView({ classGroup }: EditClassGroupViewPro
     fetchClassrooms();
   }, []);
 
-  if (!classGroup) {
-    return (
-      <>
-        <PageHeader title="Turma não encontrada" icon={UsersRound} />
-        <div className="max-w-2xl mx-auto text-center py-8">
-          <p className="text-lg text-muted-foreground mb-6">
-            A turma que você está tentando editar não foi encontrada ou não existe.
-          </p>
-          <Button
-            variant="outline"
-            asChild
-            className="hover:bg-accent hover:text-accent-foreground"
-          >
-            <Link href="/classgroups">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Lista de Turmas
-            </Link>
-          </Button>
-        </div>
-      </>
-    );
-  }
+  const handleClassGroupCreated = async (newClassGroup: ClassGroup) => {
+    if (selectedClassroom) {
+      await assignClassroomToClassGroup(newClassGroup.id, selectedClassroom.id);
+    }
+    toast({
+      title: "Turma Criada com Sucesso!",
+      description: `A turma "${newClassGroup.name}" foi criada.`,
+    });
+    router.push(`/classgroups/${newClassGroup.id}/edit`);
+  };
   
-  const assignedClassroom = classrooms.find(c => c.id === classGroup.assignedClassroomId);
+  // Dummy ClassGroup to satisfy the ChangeClassroomDialog component
+  const dummyClassGroup: ClassGroup = {
+    id: 'temp-id',
+    name: 'Nova Turma',
+    assignedClassroomId: selectedClassroom?.id || null,
+    // Add other required fields with default values
+    shift: 'Manhã',
+    year: new Date().getFullYear(),
+    status: 'Planejada',
+    startDate: new Date().toISOString(),
+    endDate: new Date().toISOString(),
+    classDays: [],
+  };
 
   return (
     <>
       <PageHeader
-        title={`Editar Turma: ${classGroup.name}`}
-        description="Modifique os dados da turma e atribua uma sala de aula."
+        title="Criar Nova Turma"
+        description="Preencha os dados para criar uma nova turma e, opcionalmente, atribua uma sala."
         icon={UsersRound}
         actions={
           <Button
@@ -82,25 +83,23 @@ export default function EditClassGroupView({ classGroup }: EditClassGroupViewPro
         }
       />
       <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {/* Coluna Principal - Edição da Turma */}
         <div className="md:col-span-2">
           <Card className="shadow-lg rounded-lg">
             <CardHeader>
-              <CardTitle className="font-headline text-xl">Dados da Turma</CardTitle>
+              <CardTitle className="font-headline text-xl">Dados da Nova Turma</CardTitle>
             </CardHeader>
             <CardContent>
-              <EditClassGroupForm classGroup={classGroup} />
+              <NewClassGroupForm onClassGroupCreated={handleClassGroupCreated} />
             </CardContent>
           </Card>
         </div>
-
-        {/* Coluna Lateral - Atribuição de Sala */}
+        
         <div className="md:col-span-1 space-y-6">
            <Card className="shadow-lg rounded-lg">
                 <CardHeader>
-                    <CardTitle className="font-headline text-xl">Sala Atribuída</CardTitle>
+                    <CardTitle className="font-headline text-xl">Atribuir Sala</CardTitle>
                     <CardDescription>
-                        Atribua uma sala de aula para esta turma.
+                        Opcional: Selecione uma sala para esta turma.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -112,29 +111,33 @@ export default function EditClassGroupView({ classGroup }: EditClassGroupViewPro
                     ) : (
                         <div className="space-y-4 text-center">
                             <div className='p-4 bg-muted rounded-lg'>
-                                {assignedClassroom ? (
+                                {selectedClassroom ? (
                                     <>
-                                        <p className="font-semibold text-lg">{assignedClassroom.name}</p>
+                                        <p className="font-semibold text-lg">{selectedClassroom.name}</p>
                                         <p className="text-sm text-muted-foreground">
-                                            Capacidade: {assignedClassroom.capacity ?? 'N/A'} alunos
+                                            Capacidade: {selectedClassroom.capacity ?? 'N/A'} alunos
                                         </p>
-                                        {assignedClassroom.isUnderMaintenance && (
+                                        {selectedClassroom.isUnderMaintenance && (
                                             <div className="mt-2 inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">
                                                 <Wrench className="mr-2 h-3 w-3" /> Em Manutenção
                                             </div>
                                         )}
                                     </>
                                 ) : (
-                                    <p className="text-muted-foreground">Nenhuma sala atribuída</p>
+                                    <p className="text-muted-foreground">Nenhuma sala selecionada</p>
                                 )}
                             </div>
-                            <ChangeClassroomDialog 
-                                classGroup={classGroup} 
+                             <ChangeClassroomDialog 
+                                classGroup={dummyClassGroup} 
                                 availableClassrooms={classrooms}
+                                onClassroomSelected={(classroomId) => {
+                                    const classroom = classrooms.find(c => c.id === classroomId);
+                                    setSelectedClassroom(classroom || null);
+                                }}
                                 triggerButton={
                                     <Button variant="default" className="w-full">
                                         <Home className="mr-2 h-4 w-4" />
-                                        {assignedClassroom ? 'Trocar Sala' : 'Atribuir Sala'}
+                                        {selectedClassroom ? 'Trocar Sala' : 'Selecionar Sala'}
                                     </Button>
                                 }
                             />

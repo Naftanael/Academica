@@ -93,6 +93,8 @@ export interface TvDisplayInfo {
   startDate: string;
   endDate: string;
   status: ClassGroupStatus;
+  classroomCapacity?: number;
+  isUnderMaintenance?: boolean;
 }
 
 // Type for the published TV panel data file

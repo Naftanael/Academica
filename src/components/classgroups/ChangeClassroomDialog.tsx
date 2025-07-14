@@ -36,23 +36,48 @@ interface ChangeClassroomDialogProps {
   classGroup: ClassGroup;
   availableClassrooms: Classroom[];
   triggerButton?: React.ReactNode;
+  onClassroomSelected?: (classroomId: string | null) => void;
 }
 
-export function ChangeClassroomDialog({ classGroup, availableClassrooms, triggerButton }: ChangeClassroomDialogProps) {
+export function ChangeClassroomDialog({ 
+  classGroup, 
+  availableClassrooms, 
+  triggerButton,
+  onClassroomSelected 
+}: ChangeClassroomDialogProps) {
   const { toast } = useToast();
   const [selectedClassroomId, setSelectedClassroomId] = React.useState<string | null>(classGroup.assignedClassroomId || null);
   const [isPending, setIsPending] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
 
   const currentClassroomDetails = classGroup.assignedClassroomId
-    ? availableClassrooms.find(c => c.id === classGroup.assignedClassroomId) // Find from all classrooms
+    ? availableClassrooms.find(c => c.id === classGroup.assignedClassroomId)
     : null;
 
   const currentClassroomName = currentClassroomDetails?.name || (classGroup.assignedClassroomId ? 'Desconhecida' : 'Não atribuída');
   const isCurrentClassroomInMaintenance = currentClassroomDetails?.isUnderMaintenance;
 
 
+  const handleSelectionChange = (value: string | null) => {
+    setSelectedClassroomId(value);
+    if (onClassroomSelected) {
+      onClassroomSelected(value);
+      // Close the dialog immediately upon selection in creation mode
+      if (classGroup.id === 'temp-id') {
+        setIsOpen(false);
+      }
+    }
+  };
+  
   const handleSubmit = async () => {
+    if (classGroup.id === 'temp-id') {
+       if(onClassroomSelected) {
+         onClassroomSelected(selectedClassroomId)
+         setIsOpen(false)
+       }
+       return
+    }
+    
     setIsPending(true);
     const result = await assignClassroomToClassGroup(classGroup.id, selectedClassroomId);
     setIsPending(false);
@@ -94,8 +119,12 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
         <DialogHeader>
           <DialogTitle>Alterar Sala da Turma: {classGroup.name}</DialogTitle>
           <DialogDescription>
-            Sala atual: <span className="font-semibold">{currentClassroomName}</span>
-            {isCurrentClassroomInMaintenance && <span className="ml-1 text-amber-600">(Em Manutenção)</span>}.
+            {classGroup.id !== 'temp-id' && (
+                <>
+                    Sala atual: <span className="font-semibold">{currentClassroomName}</span>
+                    {isCurrentClassroomInMaintenance && <span className="ml-1 text-amber-600">(Em Manutenção)</span>}.
+                </>
+            )}
             Selecione uma nova sala ou remova a atribuição.
           </DialogDescription>
         </DialogHeader>
@@ -106,7 +135,7 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
             </Label>
             <Select
               value={selectedClassroomId || 'none'}
-              onValueChange={(value) => setSelectedClassroomId(value === 'none' ? null : value)}
+              onValueChange={(value) => handleSelectionChange(value === 'none' ? null : value)}
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Selecione uma sala" />
@@ -117,7 +146,7 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
                   <SelectItem 
                     key={classroom.id} 
                     value={classroom.id} 
-                    disabled={classroom.isUnderMaintenance && classroom.id !== classGroup.assignedClassroomId} // Disable if in maintenance, unless it's the currently assigned one
+                    disabled={classroom.isUnderMaintenance && classroom.id !== classGroup.assignedClassroomId}
                   >
                     <div className="flex items-center justify-between w-full">
                       <span>{classroom.name} (Cap: {classroom.capacity ?? 'N/A'})</span>
@@ -155,14 +184,16 @@ export function ChangeClassroomDialog({ classGroup, availableClassrooms, trigger
             type="button"
             onClick={handleSubmit}
             disabled={isPending || (
-              selectedClassroomId !== null &&
-              selectedClassroomId !== classGroup.assignedClassroomId && // Allow saving if it's the current room (even if in maintenance)
-              (availableClassrooms.find(c => c.id === selectedClassroomId)?.isUnderMaintenance ?? false)
+                classGroup.id !== 'temp-id' &&
+                selectedClassroomId !== null &&
+                selectedClassroomId !== classGroup.assignedClassroomId &&
+                (availableClassrooms.find(c => c.id === selectedClassroomId)?.isUnderMaintenance ?? false)
             )}
           >
             {isPending ? 'Salvando...' : (
               <>
-                <Save className="mr-2 h-4 w-4" /> Salvar Alteração
+                <Save className="mr-2 h-4 w-4" />
+                {classGroup.id === 'temp-id' ? 'Confirmar Seleção' : 'Salvar Alteração'}
               </>
             )}
           </Button>

@@ -1,34 +1,48 @@
-
 'use server';
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-// Importa a instância do Firestore que inicializamos
 import { db } from '@/lib/firebase/admin';
-// Importa tipos e schemas existentes
 import type { Announcement } from '@/types';
 import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
-// Note: generateId e formatISO não serão mais necessários aqui, pois o Firestore gerencia IDs e Timestamps
-// import { generateId } from '@/lib/data-utils'; // Não será usado para IDs do Firestore
-// import { formatISO } from 'date-fns'; // O Firestore usa seus próprios Timestamps
+import { Timestamp } from 'firebase-admin/firestore';
+
+const announcementsCollection = db.collection('announcements');
+
+// Helper function to convert Firestore doc to Announcement type
+// Handles the conversion of Firestore Timestamp to a string.
+const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcement => {
+    const data = doc.data() as Omit<Announcement, 'id' | 'createdAt'> & { createdAt: Timestamp };
+    return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt.toDate().toISOString(),
+    };
+};
 
 export async function getAnnouncements(): Promise<Announcement[]> {
   try {
-    const announcements = await readData<Announcement>('announcements.json');
-    // Sort by creation date, newest first
-    return announcements.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const snapshot = await announcementsCollection.orderBy('createdAt', 'desc').get();
+    if (snapshot.empty) {
+      return [];
+    }
+    return snapshot.docs.map(docToAnnouncement);
   } catch (error) {
-    console.error('Failed to get announcements:', error);
+    console.error('Failed to get announcements from Firestore:', error);
+    // Returning an empty array to prevent crashing the UI
     return [];
   }
 }
 
 export async function getAnnouncementById(id: string): Promise<Announcement | undefined> {
   try {
-    const announcements = await getAnnouncements();
-    return announcements.find(a => a.id === id);
+    const doc = await announcementsCollection.doc(id).get();
+    if (!doc.exists) {
+      return undefined;
+    }
+    return docToAnnouncement(doc);
   } catch (error) {
-    console.error(`Failed to get announcement by ID ${id}:`, error);
+    console.error(`Failed to get announcement by ID ${id} from Firestore:`, error);
     return undefined;
   }
 }
@@ -36,16 +50,17 @@ export async function getAnnouncementById(id: string): Promise<Announcement | un
 export async function createAnnouncement(values: AnnouncementFormValues) {
   try {
     const validatedValues = announcementSchema.parse(values);
-    const announcements = await readData<Announcement>('announcements.json');
 
-    const newAnnouncement: Announcement = {
-      id: generateId(),
+    const newAnnouncementData = {
       ...validatedValues,
-      createdAt: formatISO(new Date()),
+      createdAt: Timestamp.now(), // Use Firestore server timestamp
     };
 
-    announcements.push(newAnnouncement);
-    await writeData('announcements.json', announcements);
+    const docRef = await announcementsCollection.add(newAnnouncementData);
+    
+    // Fetch the newly created document to return it with the ID and proper timestamp
+    const newDoc = await docRef.get();
+    const newAnnouncement = docToAnnouncement(newDoc);
 
     revalidatePath('/announcements');
     revalidatePath('/tv-display');
@@ -54,7 +69,7 @@ export async function createAnnouncement(values: AnnouncementFormValues) {
     if (error instanceof z.ZodError) {
       return { success: false, message: 'Erro de validação.', errors: error.flatten().fieldErrors };
     }
-    console.error('Failed to create announcement:', error);
+    console.error('Failed to create announcement in Firestore:', error);
     return { success: false, message: 'Erro interno ao criar anúncio.' };
   }
 }
@@ -62,28 +77,32 @@ export async function createAnnouncement(values: AnnouncementFormValues) {
 export async function updateAnnouncement(id: string, values: AnnouncementFormValues) {
   try {
     const validatedValues = announcementSchema.parse(values);
-    const announcements = await readData<Announcement>('announcements.json');
-    const index = announcements.findIndex(a => a.id === id);
-
-    if (index === -1) {
-      return { success: false, message: 'Anúncio não encontrado.' };
+    const docRef = announcementsCollection.doc(id);
+    
+    // Check if the document exists before updating
+    const doc = await docRef.get();
+    if (!doc.exists) {
+        return { success: false, message: 'Anúncio não encontrado.' };
     }
 
-    announcements[index] = {
-      ...announcements[index],
-      ...validatedValues,
-    };
+    // Firestore's update will only change the fields provided.
+    // We don't need to merge with existing data here.
+    // Note: We are not updating `createdAt`
+    await docRef.update(validatedValues);
+    
+    // Fetch the updated document to return it
+    const updatedDoc = await docRef.get();
+    const updatedAnnouncement = docToAnnouncement(updatedDoc);
 
-    await writeData('announcements.json', announcements);
     revalidatePath('/announcements');
     revalidatePath(`/announcements/${id}/edit`);
     revalidatePath('/tv-display');
-    return { success: true, message: 'Anúncio atualizado com sucesso!', data: announcements[index] };
+    return { success: true, message: 'Anúncio atualizado com sucesso!', data: updatedAnnouncement };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, message: 'Erro de validação.', errors: error.flatten().fieldErrors };
     }
-    console.error(`Failed to update announcement ${id}:`, error);
+    console.error(`Failed to update announcement ${id} in Firestore:`, error);
     return { success: false, message: 'Erro interno ao atualizar anúncio.' };
   }
 }
@@ -91,15 +110,13 @@ export async function updateAnnouncement(id: string, values: AnnouncementFormVal
 
 export async function deleteAnnouncement(id: string) {
   try {
-    let announcements = await readData<Announcement>('announcements.json');
-    announcements = announcements.filter(a => a.id !== id);
-    await writeData('announcements.json', announcements);
+    await announcementsCollection.doc(id).delete();
     
     revalidatePath('/announcements');
     revalidatePath('/tv-display');
     return { success: true, message: 'Anúncio excluído com sucesso!' };
   } catch (error) {
-    console.error(`Failed to delete announcement ${id}:`, error);
+    console.error(`Failed to delete announcement ${id} from Firestore:`, error);
     return { success: false, message: 'Erro interno ao excluir anúncio.' };
   }
 }

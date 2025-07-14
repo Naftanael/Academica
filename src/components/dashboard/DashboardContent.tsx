@@ -1,5 +1,6 @@
 
-import { readData } from '@/lib/data-utils';
+import { getClassrooms } from '@/lib/actions/classrooms';
+import { getClassGroups } from '@/lib/actions/classgroups';
 import type { ClassGroup, DashboardStats, Classroom, DayOfWeek, ClassGroupWithDates, DailyOccupancy, DashboardData, CategorizedClassGroups } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarClock, Presentation, UsersRound, TrendingUp } from 'lucide-react';
@@ -9,7 +10,6 @@ import { DAYS_OF_WEEK } from '@/lib/constants';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Mapeamento de prefixos de curso para nomes
 const courseCategories = [
   { name: 'Téc. em Farmácia', prefix: 'FMC' },
   { name: 'Téc. em Radiologia', prefix: 'RAD' },
@@ -19,13 +19,11 @@ const courseCategories = [
   { name: 'Outros', prefix: 'OTHERS' }
 ];
 
-// Helper para extrair o número do nome da turma para ordenação
 const extractNumber = (name: string) => {
     const match = name.match(/\d+/);
     return match ? parseInt(match[0], 10) : Infinity;
 };
 
-// Helper para categorizar e ordenar as turmas
 const categorizeAndSortClassGroups = (classGroups: ClassGroupWithDates[]): CategorizedClassGroups => {
     const categorized: CategorizedClassGroups = new Map();
     courseCategories.forEach(c => categorized.set(c.name, []));
@@ -39,7 +37,6 @@ const categorizeAndSortClassGroups = (classGroups: ClassGroupWithDates[]): Categ
         }
     });
 
-    // Ordena as turmas dentro de cada categoria e remove categorias vazias
     for (const [key, groups] of categorized.entries()) {
         if (groups.length === 0) {
             categorized.delete(key);
@@ -47,16 +44,14 @@ const categorizeAndSortClassGroups = (classGroups: ClassGroupWithDates[]): Categ
             groups.sort((a, b) => extractNumber(a.name) - extractNumber(b.name));
         }
     }
-
     return categorized;
 };
 
 async function getDashboardData(): Promise<DashboardData> {
-  // Simulate network delay to test Suspense
-  // await new Promise(resolve => setTimeout(resolve, 5000)); 
-  
-  const classrooms = await readData<Classroom>('classrooms.json');
-  const classGroups = await readData<ClassGroup>('classgroups.json');
+  const [classrooms, classGroups] = await Promise.all([
+    getClassrooms(),
+    getClassGroups(),
+  ]);
 
   const currentDate = new Date();
   currentDate.setHours(0, 0, 0, 0);
@@ -71,40 +66,23 @@ async function getDashboardData(): Promise<DashboardData> {
   };
 
   const detailedActiveClassGroups: ClassGroupWithDates[] = activeClassGroupsData.map(cg => {
-    let parsedStartDate: Date | null = null;
-    let parsedEndDate: Date | null = null;
-    let daysRemaining: number | undefined = undefined;
-    let formattedStartDate = 'Data Início Inválida';
-    let formattedEndDate = 'Data Fim Inválida';
-    let nearEnd = false;
-
-    if (typeof cg.startDate === 'string') {
-        const tempStartDate = parseISO(cg.startDate);
-        if (isValid(tempStartDate)) {
-            parsedStartDate = tempStartDate;
-            formattedStartDate = format(parsedStartDate, 'dd/MM/yyyy', { locale: ptBR });
+    let daysRemaining: number | undefined;
+    const formattedStartDate = cg.startDate ? format(parseISO(cg.startDate), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A';
+    const formattedEndDate = cg.endDate ? format(parseISO(cg.endDate), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A';
+    
+    if (cg.endDate) {
+        const endDate = parseISO(cg.endDate);
+        if(isValid(endDate)) {
+            daysRemaining = differenceInDays(endDate, currentDate);
         }
     }
-
-    if (typeof cg.endDate === 'string') {
-        const tempEndDate = parseISO(cg.endDate);
-        if (isValid(tempEndDate)) {
-            parsedEndDate = tempEndDate;
-            formattedEndDate = format(tempEndDate, 'dd/MM/yyyy', { locale: ptBR });
-        }
-    }
-
-    if (parsedStartDate && parsedEndDate && isAfter(parsedEndDate, parsedStartDate)) {
-        daysRemaining = differenceInDays(parsedEndDate, currentDate);
-        nearEnd = daysRemaining !== undefined && daysRemaining <= 7 && daysRemaining >= 0;
-    }
+    const nearEnd = daysRemaining !== undefined && daysRemaining <= 7 && daysRemaining >= 0;
 
     return { ...cg, formattedStartDate, formattedEndDate, nearEnd };
   });
   
   const categorizedActiveClassGroups = categorizeAndSortClassGroups(detailedActiveClassGroups);
 
-  const classroomMap = new Map(classrooms.map(room => [room.id, room.name]));
   const dailyOccupancyCounts: { [key in DayOfWeek]: number } = {
     'Segunda': 0, 'Terça': 0, 'Quarta': 0, 'Quinta': 0, 'Sexta': 0, 'Sábado': 0, 'Domingo': 0,
   };
@@ -124,7 +102,6 @@ async function getDashboardData(): Promise<DashboardData> {
   return { stats, activeClassGroups: detailedActiveClassGroups, currentDate, classroomOccupancyChartData, categorizedActiveClassGroups };
 }
 
-// Dynamically import heavy components
 const ClassroomOccupancyChart = dynamic(() => import('@/components/dashboard/ClassroomOccupancyChart'), {
   loading: () => <Skeleton className="h-[350px] w-full" />,
   ssr: false
