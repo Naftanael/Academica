@@ -67,61 +67,51 @@ function isValidDate(dateStr: string | null | undefined): boolean {
  * @returns {ClientTvDisplayInfo[]} Uma matriz dos grupos que estão ativos e devem ser exibidos agora.
  */
 export function filterActiveGroups(allGroups: ClientTvDisplayInfo[], currentTime: Date): ClientTvDisplayInfo[] {
-  // Primeiro, determina a data e o turno lógicos corretos a serem usados para todas as verificações.
   const { effectiveDate, effectiveShift } = getEffectiveShiftAndDate(currentTime);
 
-  // Se não houver um turno válido (por exemplo, a função retornou nulo), ou dados inválidos, nenhuma turma pode estar ativa.
   if (!effectiveShift || !Array.isArray(allGroups)) {
     return [];
   }
 
-  // Determina o dia da semana correto com base na data lógica.
   const effectiveDayName = JS_DAYS_OF_WEEK_MAP_TO_PT[getDay(effectiveDate)] as DayOfWeek;
 
   return allGroups.filter(group => {
-    // Condição 1: O grupo deve estar marcado como "Em Andamento".
     const isActive = group.status === 'Em Andamento';
 
-    // Condição 2: A data lógica atual deve estar dentro da data de início e fim geral do grupo.
     const isInDateRange =
       isValidDate(group.startDate) &&
       isValidDate(group.endDate) &&
       isWithinInterval(effectiveDate, {
         start: parseISO(group.startDate),
-        end: endOfDay(parseISO(group.endDate)), // Usa endOfDay para incluir todo o último dia.
+        end: endOfDay(parseISO(group.endDate)),
       });
       
+    // **FIX:** Add a check to ensure group.classDays is an array
     if (!isActive || !isInDateRange || !Array.isArray(group.classDays)) {
       return false;
     }
 
     let isCorrectDayAndShift = false;
 
-    // Regra especial para Sábado
     if (effectiveDayName === 'Sábado') {
-      // Se for Sábado à Tarde, mostra turmas da Tarde E da Noite.
       if (effectiveShift === 'Tarde' && group.classDays.includes('Sábado')) {
         if (group.shift === 'Tarde' || group.shift === 'Noite') {
           isCorrectDayAndShift = true;
         }
       }
-      // Se for Sábado à Noite, não mostra NADA, pois as turmas foram movidas para a tarde.
       else if (effectiveShift === 'Noite') {
         isCorrectDayAndShift = false;
       }
-       // Para outros turnos de Sábado (Manhã), a lógica normal aplica-se
       else if (group.classDays.includes('Sábado') && group.shift === effectiveShift) {
         isCorrectDayAndShift = true;
       }
     }
-    // Lógica normal para os outros dias da semana
     else {
       if (group.classDays.includes(effectiveDayName) && group.shift === effectiveShift) {
         isCorrectDayAndShift = true;
       }
     }
 
-    // Um grupo é exibido apenas se as condições de base E a lógica de dia/turno forem verdadeiras.
     return isCorrectDayAndShift;
   });
 }
