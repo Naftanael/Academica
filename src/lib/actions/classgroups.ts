@@ -17,6 +17,7 @@ const classGroupFormSchema = z.object({
   status: z.enum(CLASS_GROUP_STATUSES).optional(),
   startDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de início inválida."}),
   endDate: z.string().optional().refine(val => !val || !isNaN(Date.parse(val)), { message: "Data de término inválida."}),
+  notes: z.string().optional(),
 }).refine(data => {
   if (data.startDate && data.endDate) {
     return new Date(data.startDate) <= new Date(data.endDate);
@@ -63,6 +64,7 @@ export async function createClassGroup(values: ClassGroupFormValues) {
       startDate: validatedValues.startDate || formatISO(now),
       endDate: validatedValues.endDate || formatISO(addMonths(now, 1)),
       assignedClassroomId: undefined,
+      notes: validatedValues.notes || '',
     };
 
     classGroups.push(newClassGroup);

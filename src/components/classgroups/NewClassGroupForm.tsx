@@ -37,6 +37,7 @@ import { DAYS_OF_WEEK, CLASS_GROUP_STATUSES, PERIODS_OF_DAY } from '@/lib/consta
 import { cn } from '@/lib/utils';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 import type { PeriodOfDay } from '@/types';
+import { Textarea } from '../ui/textarea';
 
 const newClassGroupFormSchema = z.object({
   name: z.string().min(3, { message: "O nome da turma deve ter pelo menos 3 caracteres." }),
@@ -50,6 +51,7 @@ const newClassGroupFormSchema = z.object({
   status: z.enum(CLASS_GROUP_STATUSES).optional(),
   startDate: z.date({ required_error: "Data de início é obrigatória."}),
   endDate: z.date({ required_error: "Data de término é obrigatória."}),
+  notes: z.string().optional(),
 }).refine(data => {
   if (data.startDate && data.endDate) {
     return data.startDate <= data.endDate;
@@ -61,6 +63,8 @@ const newClassGroupFormSchema = z.object({
 });
 
 type NewClassGroupFormValues = z.infer<typeof newClassGroupFormSchema>;
+
+const saturdayShiftNote = 'Transferir aula de Sábado (Noite) para o turno da Tarde.';
 
 export default function NewClassGroupForm() {
   const router = useRouter();
@@ -77,8 +81,27 @@ export default function NewClassGroupForm() {
       status: 'Planejada',
       startDate: new Date(),
       endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      notes: '',
     },
   });
+
+  const watchClassDays = form.watch('classDays');
+  const watchShift = form.watch('shift');
+
+  const showSaturdayCheckbox = watchClassDays.includes('Sábado') && watchShift === 'Noite';
+
+  const handleSaturdayCheckboxChange = (checked: CheckedState) => {
+    const currentNotes = form.getValues('notes') || '';
+    if (checked) {
+        if (!currentNotes.includes(saturdayShiftNote)) {
+            const newNotes = currentNotes ? `${currentNotes}\n${saturdayShiftNote}` : saturdayShiftNote;
+            form.setValue('notes', newNotes);
+        }
+    } else {
+        const newNotes = currentNotes.replace(saturdayShiftNote, '').replace('\n\n', '\n').trim();
+        form.setValue('notes', newNotes);
+    }
+  };
 
   const onSubmit = async (values: NewClassGroupFormValues) => {
     setIsPending(true);
@@ -340,6 +363,42 @@ export default function NewClassGroupForm() {
               )}
             />
         </div>
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observações</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Ex: Necessidades especiais, ajustes de horário, etc."
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Adicione quaisquer notas ou observações importantes sobre esta turma.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        {showSaturdayCheckbox && (
+            <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border p-3 shadow-sm animate-in fade-in-50 duration-500">
+              <Checkbox
+                id="saturday-shift-change"
+                onCheckedChange={handleSaturdayCheckboxChange}
+                checked={form.getValues('notes')?.includes(saturdayShiftNote)}
+              />
+              <label
+                htmlFor="saturday-shift-change"
+                className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Transferir aula de Sábado (Noite) para o turno da Tarde.
+              </label>
+            </FormItem>
+        )}
 
 
         <div className="flex justify-end">

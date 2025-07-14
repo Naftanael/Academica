@@ -1,3 +1,4 @@
+
 export type DayOfWeek = 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
 export type PeriodOfDay = 'Manhã' | 'Tarde' | 'Noite';
 
@@ -23,6 +24,7 @@ export interface ClassGroup {
   endDate: string; // ISO Date string
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
+  notes?: string;
 }
 
 export interface ClassroomRecurringReservation {
