@@ -3,79 +3,120 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-// import { FieldValue, Timestamp } from "firebase-admin/firestore";
-
-import { db } from '@/lib/firebase/firebaseAdmin';
+import { getDb } from '@/lib/database';
 import { classGroupCreateSchema, classGroupEditSchema } from "@/lib/schemas/classgroups";
 import type { ClassGroup } from "@/types";
-
-// const classGroupsCollection = db.collection('classgroups');
-
-const docToClassGroup = (doc: any): ClassGroup => {
-    const data = doc.data();
-    if (!data) throw new Error(`Document data not found for doc with id ${doc.id}`);
-
-    const startDate = new Date().toISOString();
-    const endDate = new Date().toISOString();
-
-    return {
-        id: doc.id,
-        name: data.name,
-        shift: data.shift,
-        year: data.year,
-        startDate,
-        endDate,
-        classDays: data.classDays ?? [],
-        status: data.status ?? 'Planejada',
-        assignedClassroomId: data.assignedClassroomId,
-        notes: data.notes,
-    };
-};
+import { v4 as uuidv4 } from "uuid";
 
 export async function getClassGroups(): Promise<ClassGroup[]> {
-  console.log("Firebase desativado: getClassGroups retornando array vazio.");
-  return [];
+  try {
+    const db = await getDb();
+    const classGroups = await db.all('SELECT * FROM class_groups');
+    return classGroups.map(cg => ({ ...cg, days_of_week: JSON.parse(cg.days_of_week) }));
+  } catch (error) {
+    console.error('Failed to fetch class groups:', error);
+    return [];
+  }
 }
 
 export async function getClassGroupById(id: string): Promise<ClassGroup | null> {
-    console.log(`Firebase desativado: getClassGroupById para o ID ${id} retornando null.`);
+  try {
+    const db = await getDb();
+    const classGroup = await db.get('SELECT * FROM class_groups WHERE id = ?', id);
+    if (classGroup) {
+      return { ...classGroup, days_of_week: JSON.parse(classGroup.days_of_week) };
+    }
     return null;
+  } catch (error) {
+    console.error(`Failed to fetch class group with ID ${id}:`, error);
+    return null;
+  }
 }
 
 export async function createClassGroup(prevState: any, values: z.infer<typeof classGroupCreateSchema>) {
-  console.log("Firebase desativado: createClassGroup retornando erro.");
   const validatedFields = classGroupCreateSchema.safeParse(values);
 
   if (!validatedFields.success) {
     return {
       success: false,
-      message: 'Erro de validação (Firebase desativado).',
+      message: 'Validation error.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  return { success: false, message: "Firebase está temporariamente desativado." };
+
+  try {
+    const db = await getDb();
+    const newClassGroupId = uuidv4();
+    await db.run(
+      'INSERT INTO class_groups (id, name, course, classroom_id, start_date, end_date, start_time, end_time, days_of_week) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      newClassGroupId,
+      validatedFields.data.name,
+      validatedFields.data.course,
+      validatedFields.data.classroom_id,
+      validatedFields.data.start_date,
+      validatedFields.data.end_date,
+      validatedFields.data.start_time,
+      validatedFields.data.end_time,
+      JSON.stringify(validatedFields.data.days_of_week)
+    );
+    revalidatePath('/classgroups');
+    return { success: true, message: 'Class group created successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }
 
 export async function updateClassGroup(id: string, prevState: any, values: z.infer<typeof classGroupEditSchema>) {
-    console.log(`Firebase desativado: updateClassGroup para o ID ${id} retornando erro.`);
-    const validatedFields = classGroupEditSchema.safeParse(values);
+  const validatedFields = classGroupEditSchema.safeParse(values);
 
-    if (!validatedFields.success) {
-      return {
-        success: false,
-        message: 'Erro de validação (Firebase desativado).',
-        errors: validatedFields.error.flatten().fieldErrors,
-      };
-    }
-    return { success: false, message: "Firebase está temporariamente desativado." };
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: 'Validation error.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const db = await getDb();
+    await db.run(
+      'UPDATE class_groups SET name = ?, course = ?, classroom_id = ?, start_date = ?, end_date = ?, start_time = ?, end_time = ?, days_of_week = ? WHERE id = ?',
+      validatedFields.data.name,
+      validatedFields.data.course,
+      validatedFields.data.classroom_id,
+      validatedFields.data.start_date,
+      validatedFields.data.end_date,
+      validatedFields.data.start_time,
+      validatedFields.data.end_time,
+      JSON.stringify(validatedFields.data.days_of_week),
+      id
+    );
+    revalidatePath('/classgroups');
+    revalidatePath(`/classgroups/${id}/edit`);
+    return { success: true, message: 'Class group updated successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }
 
 export async function deleteClassGroup(id: string): Promise<{ success: boolean; message: string }> {
-  console.log(`Firebase desativado: deleteClassGroup para o ID ${id} retornando erro.`);
-  return { success: false, message: "Firebase está temporariamente desativado." };
+  try {
+    const db = await getDb();
+    await db.run('DELETE FROM class_groups WHERE id = ?', id);
+    revalidatePath('/classgroups');
+    return { success: true, message: 'Class group deleted successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }
 
 export async function assignClassroomToClassGroup(classGroupId: string, classroomId: string | null): Promise<{ success: boolean, message: string }> {
-    console.log(`Firebase desativado: assignClassroomToClassGroup para o ID ${classGroupId} retornando erro.`);
-    return { success: false, message: "Firebase está temporariamente desativado." };
+    try {
+        const db = await getDb();
+        await db.run('UPDATE class_groups SET classroom_id = ? WHERE id = ?', classroomId, classGroupId);
+        revalidatePath('/classgroups');
+        return { success: true, message: 'Classroom assigned successfully.' };
+    } catch (error: any) {
+        return { success: false, message: `Server error: ${error.message}` };
+    }
 }

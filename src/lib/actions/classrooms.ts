@@ -8,36 +8,10 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/firebase/firebaseAdmin';
+import { getDb } from '@/lib/database';
 import { classroomSchema } from '@/lib/schemas/classrooms';
 import type { Classroom } from '@/types';
-
-// Define a coleção do Firestore para salas de aula.
-const classroomsCollection = db.collection('classrooms');
-
-/**
- * Converte um documento do Firestore para o tipo Classroom.
- * Esta função ajuda a garantir que os dados do Firestore sejam
- * consistentes com o tipo definido na aplicação.
- *
- * @param {any} doc - O documento do Firestore.
- * @returns {Classroom} - O objeto Classroom.
- */
-const toClassroom = (doc: any): Classroom => {
-  const data = doc.data();
-  if (!data) {
-    throw new Error(`O documento ${doc.id} não possui dados.`);
-  }
-  return {
-    id: doc.id,
-    name: data.name,
-    capacity: data.capacity,
-    isUnderMaintenance: data.isUnderMaintenance || false,
-    maintenanceReason: data.maintenanceReason || '',
-    resources: data.resources || [],
-    isLab: data.isLab || false,
-  };
-};
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Define o estado do formulário para as ações de criar e atualizar.
@@ -75,9 +49,16 @@ export async function createClassroom(
   }
 
   try {
-    // Adiciona a nova sala de aula ao Firestore.
-    const newClassroom = await classroomsCollection.add(validatedFields.data);
-    console.log("DEBUG: Sala de aula criada com sucesso com o ID:", newClassroom.id);
+    // Adiciona a nova sala de aula ao SQLite.
+    const db = await getDb();
+    const newClassroomId = uuidv4();
+    await db.run(
+      'INSERT INTO classrooms (id, name, capacity) VALUES (?, ?, ?)',
+      newClassroomId,
+      validatedFields.data.name,
+      validatedFields.data.capacity,
+    );
+    console.log("DEBUG: Sala de aula criada com sucesso com o ID:", newClassroomId);
     
     // Revalida o cache da página de salas de aula para exibir a nova sala.
     revalidatePath('/classrooms');
@@ -97,8 +78,8 @@ export async function createClassroom(
 export async function getClassrooms(): Promise<Classroom[]> {
   console.log("DEBUG: Buscando todas as salas de aula...");
   try {
-    const snapshot = await classroomsCollection.get();
-    const classrooms = snapshot.docs.map(toClassroom);
+    const db = await getDb();
+    const classrooms = await db.all('SELECT * FROM classrooms');
     console.log(`DEBUG: ${classrooms.length} salas de aula encontradas.`);
     return classrooms;
   } catch (error: any) {
@@ -116,12 +97,12 @@ export async function getClassrooms(): Promise<Classroom[]> {
 export async function getClassroomById(id: string): Promise<Classroom | null> {
   console.log(`DEBUG: Buscando a sala de aula com o ID: ${id}`);
   try {
-    const doc = await classroomsCollection.doc(id).get();
-    if (!doc.exists) {
+    const db = await getDb();
+    const classroom = await db.get('SELECT * FROM classrooms WHERE id = ?', id);
+    if (!classroom) {
       console.warn(`DEBUG: Nenhuma sala de aula encontrada com o ID: ${id}`);
       return null;
     }
-    const classroom = toClassroom(doc);
     console.log("DEBUG: Sala de aula encontrada:", classroom);
     return classroom;
   } catch (error: any) {
@@ -157,8 +138,14 @@ export async function updateClassroom(
   }
 
   try {
-    // Atualiza a sala de aula no Firestore.
-    await classroomsCollection.doc(id).update(validatedFields.data);
+    // Atualiza a sala de aula no SQLite.
+    const db = await getDb();
+    await db.run(
+      'UPDATE classrooms SET name = ?, capacity = ? WHERE id = ?',
+      validatedFields.data.name,
+      validatedFields.data.capacity,
+      id,
+    );
     console.log(`DEBUG: Sala de aula com o ID ${id} atualizada com sucesso.`);
 
     // Revalida o cache para refletir as alterações.
@@ -183,8 +170,9 @@ export async function deleteClassroom(
 ): Promise<{ success: boolean; message: string }> {
   console.log(`DEBUG: Iniciando a deleção da sala de aula com o ID: ${id}`);
   try {
-    // Deleta a sala de aula do Firestore.
-    await classroomsCollection.doc(id).delete();
+    // Deleta a sala de aula do SQLite.
+    const db = await getDb();
+    await db.run('DELETE FROM classrooms WHERE id = ?', id);
     console.log(`DEBUG: Sala de aula com o ID ${id} deletada com sucesso.`);
     
     // Revalida o cache para remover a sala da lista.

@@ -3,68 +3,94 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-// import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-
-import { db } from '@/lib/firebase/firebaseAdmin';
+import { getDb } from '@/lib/database';
 import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
 import type { Announcement } from '@/types';
-
-// const announcementsCollection = db.collection('announcements');
-
-const docToAnnouncement = (doc: any): Announcement => {
-    const data = doc.data();
-    if (!data) throw new Error(`Document ${doc.id} has no data.`);
-
-    const createdAt = data.createdAt as any; // Mock
-    return {
-        id: doc.id,
-        title: data.title,
-        content: data.content,
-        author: data.author,
-        type: data.type,
-        priority: data.priority,
-        published: data.published,
-        createdAt: new Date().toISOString(),
-    };
-};
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getAnnouncements(): Promise<Announcement[]> {
-  console.log("Firebase desativado: getAnnouncements retornando array vazio.");
-  return [];
+  try {
+    const db = await getDb();
+    const announcements = await db.all('SELECT * FROM announcements');
+    return announcements;
+  } catch (error) {
+    console.error('Failed to fetch announcements:', error);
+    return [];
+  }
 }
 
 export async function getAnnouncementById(id: string): Promise<Announcement | undefined> {
-  console.log(`Firebase desativado: getAnnouncementById para o ID ${id} retornando undefined.`);
-  return undefined;
+  try {
+    const db = await getDb();
+    const announcement = await db.get('SELECT * FROM announcements WHERE id = ?', id);
+    return announcement;
+  } catch (error) {
+    console.error(`Failed to fetch announcement with ID ${id}:`, error);
+    return undefined;
+  }
 }
 
 export async function createAnnouncement(prevState: any, values: AnnouncementFormValues) {
-  console.log("Firebase desativado: createAnnouncement retornando erro.");
   const validatedValues = announcementSchema.safeParse(values);
   if (!validatedValues.success) {
-      return { 
-        success: false, 
-        message: 'Erro de validação (Firebase desativado).', 
-        errors: validatedValues.error.flatten().fieldErrors 
-      };
-    }
-  return { success: false, message: 'Firebase está temporariamente desativado.' };
+    return {
+      success: false,
+      message: 'Validation error.',
+      errors: validatedValues.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const db = await getDb();
+    const newAnnouncementId = uuidv4();
+    await db.run(
+      'INSERT INTO announcements (id, message, starts_at, ends_at) VALUES (?, ?, ?, ?)',
+      newAnnouncementId,
+      validatedValues.data.message,
+      validatedValues.data.starts_at,
+      validatedValues.data.ends_at
+    );
+    revalidatePath('/announcements');
+    return { success: true, message: 'Announcement created successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }
 
 export async function updateAnnouncement(id: string, prevState: any, values: AnnouncementFormValues) {
-  console.log(`Firebase desativado: updateAnnouncement para o ID ${id} retornando erro.`);
-   const validatedValues = announcementSchema.safeParse(values);
-    if (!validatedValues.success) {
-      return { 
-        success: false, 
-        message: 'Erro de validação (Firebase desativado).', 
-        errors: validatedValues.error.flatten().fieldErrors 
-      };
-    }
-  return { success: false, message: 'Firebase está temporariamente desativado.' };
+  const validatedValues = announcementSchema.safeParse(values);
+  if (!validatedValues.success) {
+    return {
+      success: false,
+      message: 'Validation error.',
+      errors: validatedValues.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const db = await getDb();
+    await db.run(
+      'UPDATE announcements SET message = ?, starts_at = ?, ends_at = ? WHERE id = ?',
+      validatedValues.data.message,
+      validatedValues.data.starts_at,
+      validatedValues.data.ends_at,
+      id
+    );
+    revalidatePath('/announcements');
+    revalidatePath(`/announcements/${id}/edit`);
+    return { success: true, message: 'Announcement updated successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }
 
 export async function deleteAnnouncement(id: string) {
-  console.log(`Firebase desativado: deleteAnnouncement para o ID ${id} retornando erro.`);
-  return { success: false, message: 'Firebase está temporariamente desativado.' };
+  try {
+    const db = await getDb();
+    await db.run('DELETE FROM announcements WHERE id = ?', id);
+    revalidatePath('/announcements');
+    return { success: true, message: 'Announcement deleted successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }
