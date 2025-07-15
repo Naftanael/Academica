@@ -84,7 +84,7 @@ export async function createClassGroup(prevState: any, values: z.infer<typeof cl
       return { success: false, message: 'Já existe uma turma com este nome.' };
     }
 
-    await classGroupsCollection.add({
+    const newDocRef = await classGroupsCollection.add({
       ...validatedFields.data,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
@@ -93,8 +93,11 @@ export async function createClassGroup(prevState: any, values: z.infer<typeof cl
       createdAt: FieldValue.serverTimestamp(),
     });
     
+    const newDoc = await newDocRef.get();
+    const newClassGroup = docToClassGroup(newDoc);
+
     revalidatePath('/classgroups');
-    return { success: true, message: "Turma criada com sucesso." };
+    return { success: true, message: "Turma criada com sucesso.", data: newClassGroup };
   } catch (error) {
     console.error("Failed to create class group:", error);
     return { success: false, message: "Ocorreu um erro no servidor ao criar a turma." };
