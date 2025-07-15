@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import ClassGroupsTable from '@/components/classgroups/ClassGroupsTable'; // Updated import
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Loading skeleton for the class groups table.
  */

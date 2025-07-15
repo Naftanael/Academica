@@ -6,7 +6,6 @@ import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -14,6 +13,8 @@ import { createClassGroup } from '@/lib/actions/classgroups';
 import { classGroupCreateSchema } from '@/lib/schemas/classgroups';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import type { ClassGroup } from '@/types';
+
 
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -36,9 +37,13 @@ const initialState = {
 
 type ClassGroupFormValues = z.infer<typeof classGroupCreateSchema>;
 
-export default function NewClassGroupForm() {
+interface NewClassGroupFormProps {
+  onClassGroupCreated: (newClassGroup: ClassGroup) => Promise<void>;
+}
+
+
+export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroupFormProps) {
   const { toast } = useToast();
-  const router = useRouter();
   const [state, formAction] = useFormState(createClassGroup, initialState);
 
   const form = useForm<ClassGroupFormValues>({
@@ -51,19 +56,26 @@ export default function NewClassGroupForm() {
       endDate: format(new Date(), 'yyyy-MM-dd'),
       notes: '',
     },
-    errors: state.errors,
   });
 
   React.useEffect(() => {
-    if (state.message) {
-      if (state.success) {
-        toast({ title: "Sucesso", description: state.message });
-        router.push('/classgroups');
-      } else {
-        toast({ title: 'Erro', description: state.message, variant: 'destructive' });
+    if (state.errors) {
+      for (const [key, value] of Object.entries(state.errors)) {
+        form.setError(key as keyof ClassGroupFormValues, {
+          type: 'manual',
+          message: value.join(', '),
+        });
       }
     }
-  }, [state, toast, router]);
+  }, [state.errors, form]);
+
+  React.useEffect(() => {
+    if (state.success && state.message && state.data) {
+      onClassGroupCreated(state.data);
+    } else if (!state.success && state.message) {
+      toast({ title: 'Erro', description: state.message, variant: 'destructive' });
+    }
+  }, [state, onClassGroupCreated, toast]);
   
   const watchedShift = form.watch('shift');
   const watchedClassDays = form.watch('classDays');
@@ -72,7 +84,6 @@ export default function NewClassGroupForm() {
   return (
     <Form {...form}>
       <form
-        action={formAction}
         onSubmit={form.handleSubmit(data => formAction(data))}
         className="space-y-8"
       >

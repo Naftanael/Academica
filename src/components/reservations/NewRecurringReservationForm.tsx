@@ -46,11 +46,23 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
   const form = useForm<RecurringReservationFormValues>({
     resolver: zodResolver(recurringReservationFormSchema),
     defaultValues: { classGroupId: '', classroomId: '', startDate: format(new Date(), 'yyyy-MM-dd'), numberOfClasses: 1, purpose: '' },
-    errors: state.errors,
   });
 
   const { watch } = form;
   const watchedValues = watch();
+
+  React.useEffect(() => {
+    if (state.errors) {
+      for (const [key, value] of Object.entries(state.errors)) {
+        if (value) {
+          form.setError(key as keyof RecurringReservationFormValues, {
+            type: 'manual',
+            message: value.join(', '),
+          });
+        }
+      }
+    }
+  }, [state.errors, form]);
 
   React.useEffect(() => {
     if (state.message) {
@@ -124,7 +136,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
       <CardHeader><CardTitle>Nova Reserva Recorrente</CardTitle></CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(data => formAction(data))} action={formAction} className="space-y-6">
+          <form onSubmit={form.handleSubmit(data => formAction(data))} className="space-y-6">
             <FormField control={form.control} name="purpose" render={({ field }) => (
               <FormItem><FormLabel>Propósito</FormLabel><FormControl><Input placeholder="Ex: Aulas Regulares" {...field} /></FormControl><FormMessage /></FormItem>
             )} />

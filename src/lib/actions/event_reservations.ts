@@ -11,10 +11,10 @@ import { timeRangesOverlap } from '@/lib/utils';
 import { parseISO, getDay, isWithinInterval } from 'date-fns';
 import { FieldValue } from 'firebase-admin/firestore';
 
-const eventReservationsCollection = db.collection('event_reservations');
-const recurringReservationsCollection = db.collection('recurring_reservations');
-const classGroupsCollection = db.collection('classgroups');
-const classroomsCollection = db.collection('classrooms');
+const eventReservationsCollection = db ? db.collection('event_reservations') : null;
+const recurringReservationsCollection = db ? db.collection('recurring_reservations') : null;
+const classGroupsCollection = db ? db.collection('classgroups') : null;
+const classroomsCollection = db ? db.collection('classrooms') : null;
 
 // Helper to convert Firestore doc to EventReservation type
 const docToEventReservation = (doc: FirebaseFirestore.DocumentSnapshot): EventReservation => {
@@ -22,6 +22,10 @@ const docToEventReservation = (doc: FirebaseFirestore.DocumentSnapshot): EventRe
 };
 
 export async function getEventReservations(): Promise<EventReservation[]> {
+    if (!eventReservationsCollection) {
+        console.error("Firestore is not initialized.");
+        return [];
+    }
   try {
     const snapshot = await eventReservationsCollection.orderBy('date', 'desc').get();
     return snapshot.docs.map(docToEventReservation);
@@ -33,6 +37,9 @@ export async function getEventReservations(): Promise<EventReservation[]> {
 
 // Refactored to work with useFormState
 export async function createEventReservation(prevState: any, values: EventReservationFormValues) {
+    if (!db || !eventReservationsCollection || !recurringReservationsCollection || !classGroupsCollection || !classroomsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   const validatedFields = eventReservationFormSchema.safeParse(values);
   
   if (!validatedFields.success) {
@@ -99,6 +106,9 @@ export async function createEventReservation(prevState: any, values: EventReserv
 }
 
 export async function deleteEventReservation(id: string) {
+    if (!eventReservationsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   try {
     await eventReservationsCollection.doc(id).delete();
 

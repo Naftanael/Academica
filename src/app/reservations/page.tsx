@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import RecurringReservationsSection from './RecurringReservationsSection'; // We will create this
 import EventReservationsSection from './EventReservationsSection'; // We will create this
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Loading skeleton for a reservations table card.
  */

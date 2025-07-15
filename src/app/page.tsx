@@ -8,6 +8,8 @@ import ExportTvDisplayButton from '@/components/dashboard/ExportTvDisplayButton'
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const dynamic = 'force-dynamic';
+
 function DashboardSkeleton() {
   return (
     <>

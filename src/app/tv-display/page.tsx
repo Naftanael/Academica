@@ -1,10 +1,17 @@
 
 import { getClassGroups } from '@/lib/actions/classgroups';
-import { getClassrooms } from '@/lib/actions/classrooms'; // Corrected import path
+import { getClassrooms } from '@/lib/actions/classrooms';
 import { getAnnouncements } from '@/lib/actions/announcements';
 import type { ClassGroup, Classroom, TvDisplayInfo, Announcement } from '@/types';
 import TvDisplayClient from '@/components/tv-display/TvDisplayClient';
 import ClientRefresher from '@/components/tv-display/ClientRefresher';
+
+/**
+ * Instructs Next.js to render this page dynamically at request time.
+ * This is crucial for pages that need to display real-time data from a database,
+ * as it prevents the build process from timing out while trying to fetch data without credentials.
+ */
+export const dynamic = 'force-dynamic';
 
 /**
  * An asynchronous server-side function to fetch and process data for the TV panel.

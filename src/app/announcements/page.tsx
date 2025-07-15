@@ -9,6 +9,8 @@ import { getAnnouncements } from '@/lib/actions/announcements';
 import AnnouncementsList from '@/components/announcements/AnnouncementsList';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Loading skeleton for the announcements list.
  */

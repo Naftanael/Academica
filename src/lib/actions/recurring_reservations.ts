@@ -10,8 +10,8 @@ import { dateRangesOverlap } from '@/lib/utils';
 import { parseISO, format, addDays, getDay } from 'date-fns';
 import { FieldValue } from 'firebase-admin/firestore';
 
-const recurringReservationsCollection = db.collection('recurring_reservations');
-const classGroupsCollection = db.collection('classgroups');
+const recurringReservationsCollection = db ? db.collection('recurring_reservations') : null;
+const classGroupsCollection = db ? db.collection('classgroups') : null;
 
 const dayOfWeekMapping: Record<DayOfWeek, number> = {
   'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6
@@ -39,6 +39,10 @@ function calculateEndDate(startDate: Date, classDays: DayOfWeek[], numberOfClass
 }
 
 export async function getRecurringReservations(): Promise<ClassroomRecurringReservation[]> {
+    if (!recurringReservationsCollection) {
+        console.error("Firestore is not initialized.");
+        return [];
+    }
   try {
     const snapshot = await recurringReservationsCollection.orderBy('startDate').get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClassroomRecurringReservation));
@@ -50,6 +54,9 @@ export async function getRecurringReservations(): Promise<ClassroomRecurringRese
 
 // Refactored to work with useFormState
 export async function createRecurringReservation(prevState: any, values: RecurringReservationFormValues) {
+    if (!db || !recurringReservationsCollection || !classGroupsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   const validatedFields = recurringReservationFormSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -114,6 +121,9 @@ export async function createRecurringReservation(prevState: any, values: Recurri
 }
 
 export async function deleteRecurringReservation(id: string) {
+    if (!recurringReservationsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   try {
     await recurringReservationsCollection.doc(id).delete();
 

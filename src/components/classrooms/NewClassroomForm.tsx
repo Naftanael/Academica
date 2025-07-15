@@ -37,8 +37,20 @@ export default function NewClassroomForm() {
       isUnderMaintenance: false,
       maintenanceReason: '',
     },
-    errors: state.errors,
   });
+
+  useEffect(() => {
+    if (state.errors) {
+      for (const [key, value] of Object.entries(state.errors)) {
+        if (value) {
+          form.setError(key as keyof ClassroomFormValues, {
+            type: 'manual',
+            message: value.join(', '),
+          });
+        }
+      }
+    }
+  }, [state.errors, form]);
 
   useEffect(() => {
     if (state.message) {
@@ -61,7 +73,6 @@ export default function NewClassroomForm() {
       <CardContent>
         <Form {...form}>
           <form
-            action={formAction}
             onSubmit={form.handleSubmit((data) => formAction(data))}
             className="space-y-6"
           >
@@ -90,6 +101,7 @@ export default function NewClassroomForm() {
                       type="number" 
                       placeholder="Ex: 30"
                       {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
                     />
                   </FormControl>
                   <FormMessage />

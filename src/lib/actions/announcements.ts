@@ -8,7 +8,7 @@ import type { Announcement } from '@/types';
 import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-const announcementsCollection = db.collection('announcements');
+const announcementsCollection = db ? db.collection('announcements') : null;
 
 // Helper function to convert Firestore doc to Announcement type
 const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcement => {
@@ -21,11 +21,19 @@ const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcemen
         id: doc.id,
         title: data.title,
         content: data.content,
+        author: data.author,
+        type: data.type,
+        priority: data.priority,
+        published: data.published,
         createdAt: createdAt.toDate().toISOString(),
     };
 };
 
 export async function getAnnouncements(): Promise<Announcement[]> {
+  if (!announcementsCollection) {
+    console.error("Firestore is not initialized.");
+    return [];
+  }
   try {
     const snapshot = await announcementsCollection.orderBy('createdAt', 'desc').get();
     if (snapshot.empty) {
@@ -39,6 +47,10 @@ export async function getAnnouncements(): Promise<Announcement[]> {
 }
 
 export async function getAnnouncementById(id: string): Promise<Announcement | undefined> {
+  if (!announcementsCollection) {
+    console.error("Firestore is not initialized.");
+    return undefined;
+  }
   try {
     const doc = await announcementsCollection.doc(id).get();
     if (!doc.exists) {
@@ -53,12 +65,19 @@ export async function getAnnouncementById(id: string): Promise<Announcement | un
 
 // Updated createAnnouncement to not rely on FormData
 export async function createAnnouncement(prevState: any, values: AnnouncementFormValues) {
+  if (!announcementsCollection) {
+    return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+  }
   try {
     const validatedValues = announcementSchema.parse(values);
 
     const newAnnouncementRef = announcementsCollection.doc();
     await newAnnouncementRef.set({
         ...validatedValues,
+        author: 'Admin', // default value
+        type: 'Geral', // default value
+        priority: 'Normal', // default value
+        published: true, // default value
         createdAt: FieldValue.serverTimestamp(),
     });
 
@@ -79,6 +98,9 @@ export async function createAnnouncement(prevState: any, values: AnnouncementFor
 
 // Updated updateAnnouncement to match the new state shape
 export async function updateAnnouncement(id: string, prevState: any, values: AnnouncementFormValues) {
+  if (!announcementsCollection) {
+    return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+  }
   try {
     const validatedValues = announcementSchema.parse(values);
     const docRef = announcementsCollection.doc(id);
@@ -99,6 +121,9 @@ export async function updateAnnouncement(id: string, prevState: any, values: Ann
 }
 
 export async function deleteAnnouncement(id: string) {
+  if (!announcementsCollection) {
+    return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+  }
   try {
     await announcementsCollection.doc(id).delete();
     

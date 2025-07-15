@@ -8,7 +8,7 @@ import type { Classroom } from '@/types';
 import { classroomSchema } from '@/lib/schemas/classrooms';
 import { FieldValue } from 'firebase-admin/firestore';
 
-const classroomsCollection = db.collection('classrooms');
+const classroomsCollection = db ? db.collection('classrooms') : null;
 
 // Helper function to convert Firestore doc to Classroom type
 const toClassroom = (doc: FirebaseFirestore.DocumentSnapshot): Classroom => {
@@ -39,6 +39,9 @@ type FormState = {
  * @returns A FormState object indicating success or failure.
  */
 export async function createClassroom(prevState: any, values: z.infer<typeof classroomSchema>): Promise<FormState> {
+    if (!classroomsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   const validatedFields = classroomSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -75,6 +78,10 @@ export async function createClassroom(prevState: any, values: z.infer<typeof cla
  * @returns A promise that resolves to an array of Classroom objects.
  */
 export async function getClassrooms(): Promise<Classroom[]> {
+    if (!classroomsCollection) {
+        console.error("Firestore is not initialized.");
+        return [];
+    }
   try {
     const snapshot = await classroomsCollection.orderBy('name', 'asc').get();
     return snapshot.docs.map(toClassroom);
@@ -90,6 +97,10 @@ export async function getClassrooms(): Promise<Classroom[]> {
  * @returns A promise that resolves to the Classroom object or null if not found.
  */
 export async function getClassroomById(id: string): Promise<Classroom | null> {
+    if (!classroomsCollection) {
+        console.error("Firestore is not initialized.");
+        return null;
+    }
   if (!id) return null;
   try {
     const doc = await classroomsCollection.doc(id).get();
@@ -108,6 +119,9 @@ export async function getClassroomById(id: string): Promise<Classroom | null> {
  * @returns A FormState object indicating success or failure.
  */
 export async function updateClassroom(id: string, prevState: any, values: z.infer<typeof classroomSchema>): Promise<FormState> {
+    if (!classroomsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   const validatedFields = classroomSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -140,6 +154,10 @@ export async function updateClassroom(id: string, prevState: any, values: z.infe
  * @returns An object with a message indicating success or failure.
  */
 export async function deleteClassroom(id: string): Promise<{ success: boolean; message: string }> {
+    if (!classroomsCollection || !db) {
+        console.error("Firestore is not initialized.");
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   try {
     const querySnapshot = await db.collection('classgroups').where('assignedClassroomId', '==', id).limit(1).get();
 

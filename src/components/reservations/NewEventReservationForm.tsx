@@ -52,9 +52,21 @@ export default function NewEventReservationForm({ classrooms }: NewEventReservat
       reservedBy: '',
       details: '',
     },
-    errors: state.errors,
   });
   
+  React.useEffect(() => {
+    if (state.errors) {
+      for (const [key, value] of Object.entries(state.errors)) {
+        if (value) {
+          form.setError(key as keyof EventReservationFormValues, {
+            type: 'manual',
+            message: value.join(', '),
+          });
+        }
+      }
+    }
+  }, [state.errors, form]);
+
   React.useEffect(() => {
     if (state.message) {
       if (state.success) {
@@ -75,7 +87,6 @@ export default function NewEventReservationForm({ classrooms }: NewEventReservat
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(data => formAction(data))}
-            action={formAction}
             className="space-y-6"
           >
             <FormField

@@ -9,6 +9,8 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlusCircle, School } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Renders a loading skeleton for the classrooms display.
  * This provides a better user experience by showing a placeholder while data is being fetched.

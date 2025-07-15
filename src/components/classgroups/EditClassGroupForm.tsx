@@ -58,8 +58,19 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
       endDate: classGroup.endDate ? format(parseISO(classGroup.endDate), 'yyyy-MM-dd') : '',
       notes: classGroup.notes ?? '',
     },
-    errors: state.errors,
   });
+  
+  React.useEffect(() => {
+    if (state.errors) {
+      for (const [key, value] of Object.entries(state.errors)) {
+        form.setError(key as keyof ClassGroupFormValues, {
+          type: 'manual',
+          message: value.join(', '),
+        });
+      }
+    }
+  }, [state.errors, form]);
+
 
   React.useEffect(() => {
     if (state.message) {

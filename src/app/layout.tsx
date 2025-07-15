@@ -10,6 +10,15 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+// Best practice: Define metadata directly in the layout
+export const metadata = {
+  title: 'Academica',
+  description: 'Sistema de Gerenciamento Acadêmico',
+  icons: {
+    icon: '/favicon.ico',
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -8,7 +8,7 @@ import type { ClassGroup } from "@/types";
 import { classGroupCreateSchema, classGroupEditSchema } from "@/lib/schemas/classgroups";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-const classGroupsCollection = db.collection('classgroups');
+const classGroupsCollection = db ? db.collection('classgroups') : null;
 
 // Helper to convert Firestore doc to ClassGroup type
 const docToClassGroup = (doc: FirebaseFirestore.DocumentSnapshot): ClassGroup => {
@@ -33,6 +33,10 @@ const docToClassGroup = (doc: FirebaseFirestore.DocumentSnapshot): ClassGroup =>
 };
 
 export async function getClassGroups(): Promise<ClassGroup[]> {
+    if (!classGroupsCollection) {
+        console.error("Firestore is not initialized.");
+        return [];
+    }
   try {
     const snapshot = await classGroupsCollection.orderBy('name').get();
     return snapshot.docs.map(docToClassGroup);
@@ -43,6 +47,10 @@ export async function getClassGroups(): Promise<ClassGroup[]> {
 }
 
 export async function getClassGroupById(id: string): Promise<ClassGroup | null> {
+    if (!classGroupsCollection) {
+        console.error("Firestore is not initialized.");
+        return null;
+    }
     try {
         const doc = await classGroupsCollection.doc(id).get();
         return doc.exists ? docToClassGroup(doc) : null;
@@ -54,6 +62,9 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
 
 // Refactored to work with useFormState
 export async function createClassGroup(prevState: any, values: z.infer<typeof classGroupCreateSchema>) {
+    if (!classGroupsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   const validatedFields = classGroupCreateSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -73,17 +84,20 @@ export async function createClassGroup(prevState: any, values: z.infer<typeof cl
     }
 
     const newClassGroupRef = classGroupsCollection.doc();
-    await newClassGroupRef.set({
+    const newClassGroupData = {
       ...validatedFields.data,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       year: new Date().getFullYear(),
       status: 'Planejada' as const,
       createdAt: FieldValue.serverTimestamp(),
-    });
+    };
+    await newClassGroupRef.set(newClassGroupData);
+    
+    const newClassGroup = await getClassGroupById(newClassGroupRef.id);
 
     revalidatePath('/classgroups');
-    return { success: true, message: "Turma criada com sucesso." };
+    return { success: true, message: "Turma criada com sucesso.", data: newClassGroup };
   } catch (error) {
     console.error("Failed to create class group:", error);
     return { success: false, message: "Falha ao criar a turma." };
@@ -92,6 +106,9 @@ export async function createClassGroup(prevState: any, values: z.infer<typeof cl
 
 // Refactored to work with useFormState
 export async function updateClassGroup(id: string, prevState: any, values: z.infer<typeof classGroupEditSchema>) {
+    if (!classGroupsCollection) {
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
     const validatedFields = classGroupEditSchema.safeParse(values);
 
     if (!validatedFields.success) {
@@ -121,6 +138,10 @@ export async function updateClassGroup(id: string, prevState: any, values: z.inf
 }
 
 export async function deleteClassGroup(id: string): Promise<{ success: boolean; message: string }> {
+    if (!classGroupsCollection || !db) {
+        console.error("Firestore is not initialized.");
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
   try {
     const classGroupDoc = await classGroupsCollection.doc(id).get();
     if (!classGroupDoc.exists) {
@@ -146,6 +167,10 @@ export async function deleteClassGroup(id: string): Promise<{ success: boolean; 
 }
 
 export async function assignClassroomToClassGroup(classGroupId: string, classroomId: string | null): Promise<{ success: boolean, message: string }> {
+    if (!classGroupsCollection) {
+        console.error("Firestore is not initialized.");
+        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
+    }
     try {
         const docRef = classGroupsCollection.doc(classGroupId);
         await docRef.update({
