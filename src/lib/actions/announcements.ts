@@ -3,33 +3,33 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+// import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-import { db } from '@/lib/firebase/firebaseAdmin'; // A importação garante a inicialização. Se falhar, a app para.
+// import { db } from '@/lib/firebase/firebaseAdmin'; // A importação garante a inicialização. Se falhar, a app para.
 import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
 import type { Announcement } from '@/types';
 
 // A coleção é inicializada diretamente. Se 'db' não estivesse disponível, o app teria falhado ao iniciar.
-const announcementsCollection = db.collection('announcements');
+// const announcementsCollection = db.collection('announcements');
 
 // Helper para converter um documento do Firestore para o nosso tipo Announcement.
-const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcement => {
-    const data = doc.data();
-    // Um doc retornado pelo Firestore sempre terá dados.
-    if (!data) throw new Error(`Document ${doc.id} has no data.`);
+// const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcement => {
+//     const data = doc.data();
+//     // Um doc retornado pelo Firestore sempre terá dados.
+//     if (!data) throw new Error(`Document ${doc.id} has no data.`);
 
-    const createdAt = data.createdAt as Timestamp;
-    return {
-        id: doc.id,
-        title: data.title,
-        content: data.content,
-        author: data.author,
-        type: data.type,
-        priority: data.priority,
-        published: data.published,
-        createdAt: createdAt.toDate().toISOString(),
-    };
-};
+//     const createdAt = data.createdAt as import('firebase-admin/firestore').Timestamp;
+//     return {
+//         id: doc.id,
+//         title: data.title,
+//         content: data.content,
+//         author: data.author,
+//         type: data.type,
+//         priority: data.priority,
+//         published: data.published,
+//         createdAt: createdAt.toDate().toISOString(),
+//     };
+// };
 
 /**
  * Busca todos os anúncios do Firestore, ordenados por data de criação.
@@ -37,11 +37,13 @@ const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcemen
  */
 export async function getAnnouncements(): Promise<Announcement[]> {
   try {
-    const snapshot = await announcementsCollection.orderBy('createdAt', 'desc').get();
-    if (snapshot.empty) {
-      return [];
-    }
-    return snapshot.docs.map(docToAnnouncement);
+    console.log("Firebase desativado: getAnnouncements retornando array vazio.");
+    return [];
+    // const snapshot = await announcementsCollection.orderBy('createdAt', 'desc').get();
+    // if (snapshot.empty) {
+    //   return [];
+    // }
+    // return snapshot.docs.map(docToAnnouncement);
   } catch (error) {
     console.error('Error fetching announcements from Firestore:', error);
     // Lançar o erro permite que a camada superior (ex: um Error Boundary no React) o capture.
@@ -56,8 +58,10 @@ export async function getAnnouncements(): Promise<Announcement[]> {
  */
 export async function getAnnouncementById(id: string): Promise<Announcement | undefined> {
   try {
-    const doc = await announcementsCollection.doc(id).get();
-    return doc.exists ? docToAnnouncement(doc) : undefined;
+    console.log(`Firebase desativado: getAnnouncementById para o ID ${id} retornando undefined.`);
+    return undefined;
+    // const doc = await announcementsCollection.doc(id).get();
+    // return doc.exists ? docToAnnouncement(doc) : undefined;
   } catch (error) {
     console.error(`Error fetching announcement by ID ${id} from Firestore:`, error);
     throw new Error(`Failed to retrieve announcement ${id}.`);
@@ -70,18 +74,20 @@ export async function getAnnouncementById(id: string): Promise<Announcement | un
  */
 export async function createAnnouncement(prevState: any, values: AnnouncementFormValues) {
   try {
-    const validatedValues = announcementSchema.parse(values);
+     console.log("Firebase desativado: createAnnouncement retornando erro.");
+    return { success: false, message: 'Firebase está temporariamente desativado.' };
+    // const validatedValues = announcementSchema.parse(values);
 
-    await announcementsCollection.add({
-        ...validatedValues,
-        createdAt: FieldValue.serverTimestamp(),
-    });
+    // await announcementsCollection.add({
+    //     ...validatedValues,
+    //     createdAt: FieldValue.serverTimestamp(),
+    // });
 
-    // Invalida o cache para as páginas que exibem os anúncios.
-    revalidatePath('/announcements');
-    revalidatePath('/tv-display');
+    // // Invalida o cache para as páginas que exibem os anúncios.
+    // revalidatePath('/announcements');
+    // revalidatePath('/tv-display');
 
-    return { success: true, message: 'Anúncio criado com sucesso!' };
+    // return { success: true, message: 'Anúncio criado com sucesso!' };
   } catch (error) {
     // Tratamento específico para erros de validação do Zod.
     if (error instanceof z.ZodError) {
@@ -101,19 +107,21 @@ export async function createAnnouncement(prevState: any, values: AnnouncementFor
  */
 export async function updateAnnouncement(id: string, prevState: any, values: AnnouncementFormValues) {
   try {
-    const validatedValues = announcementSchema.parse(values);
-    const docRef = announcementsCollection.doc(id);
+    console.log(`Firebase desativado: updateAnnouncement para o ID ${id} retornando erro.`);
+    return { success: false, message: 'Firebase está temporariamente desativado.' };
+    // const validatedValues = announcementSchema.parse(values);
+    // const docRef = announcementsCollection.doc(id);
 
-    await docRef.update({
-      ...validatedValues,
-      updatedAt: FieldValue.serverTimestamp() // Adiciona um campo de 'updatedAt' para rastreamento.
-    });
+    // await docRef.update({
+    //   ...validatedValues,
+    //   updatedAt: FieldValue.serverTimestamp() // Adiciona um campo de 'updatedAt' para rastreamento.
+    // });
 
-    revalidatePath('/announcements');
-    revalidatePath(`/announcements/${id}/edit`);
-    revalidatePath('/tv-display');
+    // revalidatePath('/announcements');
+    // revalidatePath(`/announcements/${id}/edit`);
+    // revalidatePath('/tv-display');
 
-    return { success: true, message: 'Anúncio atualizado com sucesso!' };
+    // return { success: true, message: 'Anúncio atualizado com sucesso!' };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { 
@@ -132,12 +140,14 @@ export async function updateAnnouncement(id: string, prevState: any, values: Ann
  */
 export async function deleteAnnouncement(id: string) {
   try {
-    await announcementsCollection.doc(id).delete();
+    console.log(`Firebase desativado: deleteAnnouncement para o ID ${id} retornando erro.`);
+    return { success: false, message: 'Firebase está temporariamente desativado.' };
+    // await announcementsCollection.doc(id).delete();
     
-    revalidatePath('/announcements');
-    revalidatePath('/tv-display');
+    // revalidatePath('/announcements');
+    // revalidatePath('/tv-display');
 
-    return { success: true, message: 'Anúncio excluído com sucesso!' };
+    // return { success: true, message: 'Anúncio excluído com sucesso!' };
   } catch (error) {
     console.error(`Failed to delete announcement ${id} from Firestore:`, error);
     return { success: false, message: 'Ocorreu um erro no servidor ao excluir o anúncio.' };
