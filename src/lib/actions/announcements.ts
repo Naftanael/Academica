@@ -1,4 +1,4 @@
-
+// src/lib/actions/announcements.ts
 'use server';
 
 import { z } from 'zod';
@@ -11,7 +11,6 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 const announcementsCollection = db.collection('announcements');
 
 // Helper function to convert Firestore doc to Announcement type
-// Handles the conversion of Firestore Timestamp to a string.
 const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcement => {
     const data = doc.data();
     if (!data) {
@@ -52,18 +51,15 @@ export async function getAnnouncementById(id: string): Promise<Announcement | un
   }
 }
 
-export async function createAnnouncement(values: AnnouncementFormValues) {
+// Updated createAnnouncement to not rely on FormData
+export async function createAnnouncement(prevState: any, values: AnnouncementFormValues) {
   try {
     const validatedValues = announcementSchema.parse(values);
 
-    const newAnnouncement = await db.runTransaction(async (transaction) => {
-        const newAnnouncementRef = announcementsCollection.doc();
-        const newAnnouncementData = {
-            ...validatedValues,
-            createdAt: FieldValue.serverTimestamp(),
-        };
-        transaction.set(newAnnouncementRef, newAnnouncementData);
-        return { id: newAnnouncementRef.id, ...validatedValues };
+    const newAnnouncementRef = announcementsCollection.doc();
+    await newAnnouncementRef.set({
+        ...validatedValues,
+        createdAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath('/announcements');
@@ -71,7 +67,6 @@ export async function createAnnouncement(values: AnnouncementFormValues) {
     return { 
         success: true, 
         message: 'Anúncio criado com sucesso!', 
-        data: { ...newAnnouncement, createdAt: new Date().toISOString() } // Return optimistic data
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -82,18 +77,13 @@ export async function createAnnouncement(values: AnnouncementFormValues) {
   }
 }
 
-export async function updateAnnouncement(id: string, values: AnnouncementFormValues) {
+// Updated updateAnnouncement to match the new state shape
+export async function updateAnnouncement(id: string, prevState: any, values: AnnouncementFormValues) {
   try {
     const validatedValues = announcementSchema.parse(values);
     const docRef = announcementsCollection.doc(id);
 
-    await db.runTransaction(async (transaction) => {
-        const doc = await transaction.get(docRef);
-        if (!doc.exists) {
-            throw new Error('Anúncio não encontrado.');
-        }
-        transaction.update(docRef, validatedValues);
-    });
+    await docRef.update(validatedValues);
 
     revalidatePath('/announcements');
     revalidatePath(`/announcements/${id}/edit`);
@@ -110,13 +100,7 @@ export async function updateAnnouncement(id: string, values: AnnouncementFormVal
 
 export async function deleteAnnouncement(id: string) {
   try {
-    await db.runTransaction(async (transaction) => {
-        const docRef = announcementsCollection.doc(id);
-        const doc = await transaction.get(docRef);
-        if (doc.exists) {
-            transaction.delete(docRef);
-        }
-    });
+    await announcementsCollection.doc(id).delete();
     
     revalidatePath('/announcements');
     revalidatePath('/tv-display');

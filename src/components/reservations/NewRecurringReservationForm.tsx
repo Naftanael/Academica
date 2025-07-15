@@ -1,36 +1,26 @@
-
+// src/components/reservations/NewRecurringReservationForm.tsx
 'use client';
 
 import * as React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { Save, CalendarIcon as CalendarDateIcon, Info } from 'lucide-react';
+import { CalendarIcon as CalendarDateIcon, Info } from 'lucide-react';
 import { format, isValid, getDay, isBefore, isAfter, parseISO, addDays, isEqual } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; 
 import { type DayModifiers } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import FormSubmitButton from '@/components/shared/FormSubmitButton';
+
 import { createRecurringReservation } from '@/lib/actions/recurring_reservations';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
@@ -41,354 +31,124 @@ interface NewRecurringReservationFormProps {
   classrooms: Classroom[];
 }
 
-const dayOfWeekMapping: Record<DayOfWeek, number> = {
-  'Domingo': 0,
-  'Segunda': 1,
-  'Terça': 2,
-  'Quarta': 3,
-  'Quinta': 4,
-  'Sexta': 5,
-  'Sábado': 6
-};
+const dayOfWeekMapping: Record<DayOfWeek, number> = { 'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6 };
+
+const initialState = { success: false, message: '', errors: undefined };
 
 export default function NewRecurringReservationForm({ classGroups, classrooms }: NewRecurringReservationFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [isPending, setIsPending] = React.useState(false);
-  const [selectedClassGroup, setSelectedClassGroup] = React.useState<ClassGroup | undefined>(undefined);
-  const [calculatedEndDate, setCalculatedEndDate] = React.useState<Date | null>(null);
-  const [calculationResultText, setCalculationResultText] = React.useState<string>('');
-
+  const [state, formAction] = useFormState(createRecurringReservation, initialState);
+  
+  const [selectedClassGroup, setSelectedClassGroup] = React.useState<ClassGroup | undefined>();
+  const [calculationResult, setCalculationResult] = React.useState<{ text: string, endDate: Date | null }>({ text: '', endDate: null });
 
   const form = useForm<RecurringReservationFormValues>({
     resolver: zodResolver(recurringReservationFormSchema),
-    defaultValues: {
-      classGroupId: undefined,
-      classroomId: undefined,
-      startDate: format(new Date(), 'yyyy-MM-dd'),
-      numberOfClasses: 1,
-      purpose: '',
-    },
+    defaultValues: { classGroupId: '', classroomId: '', startDate: format(new Date(), 'yyyy-MM-dd'), numberOfClasses: 1, purpose: '' },
+    errors: state.errors,
   });
 
-  const watchedClassGroupId = form.watch("classGroupId");
-  const watchedStartDate = form.watch("startDate");
-  const watchedNumberOfClasses = form.watch("numberOfClasses");
+  const { watch } = form;
+  const watchedValues = watch();
 
   React.useEffect(() => {
-    if (watchedClassGroupId) {
-      const classGroup = classGroups.find(cg => cg.id === watchedClassGroupId);
-      setSelectedClassGroup(classGroup);
-    } else {
-      setSelectedClassGroup(undefined);
+    if (state.message) {
+      if (state.success) {
+        toast({ title: 'Sucesso!', description: state.message });
+        router.push('/reservations');
+      } else {
+        toast({ title: 'Erro', description: state.message, variant: 'destructive' });
+      }
     }
-  }, [watchedClassGroupId, classGroups, form]);
+  }, [state, toast, router]);
+
+  React.useEffect(() => {
+    const classGroup = classGroups.find(cg => cg.id === watchedValues.classGroupId);
+    setSelectedClassGroup(classGroup);
+  }, [watchedValues.classGroupId, classGroups]);
   
   React.useEffect(() => {
-    const classGroup = selectedClassGroup;
-    const startDateStr = watchedStartDate;
-    const numberOfClasses = watchedNumberOfClasses;
-
-    if (!classGroup || !startDateStr || !numberOfClasses || numberOfClasses <= 0 || !isValid(parseISO(startDateStr))) {
-      setCalculatedEndDate(null);
-      setCalculationResultText('');
+    const { startDate: startDateStr, numberOfClasses } = watchedValues;
+    if (!selectedClassGroup || !startDateStr || !numberOfClasses || !isValid(parseISO(startDateStr))) {
+      setCalculationResult({ text: '', endDate: null });
       return;
     }
-    
+
     const startDate = parseISO(startDateStr);
-    const classDays = classGroup.classDays;
-    const numericalClassDays = classDays.map(d => dayOfWeekMapping[d]);
-    
+    const numericalClassDays = selectedClassGroup.classDays.map(d => dayOfWeekMapping[d]);
+    if(numericalClassDays.length === 0) return;
+
     let currentDate = new Date(startDate);
-    currentDate.setHours(0, 0, 0, 0);
-    let classesCount = 0;
-    let lastClassDate = new Date(currentDate);
-
-    let loop_guard = 0;
-    const max_days_to_check = 365 * 2;
-
-    while (!numericalClassDays.includes(getDay(currentDate)) && loop_guard < max_days_to_check) {
+    let loopGuard = 0;
+    while (!numericalClassDays.includes(getDay(currentDate)) && loopGuard++ < 365) {
       currentDate = addDays(currentDate, 1);
-      loop_guard++;
     }
     const firstClassDate = new Date(currentDate);
 
-    classesCount = 1;
-    lastClassDate = new Date(currentDate);
-    
-    while (classesCount < numberOfClasses && loop_guard < max_days_to_check) {
+    let classesCount = 1;
+    let lastClassDate = new Date(currentDate);
+    while (classesCount < numberOfClasses && loopGuard++ < 730) {
       currentDate = addDays(currentDate, 1);
       if (numericalClassDays.includes(getDay(currentDate))) {
         classesCount++;
         lastClassDate = new Date(currentDate);
       }
-      loop_guard++;
     }
 
-    setCalculatedEndDate(lastClassDate);
-    const startIsClassDay = numericalClassDays.includes(getDay(startDate));
-    const firstDayText = format(firstClassDate, "dd/MM/yyyy", { locale: ptBR });
-    const lastDayText = format(lastClassDate, "dd/MM/yyyy", { locale: ptBR });
-
-    if (!startIsClassDay) {
-      setCalculationResultText(`A 1ª aula será em ${firstDayText}. A ${numberOfClasses}ª aula terminará em ${lastDayText}.`);
-    } else {
-      setCalculationResultText(`A reserva terminará em ${lastDayText}.`);
-    }
-
-  }, [selectedClassGroup, watchedStartDate, watchedNumberOfClasses]);
-
-  const classDayInRangeModifier = React.useCallback((date: Date): boolean => {
-    if (!selectedClassGroup || !selectedClassGroup.classDays.length || !calculatedEndDate) {
-      return false;
-    }
+    const text = !isEqual(startDate, firstClassDate)
+      ? `A 1ª aula será em ${format(firstClassDate, "dd/MM/yy")}. A ${numberOfClasses}ª aula terminará em ${format(lastClassDate, "dd/MM/yy")}.`
+      : `A reserva terminará em ${format(lastClassDate, "dd/MM/yy")}.`;
     
-    const startDate = parseISO(watchedStartDate);
-    if (!isValid(startDate)) return false;
+    setCalculationResult({ text, endDate: lastClassDate });
 
-    
-    let firstClassDate = new Date(startDate);
-    const numericalClassDays = selectedClassGroup.classDays.map(d => dayOfWeekMapping[d]);
-    while (!numericalClassDays.includes(getDay(firstClassDate))) {
-        firstClassDate = addDays(firstClassDate, 1);
+  }, [selectedClassGroup, watchedValues.startDate, watchedValues.numberOfClasses]);
+
+  const calendarModifiers = React.useMemo(() => {
+    const modifiers: DayModifiers = {};
+    if (calculationResult.endDate) {
+      const startDate = parseISO(watchedValues.startDate);
+      const numericalClassDays = selectedClassGroup?.classDays.map(d => dayOfWeekMapping[d]) || [];
+      
+      modifiers.isClassDayInRange = (date: Date) => {
+        if (!isAfter(date, addDays(startDate, -1)) || !isBefore(date, addDays(calculationResult.endDate!, 1))) return false;
+        return numericalClassDays.includes(getDay(date));
+      };
+      modifiers.isCalculatedEnd = calculationResult.endDate;
     }
-    
-    const dateIsWithinInterval = 
-      (isAfter(date, firstClassDate) || isEqual(date, firstClassDate)) &&
-      (isBefore(date, calculatedEndDate) || isEqual(date, calculatedEndDate));
- 
-    if (!dateIsWithinInterval) {
-        return false;
-    }
-
-    const dayNum = getDay(date); 
-    return numericalClassDays.includes(dayNum);
-  }, [selectedClassGroup, watchedStartDate, calculatedEndDate]);
- 
-  const modifiers: DayModifiers = { 
-    isClassDayInRange: classDayInRangeModifier,
-  };
-
-  if (calculatedEndDate) {
-    modifiers.isCalculatedEnd = calculatedEndDate;
-  }
-
-  const modifiersStyles = {
-    isClassDayInRange: {
-      backgroundColor: 'hsl(var(--accent) / 0.3)', 
-      color: 'hsl(var(--foreground))', 
-      borderRadius: '0.25rem',
-    },
-    isCalculatedEnd: {
-      fontWeight: 'bold',
-      border: '2px solid hsl(var(--primary))',
-    }
-  };
-
-
-  async function onSubmit(values: RecurringReservationFormValues) {
-    setIsPending(true);
-    
-    const result = await createRecurringReservation(values);
-    setIsPending(false);
-
-    if (result.success) {
-      toast({
-        title: 'Sucesso!',
-        description: result.message,
-      });
-      router.push('/reservations');
-      router.refresh();
-    } else {
-      if (result.errors) {
-        Object.entries(result.errors).forEach(([field, errors]) => {
-          if (errors) {
-            form.setError(field as keyof RecurringReservationFormValues, {
-              type: 'manual',
-              message: Array.isArray(errors) ? errors.join(', ') : String(errors),
-            });
-          }
-        });
-        toast({
-          title: 'Erro de Validação',
-          description: result.message || "Por favor, corrija os campos destacados.",
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Erro ao criar reserva',
-          description: result.message || 'Ocorreu um erro inesperado.',
-          variant: 'destructive',
-        });
-      }
-    }
-  }
+    return modifiers;
+  }, [selectedClassGroup, watchedValues.startDate, calculationResult.endDate]);
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="purpose"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Propósito da Reserva</FormLabel>
-              <FormControl>
-                <Input placeholder="Ex: Aulas Regulares" {...field} />
-              </FormControl>
-              <FormDescription>
-                Um breve motivo para a reserva.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="classGroupId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Turma</FormLabel>
-                  <Select 
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                    }} 
-                    value={field.value || ''}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a turma" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {classGroups.length === 0 && <SelectItem value="no-cg" disabled>Nenhuma turma cadastrada</SelectItem>}
-                      {classGroups.map((cg) => (
-                        <SelectItem key={cg.id} value={cg.id}>
-                          {cg.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>A turma que utilizará a sala.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="classroomId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sala</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a sala" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {classrooms.length === 0 && <SelectItem value="no-cr" disabled>Nenhuma sala cadastrada</SelectItem>}
-                      {classrooms.map((cr) => (
-                        <SelectItem key={cr.id} value={cr.id}>
-                          {cr.name} (Cap: {cr.capacity ?? 'N/A'})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>A sala a ser reservada.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <FormField
-            control={form.control}
-            name="startDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Data de Início da Reserva</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value && isValid(parseISO(field.value)) ? (
-                          format(parseISO(field.value), "PPP", { locale: ptBR })
-                        ) : (
-                          <span>Escolha uma data</span>
-                        )}
-                        <CalendarDateIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
-                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
-                      initialFocus
-                      locale={ptBR}
-                      modifiers={modifiers}
-                      modifiersStyles={modifiersStyles}
-                      disabled={!selectedClassGroup}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormDescription>A partir de quando a reserva deve começar.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-           <FormField
-            control={form.control}
-            name="numberOfClasses"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Número de Aulas</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="Ex: 10" 
-                    {...field} 
-                    onChange={event => field.onChange(event.target.value === '' ? '' : +event.target.value)} 
-                  />
-                </FormControl>
-                <FormDescription>Total de aulas recorrentes a reservar.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        {calculationResultText && (
-          <div className="p-3 bg-accent/20 border border-accent/30 rounded-md text-sm text-accent-foreground flex items-center gap-2">
-            <Info className="h-4 w-4 text-primary" />
-            <span>{calculationResultText}</span>
-          </div>
-        )}
-        
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            {isPending ? "Salvando..." : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Reserva Recorrente
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+    <Card>
+      <CardHeader><CardTitle>Nova Reserva Recorrente</CardTitle></CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(data => formAction(data))} action={formAction} className="space-y-6">
+            <FormField control={form.control} name="purpose" render={({ field }) => (
+              <FormItem><FormLabel>Propósito</FormLabel><FormControl><Input placeholder="Ex: Aulas Regulares" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField control={form.control} name="classGroupId" render={({ field }) => (
+                <FormItem><FormLabel>Turma</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione a turma" /></SelectTrigger></FormControl><SelectContent>{classGroups.map(cg => <SelectItem key={cg.id} value={cg.id}>{cg.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="classroomId" render={({ field }) => (
+                <FormItem><FormLabel>Sala</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione a sala" /></SelectTrigger></FormControl><SelectContent>{classrooms.map(cr => <SelectItem key={cr.id} value={cr.id}>{cr.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+              )} />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              <FormField control={form.control} name="startDate" render={({ field }) => (
+                <FormItem className="flex flex-col"><FormLabel>Data de Início</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(parseISO(field.value), "PPP", { locale: ptBR }) : <span>Escolha uma data</span>}<CalendarDateIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value ? parseISO(field.value) : undefined} onSelect={date => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')} disabled={!selectedClassGroup} modifiers={calendarModifiers} modifiersStyles={{ isCalculatedEnd: { fontWeight: 'bold', border: '2px solid hsl(var(--primary))' }, isClassDayInRange: { backgroundColor: 'hsl(var(--accent)/0.3)', borderRadius: '0.25rem' } }} /></PopoverContent></Popover><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="numberOfClasses" render={({ field }) => (
+                <FormItem><FormLabel>Número de Aulas</FormLabel><FormControl><Input type="number" placeholder="Ex: 10" {...field} onChange={e => field.onChange(+e.target.value)} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
+            {calculationResult.text && <div className="p-3 bg-accent/20 border rounded-md text-sm flex items-center gap-2"><Info className="h-4 w-4 text-primary" /><span>{calculationResult.text}</span></div>}
+            <div className="flex justify-end"><FormSubmitButton>Salvar Reserva</FormSubmitButton></div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

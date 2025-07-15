@@ -1,3 +1,5 @@
+// src/components/classrooms/EditClassroomButton.tsx
+'use client';
 
 import Link from 'next/link';
 import { Edit } from 'lucide-react';
@@ -9,7 +11,7 @@ interface EditClassroomButtonProps {
   className?: string;
 }
 
-export function EditClassroomButton({ classroomId, className }: EditClassroomButtonProps) {
+export default function EditClassroomButton({ classroomId, className }: EditClassroomButtonProps) {
   return (
     <Button variant="ghost" size="icon" asChild className={cn(className)}>
       <Link href={`/classrooms/${classroomId}/edit`}>

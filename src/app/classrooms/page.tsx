@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PlusCircle, School } from 'lucide-react';
 
 /**
  * Renders a loading skeleton for the classrooms display.
@@ -14,10 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 function ClassroomsLoading() {
   return (
     <div className="space-y-4">
-      <Skeleton className="h-10 w-1/4" />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
-          <Skeleton key={i} className="h-40 rounded-lg" />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {[...Array(8)].map((_, i) => (
+          <Skeleton key={i} className="h-48 rounded-lg" />
         ))}
       </div>
     </div>
@@ -42,10 +42,14 @@ export default function ClassroomsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Salas de Aula"
-        description="Gerencie as salas de aula disponíveis."
+        description="Gerencie as salas de aula disponíveis na instituição."
+        icon={School}
       >
         <Button asChild>
-          <Link href="/classrooms/new">Adicionar Nova Sala</Link>
+          <Link href="/classrooms/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Adicionar Nova Sala
+          </Link>
         </Button>
       </PageHeader>
       

@@ -1,7 +1,7 @@
 // src/components/announcements/EditAnnouncementForm.tsx
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,13 +23,12 @@ interface EditAnnouncementFormProps {
 const initialState = {
   success: false,
   message: '',
-  errors: {},
+  errors: undefined,
 };
 
 export default function EditAnnouncementForm({ announcement }: EditAnnouncementFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
   
   const updateAnnouncementWithId = updateAnnouncement.bind(null, announcement.id);
   const [state, formAction] = useFormState(updateAnnouncementWithId, initialState);
@@ -40,7 +39,7 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
       title: announcement.title || '',
       content: announcement.content || '',
     },
-    context: state.errors,
+    errors: state.errors,
   });
 
   useEffect(() => {
@@ -60,26 +59,13 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
       }
     }
   }, [state, toast, router]);
-  
-  const handleSubmit = (data: AnnouncementFormValues) => {
-    // This function is called by RHF after validation.
-    // We need to trigger the form action with the new data.
-    // We can't pass data directly to `formAction`, so we update the form
-    // controls and submit the form programmatically.
-    if(formRef.current) {
-        (formRef.current.elements.namedItem('title') as HTMLInputElement).value = data.title;
-        (formRef.current.elements.namedItem('content') as HTMLTextAreaElement).value = data.content;
-        formRef.current.requestSubmit();
-    }
-  };
 
   return (
     <Form {...form}>
       <form
-        ref={formRef}
         action={formAction}
+        onSubmit={form.handleSubmit(data => formAction(data))}
         className="space-y-8"
-        onSubmit={form.handleSubmit(handleSubmit)}
       >
         <FormField
           control={form.control}

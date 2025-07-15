@@ -4,57 +4,71 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firebase/admin';
-import { classroomSchema, classroomSchemaWithoutRefinement } from '@/lib/schemas/classrooms';
-import { Classroom } from '@/types';
+import type { Classroom } from '@/types';
+import { classroomSchema } from '@/lib/schemas/classrooms';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const classroomsCollection = db.collection('classrooms');
 
-/**
- * Converts a Firestore document snapshot into a Classroom object.
- * @param doc - The document snapshot from Firestore.
- * @returns A Classroom object with its ID.
- */
-function toClassroom(doc: FirebaseFirestore.DocumentSnapshot): Classroom {
+// Helper function to convert Firestore doc to Classroom type
+const toClassroom = (doc: FirebaseFirestore.DocumentSnapshot): Classroom => {
   const data = doc.data();
-  if (!data) {
-    throw new Error('Document data is unexpectedly empty.');
-  }
+  if (!data) throw new Error('Document data is empty.');
   return {
     id: doc.id,
     name: data.name,
     capacity: data.capacity,
-    isUnderMaintenance: data.isUnderMaintenance,
-    maintenanceReason: data.maintenanceReason,
+    isUnderMaintenance: data.isUnderMaintenance || false,
+    maintenanceReason: data.maintenanceReason || '',
+    // Deprecated fields, kept for compatibility, can be removed later
+    resources: data.resources || [],
+    isLab: data.isLab || false,
   };
-}
+};
+
+// Type for the form state
+type FormState = {
+  success: boolean;
+  message: string;
+  errors?: z.ZodIssue[];
+};
 
 /**
- * Creates a new classroom in Firestore.
+ * Creates a new classroom in Firestore using Server Actions.
  * @param prevState - The previous state of the form.
- * @param formData - The form data containing the classroom details.
- * @returns An object with a message indicating success or failure.
+ * @param values - The validated classroom data from the form.
+ * @returns A FormState object indicating success or failure.
  */
-export async function createClassroom(prevState: any, formData: FormData) {
-  const validatedFields = classroomSchema.safeParse(Object.fromEntries(formData.entries()));
+export async function createClassroom(prevState: any, values: z.infer<typeof classroomSchema>) {
+  const validatedFields = classroomSchema.safeParse(values);
 
   if (!validatedFields.success) {
     return {
+      success: false,
       message: 'Erro de validação. Verifique os campos.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
+  const { name } = validatedFields.data;
+
   try {
+    // Check for duplicate classroom name
+    const existingClassroomQuery = await classroomsCollection.where('name', '==', name).limit(1).get();
+    if (!existingClassroomQuery.empty) {
+      return { success: false, message: 'Já existe uma sala de aula com este nome.' };
+    }
+
     await classroomsCollection.add({
       ...validatedFields.data,
-      createdAt: FieldValue.serverTimestamp(), // Best practice to track creation
+      createdAt: FieldValue.serverTimestamp(),
     });
+
     revalidatePath('/classrooms');
-    return { message: 'Sala de aula criada com sucesso!' };
+    return { success: true, message: 'Sala de aula criada com sucesso!' };
   } catch (error) {
     console.error('Error creating classroom:', error);
-    return { message: 'Erro ao criar a sala de aula.' };
+    return { success: false, message: 'Erro de servidor ao criar a sala de aula.' };
   }
 }
 
@@ -65,12 +79,9 @@ export async function createClassroom(prevState: any, formData: FormData) {
 export async function getClassrooms(): Promise<Classroom[]> {
   try {
     const snapshot = await classroomsCollection.orderBy('name', 'asc').get();
-    if (snapshot.empty) {
-      return [];
-    }
     return snapshot.docs.map(toClassroom);
   } catch (error) {
-    console.error('Error getting documents: ', error);
+    console.error('Error getting classrooms: ', error);
     return [];
   }
 }
@@ -81,17 +92,10 @@ export async function getClassrooms(): Promise<Classroom[]> {
  * @returns A promise that resolves to the Classroom object or null if not found.
  */
 export async function getClassroomById(id: string): Promise<Classroom | null> {
-  if (!id) {
-    console.error('getClassroomById: ID is required.');
-    return null;
-  }
+  if (!id) return null;
   try {
     const doc = await classroomsCollection.doc(id).get();
-    if (!doc.exists) {
-      console.warn(`No classroom found with id: ${id}`);
-      return null;
-    }
-    return toClassroom(doc);
+    return doc.exists ? toClassroom(doc) : null;
   } catch (error) {
     console.error(`Error fetching classroom ${id}:`, error);
     return null;
@@ -99,17 +103,18 @@ export async function getClassroomById(id: string): Promise<Classroom | null> {
 }
 
 /**
- * Updates an existing classroom in Firestore.
+ * Updates an existing classroom in Firestore using Server Actions.
  * @param id - The ID of the classroom to update.
  * @param prevState - The previous state of the form.
- * @param formData - The form data containing the updated classroom details.
- * @returns An object with a message indicating success or failure.
+ * @param values - The validated classroom data from the form.
+ * @returns A FormState object indicating success or failure.
  */
-export async function updateClassroom(id: string, prevState: any, formData: FormData) {
-  const validatedFields = classroomSchemaWithoutRefinement.safeParse(Object.fromEntries(formData.entries()));
+export async function updateClassroom(id: string, prevState: any, values: z.infer<typeof classroomSchema>) {
+  const validatedFields = classroomSchema.safeParse(values);
 
   if (!validatedFields.success) {
     return {
+      success: false,
       message: 'Erro de validação. Verifique os campos.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
@@ -119,29 +124,37 @@ export async function updateClassroom(id: string, prevState: any, formData: Form
     const classroomRef = classroomsCollection.doc(id);
     await classroomRef.update({
       ...validatedFields.data,
-      updatedAt: FieldValue.serverTimestamp(), // Best practice to track updates
+      updatedAt: FieldValue.serverTimestamp(),
     });
+
     revalidatePath('/classrooms');
     revalidatePath(`/classrooms/${id}/edit`);
-    return { message: 'Sala de aula atualizada com sucesso!' };
+    return { success: true, message: 'Sala de aula atualizada com sucesso!' };
   } catch (error) {
-    console.error('Error updating classroom:', error);
-    return { message: 'Erro ao atualizar a sala de aula.' };
+    console.error(`Error updating classroom ${id}:`, error);
+    return { success: false, message: 'Erro de servidor ao atualizar a sala de aula.' };
   }
 }
 
 /**
  * Deletes a classroom from Firestore.
  * @param id - The ID of the classroom to delete.
- * @returns A promise that resolves when the classroom is deleted.
+ * @returns An object with a message indicating success or failure.
  */
-export async function deleteClassroom(id: string) {
+export async function deleteClassroom(id: string): Promise<{ success: boolean; message: string }> {
   try {
+    // Before deleting, check if this classroom is assigned to any class group
+    const querySnapshot = await db.collection('classgroups').where('assignedClassroomId', '==', id).limit(1).get();
+
+    if (!querySnapshot.empty) {
+        return { success: false, message: 'Não é possível excluir. A sala está atribuída a uma ou mais turmas.' };
+    }
+
     await classroomsCollection.doc(id).delete();
     revalidatePath('/classrooms');
-    return { message: 'Sala de aula deletada com sucesso' };
+    return { success: true, message: 'Sala de aula excluída com sucesso.' };
   } catch (error) {
-    console.error('Error deleting classroom:', error);
-    return { message: 'Erro ao deletar a sala de aula' };
+    console.error(`Error deleting classroom ${id}:`, error);
+    return { success: false, message: 'Erro de servidor ao excluir a sala de aula.' };
   }
 }

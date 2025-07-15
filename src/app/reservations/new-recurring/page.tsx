@@ -1,43 +1,34 @@
+// src/app/reservations/new-recurring/page.tsx
+import NewRecurringReservationForm from "@/components/reservations/NewRecurringReservationForm";
+import PageHeader from "@/components/shared/PageHeader";
+import { getClassrooms } from "@/lib/actions/classrooms";
+import { getClassGroups } from "@/lib/actions/classgroups";
 
-import Link from 'next/link';
-import { ArrowLeft, CalendarPlus } from 'lucide-react';
-import PageHeader from '@/components/shared/PageHeader';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getClassGroups } from '@/lib/actions/classgroups';
-import { getClassrooms } from '@/lib/actions/classrooms';
-import NewRecurringReservationForm from '@/components/reservations/NewRecurringReservationForm';
-
+/**
+ * Page for creating a new recurring reservation.
+ * Fetches required data (class groups and classrooms) on the server 
+ * and passes it to the form component.
+ */
 export default async function NewRecurringReservationPage() {
   const classGroups = await getClassGroups();
-  const classrooms = await getClassrooms();
+  const allClassrooms = await getClassrooms();
+
+  // Only allow reservations for classrooms that are not under maintenance
+  const availableClassrooms = allClassrooms.filter(c => !c.isUnderMaintenance);
+  
+  // Filter class groups that are not yet "Concluída"
+  const availableClassGroups = classGroups.filter(cg => cg.status !== 'Concluída');
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
         title="Nova Reserva Recorrente"
-        description="Preencha os dados para agendar uma reserva recorrente para uma turma."
-        icon={CalendarPlus}
-        actions={
-          <Button variant="outline" asChild className="hover:bg-accent hover:text-accent-foreground">
-            <Link href="/reservations">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Lista de Reservas
-            </Link>
-          </Button>
-        }
+        description="Associe uma turma a uma sala de aula por um período determinado."
       />
-      <Card className="max-w-2xl mx-auto shadow-lg rounded-lg">
-        <CardHeader>
-          <CardTitle className="font-headline text-xl">Detalhes da Reserva Recorrente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NewRecurringReservationForm
-            classGroups={classGroups}
-            classrooms={classrooms}
-          />
-        </CardContent>
-      </Card>
-    </>
+      <NewRecurringReservationForm 
+        classGroups={availableClassGroups} 
+        classrooms={availableClassrooms} 
+      />
+    </div>
   );
 }

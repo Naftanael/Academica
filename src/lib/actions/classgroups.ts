@@ -1,4 +1,4 @@
-
+// src/lib/actions/classgroups.ts
 'use server'
 
 import { revalidatePath } from "next/cache";
@@ -13,9 +13,7 @@ const classGroupsCollection = db.collection('classgroups');
 // Helper to convert Firestore doc to ClassGroup type
 const docToClassGroup = (doc: FirebaseFirestore.DocumentSnapshot): ClassGroup => {
     const data = doc.data();
-    if (!data) {
-        throw new Error(`Document data not found for doc with id ${doc.id}`);
-    }
+    if (!data) throw new Error(`Document data not found for doc with id ${doc.id}`);
 
     const startDate = data.startDate instanceof Timestamp ? data.startDate.toDate().toISOString() : data.startDate;
     const endDate = data.endDate instanceof Timestamp ? data.endDate.toDate().toISOString() : data.endDate;
@@ -25,8 +23,8 @@ const docToClassGroup = (doc: FirebaseFirestore.DocumentSnapshot): ClassGroup =>
         name: data.name,
         shift: data.shift,
         year: data.year,
-        startDate: startDate,
-        endDate: endDate,
+        startDate,
+        endDate,
         classDays: data.classDays ?? [],
         status: data.status ?? 'Planejada',
         assignedClassroomId: data.assignedClassroomId ?? undefined,
@@ -54,67 +52,62 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
     }
 }
 
-export async function createClassGroup(values: z.infer<typeof classGroupCreateSchema>): Promise<{ success: boolean; message: string; data?: ClassGroup }> {
-  try {
-    const validatedValues = classGroupCreateSchema.parse(values);
-    
-    // Check for duplicate name before starting the transaction
-    const existingGroupQuery = classGroupsCollection.where('name', '==', validatedValues.name);
-    const existingGroupSnapshot = await existingGroupQuery.get();
+// Refactored to work with useFormState
+export async function createClassGroup(prevState: any, values: z.infer<typeof classGroupCreateSchema>) {
+  const validatedFields = classGroupCreateSchema.safeParse(values);
 
-    if (!existingGroupSnapshot.empty) {
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: 'Erro de validação. Verifique os campos.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const { name, startDate, endDate } = validatedFields.data;
+
+    const existingGroupQuery = await classGroupsCollection.where('name', '==', name).limit(1).get();
+    if (!existingGroupQuery.empty) {
       return { success: false, message: 'Já existe uma turma com este nome.' };
     }
 
     const newClassGroupRef = classGroupsCollection.doc();
-    const newClassGroupData = {
-      ...validatedValues,
-      startDate: new Date(validatedValues.startDate),
-      endDate: new Date(validatedValues.endDate),
+    await newClassGroupRef.set({
+      ...validatedFields.data,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
       year: new Date().getFullYear(),
       status: 'Planejada' as const,
       createdAt: FieldValue.serverTimestamp(),
-    };
-    
-    await newClassGroupRef.set(newClassGroupData);
+    });
 
-    const newClassGroup = {
-      id: newClassGroupRef.id,
-      ...validatedValues,
-      year: newClassGroupData.year,
-      status: newClassGroupData.status,
-      createdAt: new Date().toISOString(), // optimistic timestamp for return
-    };
-    
     revalidatePath('/classgroups');
-    return { success: true, message: "Turma adicionada com sucesso.", data: newClassGroup as unknown as ClassGroup };
+    return { success: true, message: "Turma criada com sucesso." };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: `Erro de validação: ${error.errors.map(e => e.message).join(', ')}` };
-    }
-    console.error("Failed to add class group to Firestore:", error);
-    return { success: false, message: "Falha ao adicionar a turma." };
+    console.error("Failed to create class group:", error);
+    return { success: false, message: "Falha ao criar a turma." };
   }
 }
 
+// Refactored to work with useFormState
+export async function updateClassGroup(id: string, prevState: any, values: z.infer<typeof classGroupEditSchema>) {
+    const validatedFields = classGroupEditSchema.safeParse(values);
 
-export async function updateClassGroup(id: string, values: z.infer<typeof classGroupEditSchema>): Promise<{ success: boolean; message: string }> {
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: 'Erro de validação. Verifique os campos.',
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
     try {
-        const validatedValues = classGroupEditSchema.parse(values);
-        
-        await db.runTransaction(async (transaction) => {
-            const docRef = classGroupsCollection.doc(id);
-            const doc = await transaction.get(docRef);
-            if (!doc.exists) {
-                throw new Error("Turma não encontrada.");
-            }
-            // Convert date strings to Date objects for Firestore
-            const updateData = {
-                ...validatedValues,
-                startDate: new Date(validatedValues.startDate),
-                endDate: new Date(validatedValues.endDate),
-            };
-            transaction.update(docRef, updateData);
+        const docRef = classGroupsCollection.doc(id);
+        await docRef.update({
+          ...validatedFields.data,
+          startDate: new Date(validatedFields.data.startDate),
+          endDate: new Date(validatedFields.data.endDate),
         });
         
         revalidatePath('/classgroups');
@@ -122,11 +115,8 @@ export async function updateClassGroup(id: string, values: z.infer<typeof classG
 
         return { success: true, message: "Turma atualizada com sucesso." };
     } catch (error) {
-        if (error instanceof z.ZodError) {
-          return { success: false, message: `Erro de validação: ${error.errors.map(e => e.message).join(', ')}` };
-        }
-        console.error("Failed to update class group in Firestore:", error);
-        return { success: false, message: (error as Error).message || "Falha ao atualizar a turma." };
+        console.error("Failed to update class group:", error);
+        return { success: false, message: "Falha ao atualizar a turma." };
     }
 }
 
@@ -137,9 +127,8 @@ export async function deleteClassGroup(id: string): Promise<{ success: boolean; 
         return { success: false, message: "Turma não encontrada." };
     }
 
-    const recurringReservationsQuery = db.collection('recurring_reservations').where('classGroupId', '==', id);
-    const recurringReservationsSnapshot = await recurringReservationsQuery.get();
-
+    const recurringReservationsQuery = db.collection('recurring_reservations').where('classGroupId', '==', id).limit(1).get();
+    const recurringReservationsSnapshot = await recurringReservationsQuery;
     if (!recurringReservationsSnapshot.empty) {
         return { success: false, message: "Não é possível excluir. A turma possui reservas recorrentes associadas." };
     }
@@ -147,37 +136,31 @@ export async function deleteClassGroup(id: string): Promise<{ success: boolean; 
     await classGroupsCollection.doc(id).delete();
     
     revalidatePath('/classgroups');
-    revalidatePath('/'); // Revalidate dashboard as well
+    revalidatePath('/');
     revalidatePath('/room-availability');
     return { success: true, message: "Turma excluída com sucesso." };
   } catch (error) {
-    console.error("Failed to delete class group from Firestore:", error);
+    console.error("Failed to delete class group:", error);
     return { success: false, message: "Falha ao excluir a turma." };
   }
 }
 
 export async function assignClassroomToClassGroup(classGroupId: string, classroomId: string | null): Promise<{ success: boolean, message: string }> {
     try {
-        await db.runTransaction(async (transaction) => {
-            const docRef = classGroupsCollection.doc(classGroupId);
-            const doc = await transaction.get(docRef);
-            if (!doc.exists) {
-                throw new Error("Turma não encontrada.");
-            }
-
-            const updateData: { assignedClassroomId: string | null } = {
-                assignedClassroomId: classroomId ?? null,
-            };
-            
-            transaction.update(docRef, updateData);
+        const docRef = classGroupsCollection.doc(classGroupId);
+        await docRef.update({
+            assignedClassroomId: classroomId,
+            updatedAt: FieldValue.serverTimestamp()
         });
         
         revalidatePath('/classgroups');
         revalidatePath(`/classgroups/${classGroupId}/edit`);
+        revalidatePath('/room-availability');
+
 
         return { success: true, message: "Sala atribuída com sucesso." };
     } catch (error) {
-        console.error("Failed to assign classroom to class group in Firestore:", error);
-        return { success: false, message: (error as Error).message || "Falha ao atribuir a sala." };
+        console.error("Failed to assign classroom:", error);
+        return { success: false, message: "Falha ao atribuir a sala." };
     }
 }

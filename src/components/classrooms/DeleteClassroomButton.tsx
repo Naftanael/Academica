@@ -1,4 +1,4 @@
-
+// src/components/classrooms/DeleteClassroomButton.tsx
 'use client';
 
 import * as React from 'react';
@@ -13,21 +13,17 @@ interface DeleteClassroomButtonProps {
   className?: string;
 }
 
-export function DeleteClassroomButton({ classroomId, className }: DeleteClassroomButtonProps) {
+export default function DeleteClassroomButton({ classroomId, className }: DeleteClassroomButtonProps) {
   const { toast } = useToast();
-  const [isPending, setIsPending] = React.useState(false);
 
   const handleDelete = async () => {
-    setIsPending(true);
     const result = await deleteClassroom(classroomId);
-    setIsPending(false);
     if (result.success) {
       toast({
         title: "Sucesso!",
         description: result.message,
-        variant: "default",
       });
-      // Revalidation will be handled by revalidatePath in the server action
+      // Revalidation is handled by the server action.
     } else {
       toast({
         title: "Erro",
@@ -41,13 +37,13 @@ export function DeleteClassroomButton({ classroomId, className }: DeleteClassroo
     <DeleteConfirmationDialog
       onConfirm={handleDelete}
       triggerButton={
-        <Button variant="ghost" size="icon" className={className} disabled={isPending}>
+        <Button variant="ghost" size="icon" className={className}>
           <Trash2 className="h-4 w-4" />
           <span className="sr-only">Excluir Sala</span>
         </Button>
       }
       dialogTitle="Excluir Sala de Aula?"
-      dialogDescription="Esta ação não pode ser desfeita. Todos os dados da sala serão removidos permanentemente."
+      dialogDescription="Esta ação não pode ser desfeita. Todos os dados da sala, incluindo associações com turmas, serão removidos."
     />
   );
 }

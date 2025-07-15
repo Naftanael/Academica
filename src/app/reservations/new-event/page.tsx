@@ -1,39 +1,24 @@
+// src/app/reservations/new-event/page.tsx
+import NewEventReservationForm from "@/components/reservations/NewEventReservationForm";
+import PageHeader from "@/components/shared/PageHeader";
+import { getClassrooms } from "@/lib/actions/classrooms";
 
-import Link from 'next/link';
-import { ArrowLeft, CalendarPlus } from 'lucide-react';
-import PageHeader from '@/components/shared/PageHeader';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getClassrooms } from '@/lib/actions/classrooms';
-import NewEventReservationForm from '@/components/reservations/NewEventReservationForm';
-import type { Classroom } from '@/types';
-
+/**
+ * Page for creating a new event reservation.
+ * Fetches the list of available classrooms on the server and passes it to the form component.
+ */
 export default async function NewEventReservationPage() {
-  const classrooms: Classroom[] = await getClassrooms();
+  // Fetch classrooms that are not under maintenance to make them available in the form
+  const allClassrooms = await getClassrooms();
+  const availableClassrooms = allClassrooms.filter(c => !c.isUnderMaintenance);
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
         title="Nova Reserva de Evento"
-        description="Preencha os dados para agendar uma reserva pontual para uma sala."
-        icon={CalendarPlus}
-        actions={
-          <Button variant="outline" asChild>
-            <Link href="/reservations">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Lista de Reservas
-            </Link>
-          </Button>
-        }
+        description="Reserve uma sala para um evento, reunião ou outra atividade pontual."
       />
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Detalhes da Reserva de Evento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NewEventReservationForm classrooms={classrooms} />
-        </CardContent>
-      </Card>
-    </>
+      <NewEventReservationForm classrooms={availableClassrooms} />
+    </div>
   );
 }

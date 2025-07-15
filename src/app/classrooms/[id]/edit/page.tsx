@@ -3,6 +3,9 @@ import { getClassroomById } from "@/lib/actions/classrooms";
 import EditClassroomForm from "@/components/classrooms/EditClassroomForm";
 import PageHeader from "@/components/shared/PageHeader";
 import { notFound } from "next/navigation";
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 interface EditClassroomPageProps {
   params: {
@@ -28,7 +31,14 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
       <PageHeader
         title="Editar Sala de Aula"
         description={`Você está editando a sala: ${classroom.name}`}
-      />
+      >
+        <Button asChild variant="outline">
+          <Link href="/classrooms">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar
+          </Link>
+        </Button>
+      </PageHeader>
       <EditClassroomForm classroom={classroom} />
     </div>
   );

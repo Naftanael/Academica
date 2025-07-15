@@ -1,10 +1,10 @@
-
+// src/lib/actions/event_reservations.ts
 'use server';
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firebase/admin';
-import type { EventReservation, ClassroomRecurringReservation, ClassGroup, Classroom } from '@/types';
+import type { EventReservation, ClassroomRecurringReservation, ClassGroup } from '@/types';
 import { eventReservationFormSchema, type EventReservationFormValues } from '@/lib/schemas/event_reservations';
 import { SHIFT_TIME_RANGES, JS_DAYS_OF_WEEK_MAP_TO_PT } from '@/lib/constants';
 import { timeRangesOverlap } from '@/lib/utils';
@@ -31,54 +31,61 @@ export async function getEventReservations(): Promise<EventReservation[]> {
   }
 }
 
-export async function createEventReservation(values: EventReservationFormValues) {
+// Refactored to work with useFormState
+export async function createEventReservation(prevState: any, values: EventReservationFormValues) {
+  const validatedFields = eventReservationFormSchema.safeParse(values);
+  
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: 'Erro de validação. Verifique os campos.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
   try {
-    const validatedValues = eventReservationFormSchema.parse(values);
-    const newEventDate = parseISO(validatedValues.date);
+    const { date, classroomId, startTime, endTime } = validatedFields.data;
+    const newEventDate = parseISO(date);
     const newEventDayOfWeekPt = JS_DAYS_OF_WEEK_MAP_TO_PT[getDay(newEventDate)];
 
     await db.runTransaction(async (transaction) => {
         // 1. Check for conflicts with other single-event reservations
         const eventConflictQuery = eventReservationsCollection
-            .where('classroomId', '==', validatedValues.classroomId)
-            .where('date', '==', validatedValues.date);
+            .where('classroomId', '==', classroomId)
+            .where('date', '==', date);
         const eventConflictSnapshot = await transaction.get(eventConflictQuery);
 
         for (const doc of eventConflictSnapshot.docs) {
             const existingEvent = doc.data() as EventReservation;
-            if (timeRangesOverlap(validatedValues.startTime, validatedValues.endTime, existingEvent.startTime, existingEvent.endTime)) {
-                const classroom = await transaction.get(classroomsCollection.doc(validatedValues.classroomId));
-                throw new Error(`Conflito: A sala "${classroom.data()?.name || 'desconhecida'}" já tem o evento "${existingEvent.title}" neste dia e horário.`);
+            if (timeRangesOverlap(startTime, endTime, existingEvent.startTime, existingEvent.endTime)) {
+                const classroomDoc = await transaction.get(classroomsCollection.doc(classroomId));
+                throw new Error(`Conflito: A sala "${classroomDoc.data()?.name || 'desconhecida'}" já tem o evento "${existingEvent.title}" neste horário.`);
             }
         }
 
         // 2. Check for conflicts with recurring reservations
-        const recurringConflictQuery = recurringReservationsCollection.where('classroomId', '==', validatedValues.classroomId);
+        const recurringConflictQuery = recurringReservationsCollection.where('classroomId', '==', classroomId);
         const recurringSnapshot = await transaction.get(recurringConflictQuery);
 
         for (const doc of recurringSnapshot.docs) {
             const recurringRes = doc.data() as ClassroomRecurringReservation;
-            const recurringStartDate = parseISO(recurringRes.startDate);
-            const recurringEndDate = parseISO(recurringRes.endDate);
-
-            if (isWithinInterval(newEventDate, { start: recurringStartDate, end: recurringEndDate })) {
+            if (isWithinInterval(newEventDate, { start: parseISO(recurringRes.startDate), end: parseISO(recurringRes.endDate) })) {
                 const classGroupDoc = await transaction.get(classGroupsCollection.doc(recurringRes.classGroupId));
                 if (!classGroupDoc.exists) continue;
 
                 const classGroup = classGroupDoc.data() as ClassGroup;
                 if (classGroup.classDays?.includes(newEventDayOfWeekPt)) {
                     const shiftTimeRange = SHIFT_TIME_RANGES[classGroup.shift];
-                    if (timeRangesOverlap(validatedValues.startTime, validatedValues.endTime, shiftTimeRange.start, shiftTimeRange.end)) {
-                        const classroom = await transaction.get(classroomsCollection.doc(validatedValues.classroomId));
-                        throw new Error(`Conflito: A sala "${classroom.data()?.name || 'desconhecida'}" tem uma reserva recorrente para a turma "${classGroup.name}" que colide com este dia e horário.`);
+                    if (timeRangesOverlap(startTime, endTime, shiftTimeRange.start, shiftTimeRange.end)) {
+                        const classroomDoc = await transaction.get(classroomsCollection.doc(classroomId));
+                        throw new Error(`Conflito: A sala "${classroomDoc.data()?.name || 'desconhecida'}" tem uma reserva recorrente para a turma "${classGroup.name}" neste horário.`);
                     }
                 }
             }
         }
 
-        // If no conflicts, create the new event reservation
         const newEventRef = eventReservationsCollection.doc();
-        transaction.set(newEventRef, { ...validatedValues, createdAt: FieldValue.serverTimestamp() });
+        transaction.set(newEventRef, { ...validatedFields.data, createdAt: FieldValue.serverTimestamp() });
     });
 
     revalidatePath('/reservations');
@@ -86,29 +93,20 @@ export async function createEventReservation(values: EventReservationFormValues)
     return { success: true, message: 'Reserva de evento criada com sucesso!' };
 
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: 'Erro de validação.', errors: error.flatten().fieldErrors };
-    }
-    console.error('Failed to create event reservation in Firestore:', error);
-    return { success: false, message: (error as Error).message || 'Erro interno ao criar reserva de evento.' };
+    console.error('Failed to create event reservation:', error);
+    return { success: false, message: (error as Error).message || 'Erro interno ao criar reserva.' };
   }
 }
 
 export async function deleteEventReservation(id: string) {
   try {
-    await db.runTransaction(async (transaction) => {
-        const docRef = eventReservationsCollection.doc(id);
-        const doc = await transaction.get(docRef);
-        if (doc.exists) {
-            transaction.delete(docRef);
-        }
-    });
+    await eventReservationsCollection.doc(id).delete();
 
     revalidatePath('/reservations');
     revalidatePath('/room-availability');
     return { success: true, message: 'Reserva de evento excluída com sucesso!' };
   } catch (error) {
-    console.error(`Failed to delete event reservation ${id} from Firestore:`, error);
-    return { success: false, message: 'Erro interno ao excluir reserva de evento.' };
+    console.error(`Failed to delete event reservation ${id}:`, error);
+    return { success: false, message: 'Erro ao excluir reserva de evento.' };
   }
 }
