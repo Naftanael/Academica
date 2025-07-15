@@ -33,7 +33,7 @@ export default function NewClassroomForm() {
     resolver: zodResolver(classroomSchema),
     defaultValues: {
       name: '',
-      capacity: 0,
+      capacity: undefined,
       isUnderMaintenance: false,
       maintenanceReason: '',
     },
@@ -101,7 +101,11 @@ export default function NewClassroomForm() {
                       type="number" 
                       placeholder="Ex: 30"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        field.onChange(isNaN(value) ? '' : value);
+                      }}
+                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -138,7 +142,7 @@ export default function NewClassroomForm() {
                   <FormItem>
                     <FormLabel>Motivo da Manutenção</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Ex: Pintura, conserto de ar condicionado..." {...field} />
+                      <Textarea placeholder="Ex: Pintura, conserto de ar condicionado..." {...field} value={field.value ?? ''}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

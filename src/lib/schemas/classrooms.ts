@@ -8,13 +8,16 @@ export const classroomSchema = z.object({
   name: z.string().trim()
     .min(3, "O nome da sala deve ter pelo menos 3 caracteres.")
     .max(100, "O nome da sala é muito longo."),
-  capacity: z.coerce.number({
+  capacity: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.coerce.number({
       required_error: "A capacidade é obrigatória.",
       invalid_type_error: "A capacidade deve ser um número.",
     })
     .int("A capacidade deve ser um número inteiro.")
     .positive("A capacidade deve ser um número positivo.")
-    .min(1, "A capacidade deve ser de pelo menos 1."),
+    .min(1, "A capacidade deve ser de pelo menos 1.")
+  ),
   isUnderMaintenance: z.boolean().default(false).optional(),
   maintenanceReason: z.string().trim().optional(),
 }).refine(data => {

@@ -9,10 +9,13 @@ export const recurringReservationFormSchema = z.object({
   startDate: dateStringSchema.refine(val => !isNaN(parseISO(val).getTime()), {
     message: "Data de início inválida.",
   }),
-  numberOfClasses: z.coerce
-    .number({ invalid_type_error: "O número de aulas deve ser um número." })
-    .min(1, "A reserva deve ter pelo menos 1 aula.")
-    .max(100, "O número máximo de aulas por reserva é 100."), // Added a safeguard
+  numberOfClasses: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.coerce
+      .number({ invalid_type_error: "O número de aulas deve ser um número." })
+      .min(1, "A reserva deve ter pelo menos 1 aula.")
+      .max(100, "O número máximo de aulas por reserva é 100.")
+  ),
   purpose: z.string().min(3, "O propósito deve ter pelo menos 3 caracteres.").max(100, "Propósito muito longo."),
 });
 

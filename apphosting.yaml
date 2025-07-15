@@ -12,3 +12,15 @@ runConfig:
   cpu: 1
   memoryMiB: 1024
   timeoutSeconds: 60
+
+# To use Google Cloud services, it's recommended to create a service account with
+# the "Firebase App Hosting Admin" role and the necessary permissions for other
+# services, then set it below.
+# serviceAccount: my-app-hosting-sa
+
+# Expose secrets from Google Secret Manager as environment variables.
+# The secret must be created in Secret Manager before deployment.
+# https://firebase.google.com/docs/app-hosting/configure#secret-env
+secretEnvironmentVariables:
+  - key: FIREBASE_SERVICE_ACCOUNT_KEY
+    secret: FIREBASE_SERVICE_ACCOUNT_KEY

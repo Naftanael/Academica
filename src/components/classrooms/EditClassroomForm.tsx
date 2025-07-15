@@ -40,7 +40,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
     resolver: zodResolver(classroomSchema),
     defaultValues: {
       name: classroom.name || '',
-      capacity: classroom.capacity || 0,
+      capacity: classroom.capacity || undefined,
       isUnderMaintenance: classroom.isUnderMaintenance || false,
       maintenanceReason: classroom.maintenanceReason || '',
     },
@@ -109,7 +109,11 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                       type="number" 
                       placeholder="Ex: 30" 
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        field.onChange(isNaN(value) ? '' : value);
+                      }}
+                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -146,7 +150,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                   <FormItem>
                     <FormLabel>Motivo da Manutenção</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Ex: Infiltração no teto, projetor quebrado..." {...field} />
+                      <Textarea placeholder="Ex: Infiltração no teto, projetor quebrado..." {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
