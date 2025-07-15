@@ -2,27 +2,33 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/firebase/admin';
-import type { ClassroomRecurringReservation, DayOfWeek, ClassGroup } from '@/types';
-import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
-import { z } from 'zod';
-import { dateRangesOverlap } from '@/lib/utils';
-import { parseISO, format, addDays, getDay } from 'date-fns';
 import { FieldValue } from 'firebase-admin/firestore';
+import { z } from 'zod';
+import { parseISO, format, addDays, getDay } from 'date-fns';
 
-const recurringReservationsCollection = db ? db.collection('recurring_reservations') : null;
-const classGroupsCollection = db ? db.collection('classgroups') : null;
+import { db } from '@/lib/firebase/admin';
+import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
+import { dateRangesOverlap } from '@/lib/utils';
+import type { ClassroomRecurringReservation, DayOfWeek, ClassGroup } from '@/types';
 
+// Coleções do Firestore.
+const recurringReservationsCollection = db.collection('recurring_reservations');
+const classGroupsCollection = db.collection('classgroups');
+
+// Mapeamento de dias da semana para o formato numérico da lib 'date-fns'.
 const dayOfWeekMapping: Record<DayOfWeek, number> = {
   'Domingo': 0, 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5, 'Sábado': 6
 };
 
+/**
+ * Calcula a data de término de uma reserva com base na data de início, dias de aula e número de aulas.
+ */
 function calculateEndDate(startDate: Date, classDays: DayOfWeek[], numberOfClasses: number): Date {
   if (numberOfClasses <= 0 || !classDays || classDays.length === 0) return new Date(startDate);
   
   const numericalClassDays = classDays.map(d => dayOfWeekMapping[d]);
   let currentDate = new Date(startDate);
-  currentDate.setHours(0, 0, 0, 0);
+  currentDate.setHours(0, 0, 0, 0); // Zera a hora para evitar bugs de fuso horário.
   let classesCount = 0;
   let lastClassDate = new Date(currentDate);
 
@@ -31,6 +37,7 @@ function calculateEndDate(startDate: Date, classDays: DayOfWeek[], numberOfClass
       classesCount++;
       lastClassDate = new Date(currentDate);
     }
+    // Avança para o próximo dia apenas se ainda não tivermos encontrado todas as aulas.
     if (classesCount < numberOfClasses) {
         currentDate = addDays(currentDate, 1);
     }
@@ -38,25 +45,24 @@ function calculateEndDate(startDate: Date, classDays: DayOfWeek[], numberOfClass
   return lastClassDate;
 }
 
+/**
+ * Busca todas as reservas recorrentes do Firestore.
+ * Lança um erro em caso de falha.
+ */
 export async function getRecurringReservations(): Promise<ClassroomRecurringReservation[]> {
-    if (!recurringReservationsCollection) {
-        console.error("Firestore is not initialized.");
-        return [];
-    }
   try {
     const snapshot = await recurringReservationsCollection.orderBy('startDate').get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClassroomRecurringReservation));
   } catch (error) {
-    console.error('Failed to get recurring reservations:', error);
-    return [];
+    console.error('Error fetching recurring reservations:', error);
+    throw new Error('Failed to retrieve recurring reservations.');
   }
 }
 
-// Refactored to work with useFormState
+/**
+ * Cria uma nova reserva recorrente, verificando conflitos dentro de uma transação atômica.
+ */
 export async function createRecurringReservation(prevState: any, values: RecurringReservationFormValues) {
-    if (!db || !recurringReservationsCollection || !classGroupsCollection) {
-        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
-    }
   const validatedFields = recurringReservationFormSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -67,12 +73,12 @@ export async function createRecurringReservation(prevState: any, values: Recurri
     };
   }
   
+  const { classGroupId, classroomId, startDate, numberOfClasses, purpose } = validatedFields.data;
+
   try {
-    const { classGroupId, classroomId, startDate, numberOfClasses, purpose } = validatedFields.data;
-    
     await db.runTransaction(async (transaction) => {
         const classGroupDoc = await transaction.get(classGroupsCollection.doc(classGroupId));
-        if (!classGroupDoc.exists) throw new Error('Turma não encontrada.');
+        if (!classGroupDoc.exists) throw new Error('A turma selecionada não foi encontrada.');
         
         const newReservationClassGroup = classGroupDoc.data() as ClassGroup;
         const newResStartDate = parseISO(startDate);
@@ -86,6 +92,7 @@ export async function createRecurringReservation(prevState: any, values: Recurri
             const existingResStartDate = parseISO(existingRes.startDate);
             const existingResEndDate = parseISO(existingRes.endDate);
 
+            // Se os períodos de data se sobrepõem, precisamos verificar os detalhes.
             if (dateRangesOverlap(newResStartDate, newResEndDate, existingResStartDate, existingResEndDate)) {
                 const existingResClassGroupDoc = await transaction.get(classGroupsCollection.doc(existingRes.classGroupId));
                 if (!existingResClassGroupDoc.exists) continue;
@@ -93,12 +100,14 @@ export async function createRecurringReservation(prevState: any, values: Recurri
                 const existingResClassGroup = existingResClassGroupDoc.data() as ClassGroup;
                 const commonClassDays = newReservationClassGroup.classDays.filter(day => existingResClassGroup.classDays?.includes(day));
 
+                // Se houver conflito de dias na semana, a reserva não é permitida.
                 if (commonClassDays.length > 0) {
-                    throw new Error(`Conflito: A sala já está reservada para "${existingResClassGroup.name}" em dias (${commonClassDays.join(', ')}) que se sobrepõem ao período.`);
+                    throw new Error(`Conflito: A sala já está reservada para a turma "${existingResClassGroup.name}" em dias (${commonClassDays.join(', ')}) que se sobrepõem ao período selecionado.`);
                 }
             }
         }
 
+        // Se não houver conflitos, cria a nova reserva.
         const newReservationRef = recurringReservationsCollection.doc();
         transaction.set(newReservationRef, {
             classGroupId,
@@ -114,16 +123,16 @@ export async function createRecurringReservation(prevState: any, values: Recurri
     revalidatePath('/room-availability'); 
     return { success: true, message: 'Reserva recorrente criada com sucesso!' };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create recurring reservation:', error);
-    return { success: false, message: (error as Error).message || 'Erro ao criar reserva.' };
+    return { success: false, message: error.message || 'Ocorreu um erro no servidor ao criar a reserva.' };
   }
 }
 
+/**
+ * Deleta uma reserva recorrente do Firestore.
+ */
 export async function deleteRecurringReservation(id: string) {
-    if (!recurringReservationsCollection) {
-        return { success: false, message: 'Erro: O banco de dados não foi inicializado.' };
-    }
   try {
     await recurringReservationsCollection.doc(id).delete();
 
@@ -132,6 +141,6 @@ export async function deleteRecurringReservation(id: string) {
     return { success: true, message: 'Reserva recorrente excluída com sucesso!' };
   } catch (error) {
     console.error(`Failed to delete recurring reservation ${id}:`, error);
-    return { success: false, message: 'Erro ao excluir reserva.' };
+    return { success: false, message: 'Ocorreu um erro no servidor ao excluir a reserva.' };
   }
 }
