@@ -5,151 +5,66 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 // import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-// import { db } from '@/lib/firebase/firebaseAdmin'; // A importação garante a inicialização. Se falhar, a app para.
+import { db } from '@/lib/firebase/firebaseAdmin';
 import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
 import type { Announcement } from '@/types';
 
-// A coleção é inicializada diretamente. Se 'db' não estivesse disponível, o app teria falhado ao iniciar.
 // const announcementsCollection = db.collection('announcements');
 
-// Helper para converter um documento do Firestore para o nosso tipo Announcement.
-// const docToAnnouncement = (doc: FirebaseFirestore.DocumentSnapshot): Announcement => {
-//     const data = doc.data();
-//     // Um doc retornado pelo Firestore sempre terá dados.
-//     if (!data) throw new Error(`Document ${doc.id} has no data.`);
+const docToAnnouncement = (doc: any): Announcement => {
+    const data = doc.data();
+    if (!data) throw new Error(`Document ${doc.id} has no data.`);
 
-//     const createdAt = data.createdAt as import('firebase-admin/firestore').Timestamp;
-//     return {
-//         id: doc.id,
-//         title: data.title,
-//         content: data.content,
-//         author: data.author,
-//         type: data.type,
-//         priority: data.priority,
-//         published: data.published,
-//         createdAt: createdAt.toDate().toISOString(),
-//     };
-// };
+    const createdAt = data.createdAt as any; // Mock
+    return {
+        id: doc.id,
+        title: data.title,
+        content: data.content,
+        author: data.author,
+        type: data.type,
+        priority: data.priority,
+        published: data.published,
+        createdAt: new Date().toISOString(),
+    };
+};
 
-/**
- * Busca todos os anúncios do Firestore, ordenados por data de criação.
- * Lança um erro se a busca no banco de dados falhar.
- */
 export async function getAnnouncements(): Promise<Announcement[]> {
-  try {
-    console.log("Firebase desativado: getAnnouncements retornando array vazio.");
-    return [];
-    // const snapshot = await announcementsCollection.orderBy('createdAt', 'desc').get();
-    // if (snapshot.empty) {
-    //   return [];
-    // }
-    // return snapshot.docs.map(docToAnnouncement);
-  } catch (error) {
-    console.error('Error fetching announcements from Firestore:', error);
-    // Lançar o erro permite que a camada superior (ex: um Error Boundary no React) o capture.
-    throw new Error('Failed to retrieve announcements.');
-  }
+  console.log("Firebase desativado: getAnnouncements retornando array vazio.");
+  return [];
 }
 
-/**
- * Busca um anúncio específico pelo seu ID.
- * Retorna undefined se o documento não for encontrado.
- * Lança um erro se a busca no banco de dados falhar.
- */
 export async function getAnnouncementById(id: string): Promise<Announcement | undefined> {
-  try {
-    console.log(`Firebase desativado: getAnnouncementById para o ID ${id} retornando undefined.`);
-    return undefined;
-    // const doc = await announcementsCollection.doc(id).get();
-    // return doc.exists ? docToAnnouncement(doc) : undefined;
-  } catch (error) {
-    console.error(`Error fetching announcement by ID ${id} from Firestore:`, error);
-    throw new Error(`Failed to retrieve announcement ${id}.`);
-  }
+  console.log(`Firebase desativado: getAnnouncementById para o ID ${id} retornando undefined.`);
+  return undefined;
 }
 
-/**
- * Cria um novo anúncio no Firestore.
- * Utiliza o 'prevState' do useFormState para retornar o estado da operação.
- */
 export async function createAnnouncement(prevState: any, values: AnnouncementFormValues) {
-  try {
-     console.log("Firebase desativado: createAnnouncement retornando erro.");
-    return { success: false, message: 'Firebase está temporariamente desativado.' };
-    // const validatedValues = announcementSchema.parse(values);
-
-    // await announcementsCollection.add({
-    //     ...validatedValues,
-    //     createdAt: FieldValue.serverTimestamp(),
-    // });
-
-    // // Invalida o cache para as páginas que exibem os anúncios.
-    // revalidatePath('/announcements');
-    // revalidatePath('/tv-display');
-
-    // return { success: true, message: 'Anúncio criado com sucesso!' };
-  } catch (error) {
-    // Tratamento específico para erros de validação do Zod.
-    if (error instanceof z.ZodError) {
+  console.log("Firebase desativado: createAnnouncement retornando erro.");
+  const validatedValues = announcementSchema.safeParse(values);
+  if (!validatedValues.success) {
       return { 
         success: false, 
-        message: 'Erro de validação nos dados do anúncio.', 
-        errors: error.flatten().fieldErrors 
+        message: 'Erro de validação (Firebase desativado).', 
+        errors: validatedValues.error.flatten().fieldErrors 
       };
     }
-    console.error('Failed to create announcement in Firestore:', error);
-    return { success: false, message: 'Ocorreu um erro no servidor ao criar o anúncio.' };
-  }
+  return { success: false, message: 'Firebase está temporariamente desativado.' };
 }
 
-/**
- * Atualiza um anúncio existente no Firestore.
- */
 export async function updateAnnouncement(id: string, prevState: any, values: AnnouncementFormValues) {
-  try {
-    console.log(`Firebase desativado: updateAnnouncement para o ID ${id} retornando erro.`);
-    return { success: false, message: 'Firebase está temporariamente desativado.' };
-    // const validatedValues = announcementSchema.parse(values);
-    // const docRef = announcementsCollection.doc(id);
-
-    // await docRef.update({
-    //   ...validatedValues,
-    //   updatedAt: FieldValue.serverTimestamp() // Adiciona um campo de 'updatedAt' para rastreamento.
-    // });
-
-    // revalidatePath('/announcements');
-    // revalidatePath(`/announcements/${id}/edit`);
-    // revalidatePath('/tv-display');
-
-    // return { success: true, message: 'Anúncio atualizado com sucesso!' };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+  console.log(`Firebase desativado: updateAnnouncement para o ID ${id} retornando erro.`);
+   const validatedValues = announcementSchema.safeParse(values);
+    if (!validatedValues.success) {
       return { 
         success: false, 
-        message: 'Erro de validação nos dados do anúncio.', 
-        errors: error.flatten().fieldErrors 
+        message: 'Erro de validação (Firebase desativado).', 
+        errors: validatedValues.error.flatten().fieldErrors 
       };
     }
-    console.error(`Failed to update announcement ${id} in Firestore:`, error);
-    return { success: false, message: 'Ocorreu um erro no servidor ao atualizar o anúncio.' };
-  }
+  return { success: false, message: 'Firebase está temporariamente desativado.' };
 }
 
-/**
- * Deleta um anúncio do Firestore.
- */
 export async function deleteAnnouncement(id: string) {
-  try {
-    console.log(`Firebase desativado: deleteAnnouncement para o ID ${id} retornando erro.`);
-    return { success: false, message: 'Firebase está temporariamente desativado.' };
-    // await announcementsCollection.doc(id).delete();
-    
-    // revalidatePath('/announcements');
-    // revalidatePath('/tv-display');
-
-    // return { success: true, message: 'Anúncio excluído com sucesso!' };
-  } catch (error) {
-    console.error(`Failed to delete announcement ${id} from Firestore:`, error);
-    return { success: false, message: 'Ocorreu um erro no servidor ao excluir o anúncio.' };
-  }
+  console.log(`Firebase desativado: deleteAnnouncement para o ID ${id} retornando erro.`);
+  return { success: false, message: 'Firebase está temporariamente desativado.' };
 }

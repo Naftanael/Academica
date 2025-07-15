@@ -33,6 +33,7 @@ const initialState = {
   success: false,
   message: '',
   errors: undefined,
+  data: undefined,
 };
 
 type ClassGroupFormValues = z.infer<typeof classGroupCreateSchema>;

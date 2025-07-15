@@ -1,25 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: false,
-  },
-  eslint: {
-    ignoreDuringBuilds: false, 
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
-  devIndicators: {
-    allowedDevOrigins: ["https://*.cloudworkstations.dev"],
-  },
+  // Nenhuma configuração extra do Webpack é necessária para importar JSON
+  // em versões recentes do Next.js.
 };
 
 module.exports = nextConfig;
