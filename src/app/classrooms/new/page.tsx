@@ -1,35 +1,19 @@
+// src/app/classrooms/new/page.tsx
+import NewClassroomForm from "@/components/classrooms/NewClassroomForm";
+import PageHeader from "@/components/shared/PageHeader";
 
-import Link from 'next/link';
-import { ArrowLeft, School } from 'lucide-react';
-import PageHeader from '@/components/shared/PageHeader';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import NewClassroomForm from '@/components/classrooms/NewClassroomForm';
-
+/**
+ * Page for creating a new classroom.
+ * This component sets up the page layout and renders the form for adding a new classroom.
+ */
 export default function NewClassroomPage() {
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
-        title="Nova Sala de Aula"
-        description="Preencha os dados para cadastrar uma nova sala."
-        icon={School}
-        actions={
-          <Button variant="outline" asChild>
-            <Link href="/classrooms">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Lista
-            </Link>
-          </Button>
-        }
+        title="Adicionar Nova Sala"
+        description="Preencha os detalhes abaixo para adicionar uma nova sala de aula."
       />
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Dados da Sala</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NewClassroomForm />
-        </CardContent>
-      </Card>
-    </>
+      <NewClassroomForm />
+    </div>
   );
 }

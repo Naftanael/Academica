@@ -1,91 +1,79 @@
-
+// src/components/classrooms/EditClassroomForm.tsx
 'use client';
 
-import * as React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useRef } from 'react';
+import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
-import { Save, Wrench } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { classroomSchemaWithoutRefinement, ClassroomFormValues } from '@/lib/schemas/classrooms';
 import { updateClassroom } from '@/lib/actions/classrooms';
 import type { Classroom } from '@/types';
-import { classroomEditSchema, type ClassroomEditFormValues } from '@/lib/schemas/classrooms';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import FormSubmitButton from '@/components/shared/FormSubmitButton';
 
 interface EditClassroomFormProps {
   classroom: Classroom;
 }
 
+const initialState = {
+  message: '',
+  errors: {},
+};
+
 export default function EditClassroomForm({ classroom }: EditClassroomFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [isPending, setIsPending] = React.useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  
+  // Bind the classroom ID to the update action
+  const updateClassroomWithId = updateClassroom.bind(null, classroom.id);
+  const [state, formAction] = useFormState(updateClassroomWithId, initialState);
 
-  const form = useForm<ClassroomEditFormValues>({
-    resolver: zodResolver(classroomEditSchema),
+  const form = useForm<ClassroomFormValues>({
+    resolver: zodResolver(classroomSchemaWithoutRefinement),
     defaultValues: {
-      name: classroom.name,
-      capacity: classroom.capacity ?? undefined,
-      isUnderMaintenance: classroom.isUnderMaintenance ?? false,
-      maintenanceReason: classroom.maintenanceReason ?? '',
+      name: classroom.name || '',
+      capacity: classroom.capacity || 0,
+      isUnderMaintenance: classroom.isUnderMaintenance || false,
+      maintenanceReason: classroom.maintenanceReason || '',
     },
+    context: state.errors,
   });
 
-  const isUnderMaintenance = form.watch('isUnderMaintenance');
-
-  async function onSubmit(values: ClassroomEditFormValues) {
-    setIsPending(true);
-    const result = await updateClassroom(classroom.id, values);
-    setIsPending(false);
-
-    if (result.success) {
-      toast({
-        title: 'Sucesso!',
-        description: result.message,
-      });
-      router.push('/classrooms');
-      router.refresh(); 
-    } else {
-      if (result.errors) {
-        Object.entries(result.errors).forEach(([field, errors]) => {
-          if (errors) {
-            form.setError(field as keyof ClassroomEditFormValues, {
-              type: 'manual',
-              message: Array.isArray(errors) ? errors.join(', ') : String(errors),
-            });
-          }
-        });
+  useEffect(() => {
+    if (state.message) {
+      if (state.message.includes('sucesso')) {
         toast({
-          title: 'Erro de Validação',
-          description: "Por favor, corrija os campos destacados.",
-          variant: 'destructive',
+          title: "Sucesso!",
+          description: state.message,
         });
+        router.push('/classrooms');
       } else {
         toast({
-          title: 'Erro ao atualizar sala',
-          description: result.message || 'Ocorreu um erro inesperado.',
-          variant: 'destructive',
+          title: "Erro",
+          description: state.message,
+          variant: "destructive",
         });
       }
     }
-  }
+  }, [state, toast, router]);
+
+  const isUnderMaintenance = form.watch('isUnderMaintenance');
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        ref={formRef}
+        action={formAction}
+        className="space-y-8"
+        onSubmit={form.handleSubmit(() => formRef.current?.submit())}
+      >
         <FormField
           control={form.control}
           name="name"
@@ -93,15 +81,13 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
             <FormItem>
               <FormLabel>Nome da Sala</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Laboratório de Informática 1" {...field} />
+                <Input placeholder="Ex: Sala 101" {...field} />
               </FormControl>
-              <FormDescription>
-                O nome que identificará esta sala.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="capacity"
@@ -113,72 +99,49 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
                   type="number" 
                   placeholder="Ex: 30" 
                   {...field} 
-                  onChange={event => field.onChange(event.target.value === '' ? undefined : +event.target.value)}
-                  value={field.value === undefined ? '' : field.value}
+                  onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)}
                 />
               </FormControl>
-              <FormDescription>
-                Número máximo de alunos que a sala comporta.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="isUnderMaintenance"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-amber-50 dark:bg-amber-900/20">
-              <Wrench className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              <div className="space-y-0.5 leading-none">
-                <FormLabel className="text-base">
-                  Em Manutenção?
-                </FormLabel>
-                <FormDescription>
-                  Marque esta opção se a sala estiver temporariamente indisponível para uso.
-                </FormDescription>
-              </div>
-              <FormControl className="ml-auto!important mr-2">
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
                 <Checkbox
                   checked={field.value}
                   onCheckedChange={field.onChange}
-                  aria-label="Marcar como em manutenção"
                 />
               </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Em manutenção</FormLabel>
+              </div>
             </FormItem>
           )}
         />
+        
         {isUnderMaintenance && (
           <FormField
             control={form.control}
             name="maintenanceReason"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Motivo da Manutenção (Opcional)</FormLabel>
+                <FormLabel>Motivo da Manutenção</FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="Ex: Ar condicionado quebrado, pintura, etc."
-                    {...field}
-                  />
+                  <Input placeholder="Ex: Projetor quebrado" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Descreva brevemente o motivo pelo qual a sala está em manutenção.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         )}
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            {isPending ? "Salvando..." : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Alterações
-              </>
-            )}
-          </Button>
-        </div>
+
+        <FormSubmitButton>Salvar Alterações</FormSubmitButton>
       </form>
     </Form>
   );

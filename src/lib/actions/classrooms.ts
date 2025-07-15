@@ -1,41 +1,62 @@
+// src/lib/actions/classrooms.ts
 'use server';
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firebase/admin';
-import { FieldValue, type DocumentSnapshot } from 'firebase-admin/firestore';
-import type { Classroom } from '@/types';
-import { classroomCreateSchema, classroomEditSchema, type ClassroomCreateValues, type ClassroomEditFormValues } from '@/lib/schemas/classrooms';
+import { classroomSchema, classroomSchemaWithoutRefinement } from '@/lib/schemas/classrooms';
+import { Classroom } from '@/types';
+import { FieldValue } from 'firebase-admin/firestore';
 
-// Collection references
 const classroomsCollection = db.collection('classrooms');
-const classGroupsCollection = db.collection('classgroups');
-const eventReservationsCollection = db.collection('event_reservations');
-const recurringReservationsCollection = db.collection('recurring_reservations');
 
 /**
  * Converts a Firestore document snapshot into a Classroom object.
- * Provides default values for optional fields to ensure type consistency.
- * @param doc - The Firestore document snapshot.
- * @returns The Classroom object.
+ * @param doc - The document snapshot from Firestore.
+ * @returns A Classroom object with its ID.
  */
-const docToClassroom = (doc: DocumentSnapshot): Classroom => {
-    const data = doc.data();
-    if (!data) {
-        throw new Error("Document data is empty.");
-    }
+function toClassroom(doc: FirebaseFirestore.DocumentSnapshot): Classroom {
+  const data = doc.data();
+  if (!data) {
+    throw new Error('Document data is unexpectedly empty.');
+  }
+  return {
+    id: doc.id,
+    name: data.name,
+    capacity: data.capacity,
+    isUnderMaintenance: data.isUnderMaintenance,
+    maintenanceReason: data.maintenanceReason,
+  };
+}
+
+/**
+ * Creates a new classroom in Firestore.
+ * @param prevState - The previous state of the form.
+ * @param formData - The form data containing the classroom details.
+ * @returns An object with a message indicating success or failure.
+ */
+export async function createClassroom(prevState: any, formData: FormData) {
+  const validatedFields = classroomSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!validatedFields.success) {
     return {
-        id: doc.id,
-        name: data.name,
-        capacity: data.capacity,
-        isLab: data.isLab ?? false,
-        isUnderMaintenance: data.isUnderMaintenance ?? false,
-        maintenanceReason: data.maintenanceReason ?? '',
-        resources: data.resources ?? [],
-        createdAt: data.createdAt?.toDate(),
-        updatedAt: data.updatedAt?.toDate(),
+      message: 'Erro de validação. Verifique os campos.',
+      errors: validatedFields.error.flatten().fieldErrors,
     };
-};
+  }
+
+  try {
+    await classroomsCollection.add({
+      ...validatedFields.data,
+      createdAt: FieldValue.serverTimestamp(), // Best practice to track creation
+    });
+    revalidatePath('/classrooms');
+    return { message: 'Sala de aula criada com sucesso!' };
+  } catch (error) {
+    console.error('Error creating classroom:', error);
+    return { message: 'Erro ao criar a sala de aula.' };
+  }
+}
 
 /**
  * Fetches all classrooms from Firestore, ordered by name.
@@ -43,11 +64,13 @@ const docToClassroom = (doc: DocumentSnapshot): Classroom => {
  */
 export async function getClassrooms(): Promise<Classroom[]> {
   try {
-    const snapshot = await classroomsCollection.orderBy('name').get();
-    return snapshot.docs.map(docToClassroom);
+    const snapshot = await classroomsCollection.orderBy('name', 'asc').get();
+    if (snapshot.empty) {
+      return [];
+    }
+    return snapshot.docs.map(toClassroom);
   } catch (error) {
-    console.error('Failed to get classrooms:', error);
-    // In case of error, return an empty array to prevent UI crashes.
+    console.error('Error getting documents: ', error);
     return [];
   }
 }
@@ -55,188 +78,70 @@ export async function getClassrooms(): Promise<Classroom[]> {
 /**
  * Fetches a single classroom by its ID.
  * @param id - The ID of the classroom to fetch.
- * @returns A promise that resolves to a Classroom object, or undefined if not found.
+ * @returns A promise that resolves to the Classroom object or null if not found.
  */
-export async function getClassroomById(id: string): Promise<Classroom | undefined> {
+export async function getClassroomById(id: string): Promise<Classroom | null> {
+  if (!id) {
+    console.error('getClassroomById: ID is required.');
+    return null;
+  }
   try {
     const doc = await classroomsCollection.doc(id).get();
     if (!doc.exists) {
-      return undefined;
+      console.warn(`No classroom found with id: ${id}`);
+      return null;
     }
-    return docToClassroom(doc);
+    return toClassroom(doc);
   } catch (error) {
-    console.error(`Failed to get classroom by ID ${id}:`, error);
-    return undefined;
+    console.error(`Error fetching classroom ${id}:`, error);
+    return null;
   }
 }
 
 /**
- * Creates a new classroom in Firestore.
- * Ensures that the classroom name is unique.
- * @param values - The data for the new classroom.
- * @returns An object indicating success or failure, with a message and optional data/errors.
- */
-export async function createClassroom(values: ClassroomCreateValues) {
-    try {
-        const validatedValues = classroomCreateSchema.parse(values);
-
-        const newClassroom = await db.runTransaction(async (transaction) => {
-            const existingClassroomQuery = classroomsCollection.where('name', '==', validatedValues.name);
-            const existingClassroomSnapshot = await transaction.get(existingClassroomQuery);
-
-            if (!existingClassroomSnapshot.empty) {
-                throw new Error('Já existe uma sala de aula com este nome.');
-            }
-
-            const newClassroomRef = classroomsCollection.doc();
-            const newClassroomData = {
-                ...validatedValues,
-                // Set default values for optional fields if not provided
-                isLab: validatedValues.isLab ?? false,
-                isUnderMaintenance: validatedValues.isUnderMaintenance ?? false,
-                maintenanceReason: validatedValues.maintenanceReason ?? '',
-                resources: validatedValues.resources ?? [],
-                createdAt: FieldValue.serverTimestamp(),
-                updatedAt: FieldValue.serverTimestamp(),
-            };
-
-            transaction.set(newClassroomRef, newClassroomData);
-            return { id: newClassroomRef.id, ...newClassroomData };
-        });
-
-        // Revalidate caches to reflect the new data
-        revalidatePath('/classrooms');
-        revalidatePath('/room-availability');
-        revalidatePath('/tv-display');
-        revalidatePath('/');
-        return { success: true, message: 'Sala de aula criada com sucesso!', data: newClassroom as Classroom };
-
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            return { success: false, message: 'Erro de validação ao criar sala.', errors: error.flatten().fieldErrors };
-        }
-        console.error('Failed to create classroom:', error);
-        // Return the specific error message if available
-        return { success: false, message: (error as Error).message || 'Erro interno ao criar sala de aula.' };
-    }
-}
-
-/**
- * Updates an existing classroom.
+ * Updates an existing classroom in Firestore.
  * @param id - The ID of the classroom to update.
- * @param values - The new data for the classroom.
- * @returns An object indicating success or failure, with a message and optional errors.
+ * @param prevState - The previous state of the form.
+ * @param formData - The form data containing the updated classroom details.
+ * @returns An object with a message indicating success or failure.
  */
-export async function updateClassroom(id: string, values: ClassroomEditFormValues) {
-    try {
-        const validatedValues = classroomEditSchema.parse(values);
-        const docRef = classroomsCollection.doc(id);
+export async function updateClassroom(id: string, prevState: any, formData: FormData) {
+  const validatedFields = classroomSchemaWithoutRefinement.safeParse(Object.fromEntries(formData.entries()));
 
-        await db.runTransaction(async (transaction) => {
-            const doc = await transaction.get(docRef);
-            if (!doc.exists) {
-                throw new Error('Sala de aula não encontrada.');
-            }
-            const existingData = doc.data();
+  if (!validatedFields.success) {
+    return {
+      message: 'Erro de validação. Verifique os campos.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
 
-            // Check for name uniqueness only if the name has changed
-            if (validatedValues.name && validatedValues.name !== existingData?.name) {
-                const existingNameQuery = classroomsCollection.where('name', '==', validatedValues.name).limit(1);
-                const existingNameSnapshot = await transaction.get(existingNameQuery);
-                if (!existingNameSnapshot.empty) {
-                    throw new Error('Já existe uma sala de aula com este nome.');
-                }
-            }
-
-            // Prepare the data for update, applying robust logic for maintenance status
-            const updatedData: Record<string, any> = { ...validatedValues };
-
-            const isNowUnderMaintenance = validatedValues.isUnderMaintenance;
-
-            if (isNowUnderMaintenance === true) {
-                // If being put under maintenance, ensure there's a reason
-                updatedData.maintenanceReason = validatedValues.maintenanceReason || 'Manutenção geral.';
-            } else if (isNowUnderMaintenance === false) {
-                // If maintenance is being removed, clear the reason
-                updatedData.maintenanceReason = '';
-            }
-            // If `isNowUnderMaintenance` is `undefined`, we don't change `maintenanceReason`.
-
-            updatedData.updatedAt = FieldValue.serverTimestamp();
-            transaction.update(docRef, updatedData);
-        });
-
-        revalidatePath('/classrooms');
-        revalidatePath(`/classrooms/${id}/edit`);
-        revalidatePath('/room-availability');
-        revalidatePath('/tv-display');
-        revalidatePath('/');
-        return { success: true, message: 'Sala de aula atualizada com sucesso!' };
-
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            return { success: false, message: 'Erro de validação ao atualizar sala.', errors: error.flatten().fieldErrors };
-        }
-        console.error(`Failed to update classroom ${id}:`, error);
-        return { success: false, message: (error as Error).message || 'Erro interno ao atualizar sala de aula.' };
-    }
+  try {
+    const classroomRef = classroomsCollection.doc(id);
+    await classroomRef.update({
+      ...validatedFields.data,
+      updatedAt: FieldValue.serverTimestamp(), // Best practice to track updates
+    });
+    revalidatePath('/classrooms');
+    revalidatePath(`/classrooms/${id}/edit`);
+    return { message: 'Sala de aula atualizada com sucesso!' };
+  } catch (error) {
+    console.error('Error updating classroom:', error);
+    return { message: 'Erro ao atualizar a sala de aula.' };
+  }
 }
 
 /**
- * Deletes a classroom.
- * Prevents deletion if the classroom is currently assigned to any class groups or reservations.
+ * Deletes a classroom from Firestore.
  * @param id - The ID of the classroom to delete.
- * @returns An object indicating success or failure with a message.
+ * @returns A promise that resolves when the classroom is deleted.
  */
 export async function deleteClassroom(id: string) {
-    try {
-        await db.runTransaction(async (transaction) => {
-            const docRef = classroomsCollection.doc(id);
-            const doc = await transaction.get(docRef);
-
-            if (!doc.exists) {
-                // If it doesn't exist, our job is done.
-                console.log(`Classroom ${id} not found for deletion, considering it a success.`);
-                return;
-            }
-
-            // Check for dependencies before deleting
-            const classGroupQuery = classGroupsCollection.where('assignedClassroomId', '==', id).limit(1);
-            const eventReservationQuery = eventReservationsCollection.where('classroomId', '==', id).limit(1);
-            const recurringReservationQuery = recurringReservationsCollection.where('classroomId', '==', id).limit(1);
-
-            const [
-                classGroupSnapshot,
-                eventReservationSnapshot,
-                recurringReservationSnapshot
-            ] = await Promise.all([
-                transaction.get(classGroupQuery),
-                transaction.get(eventReservationQuery),
-                transaction.get(recurringReservationQuery)
-            ]);
-
-            if (!classGroupSnapshot.empty) {
-                throw new Error('Não é possível excluir a sala. Ela está atribuída a uma ou mais turmas.');
-            }
-            if (!eventReservationSnapshot.empty) {
-                throw new Error('Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas de eventos.');
-            }
-            if (!recurringReservationSnapshot.empty) {
-                throw new Error('Não é possível excluir a sala. Ela está sendo usada em uma ou mais reservas recorrentes.');
-            }
-
-            transaction.delete(docRef);
-        });
-
-        revalidatePath('/classrooms');
-        revalidatePath('/room-availability');
-        revalidatePath('/tv-display');
-        revalidatePath('/reservations');
-        revalidatePath('/');
-        return { success: true, message: 'Sala de aula excluída com sucesso!' };
-
-    } catch (error) {
-        console.error(`Failed to delete classroom ${id}:`, error);
-        return { success: false, message: (error as Error).message || 'Erro interno ao excluir sala de aula.' };
-    }
+  try {
+    await classroomsCollection.doc(id).delete();
+    revalidatePath('/classrooms');
+    return { message: 'Sala de aula deletada com sucesso' };
+  } catch (error) {
+    console.error('Error deleting classroom:', error);
+    return { message: 'Erro ao deletar a sala de aula' };
+  }
 }

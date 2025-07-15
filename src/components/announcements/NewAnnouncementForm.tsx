@@ -1,55 +1,97 @@
-
+// src/components/announcements/NewAnnouncementForm.tsx
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PlusCircle } from 'lucide-react';
-
-import { announcementSchema, ANNOUNCEMENT_TYPES, ANNOUNCEMENT_PRIORITIES, type AnnouncementFormValues } from '@/lib/schemas/announcements';
+import { announcementSchema, AnnouncementFormValues } from '@/lib/schemas/announcements';
 import { createAnnouncement } from '@/lib/actions/announcements';
-import { useToast } from '@/hooks/use-toast';
 
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import FormSubmitButton from '@/components/shared/FormSubmitButton';
+
+const initialState = {
+  success: false,
+  message: '',
+  errors: {},
+};
 
 export default function NewAnnouncementForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isPending, startTransition] = React.useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
+  
+  // Note: The action now returns a different shape.
+  const [state, formAction] = useFormState(createAnnouncement, initialState);
 
   const form = useForm<AnnouncementFormValues>({
     resolver: zodResolver(announcementSchema),
     defaultValues: {
       title: '',
       content: '',
-      author: '',
-      type: 'Notícia',
-      priority: 'Normal',
-      published: true,
     },
+    // Pass form-level errors to the form context
+    context: state.errors,
   });
 
-  const onSubmit = (values: AnnouncementFormValues) => {
-    startTransition(async () => {
-      const result = await createAnnouncement(values);
-      if (result.success) {
-        toast({ title: "Sucesso!", description: result.message });
+  useEffect(() => {
+    if (state.message) {
+      if (state.success) {
+        toast({
+          title: "Sucesso!",
+          description: state.message,
+        });
         router.push('/announcements');
       } else {
-        toast({ title: "Erro", description: result.message || 'Falha ao criar anúncio.', variant: 'destructive' });
+        toast({
+          title: "Erro",
+          description: state.message,
+          variant: "destructive",
+        });
       }
-    });
+    }
+  }, [state, toast, router]);
+
+  const handleSubmit = (data: AnnouncementFormValues) => {
+    // The `formAction` expects FormData. We need to create it manually.
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('content', data.content);
+    
+    // We can't directly use the hook's `formAction` with `react-hook-form`'s `handleSubmit`.
+    // Instead, we trigger the form submission manually.
+    // The `formAction` will be called by the form's `action` attribute.
+    // This approach is a bit of a workaround to integrate `react-hook-form` with `useFormState`.
+    // A hidden submit button or programmatically calling form.submit() might also work.
+    
+    // For simplicity and correctness with Server Actions, we'll let RHF handle validation,
+    // and then we'll create a new `formAction` call with the validated data.
+    // This slightly deviates from the pure `useFormState` on `form`, but is a common pattern with RHF.
+    // Let's stick to the ref-based submission to keep `useFormState` working as intended.
+    
+    // First, set the values on the form fields manually (or ensure they are set)
+    if(formRef.current) {
+        (formRef.current.elements.namedItem('title') as HTMLInputElement).value = data.title;
+        (formRef.current.elements.namedItem('content') as HTMLInputElement).value = data.content;
+        formRef.current.requestSubmit();
+    }
   };
+
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        ref={formRef}
+        action={formAction}
+        className="space-y-8"
+        // We use RHF for validation, and on valid submit, we trigger the form action
+        onSubmit={form.handleSubmit(() => formRef.current?.submit())}
+      >
         <FormField
           control={form.control}
           name="title"
@@ -57,12 +99,13 @@ export default function NewAnnouncementForm() {
             <FormItem>
               <FormLabel>Título</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Início do Período de Matrículas" {...field} />
+                <Input placeholder="Ex: Feriado de Corpus Christi" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="content"
@@ -70,110 +113,19 @@ export default function NewAnnouncementForm() {
             <FormItem>
               <FormLabel>Conteúdo</FormLabel>
               <FormControl>
-                <Textarea placeholder="Escreva o conteúdo completo da notícia ou comunicado aqui." {...field} rows={6} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="author"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Autor</FormLabel>
-              <FormControl>
-                <Input placeholder="Ex: Secretaria Acadêmica" {...field} />
-              </FormControl>
-              <FormDescription>Quem está publicando este anúncio.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Tipo</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      {ANNOUNCEMENT_TYPES.map(type => (
-                          <FormItem key={type} className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                                <RadioGroupItem value={type} />
-                            </FormControl>
-                            <FormLabel className="font-normal">{type}</FormLabel>
-                          </FormItem>
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Prioridade</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      {ANNOUNCEMENT_PRIORITIES.map(priority => (
-                          <FormItem key={priority} className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                                <RadioGroupItem value={priority} />
-                            </FormControl>
-                            <FormLabel className="font-normal">{priority}</FormLabel>
-                          </FormItem>
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        </div>
-         <FormField
-          control={form.control}
-          name="published"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Publicar?</FormLabel>
-                <FormDescription>
-                  Anúncios publicados ficam visíveis. Desmarque para salvar como rascunho.
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
+                <Textarea
+                  placeholder="Detalhes sobre o anúncio..."
+                  className="resize-none"
+                  {...field}
+                  rows={5}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex justify-end">
-            <Button type="submit" disabled={isPending}>
-                {isPending ? 'Salvando...' : (
-                    <>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Criar Anúncio
-                    </>
-                )}
-            </Button>
-        </div>
+        
+        <FormSubmitButton>Publicar Anúncio</FormSubmitButton>
       </form>
     </Form>
   );

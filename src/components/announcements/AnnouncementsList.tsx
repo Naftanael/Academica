@@ -1,108 +1,103 @@
-
+// src/components/announcements/AnnouncementsList.tsx
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Megaphone, Edit, Trash2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import type { Announcement } from '@/types';
-import { cn } from '@/lib/utils';
-import { DeleteConfirmationDialog } from '@/components/shared/DeleteConfirmationDialog';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { deleteAnnouncement } from '@/lib/actions/announcements';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 interface AnnouncementsListProps {
   announcements: Announcement[];
 }
 
-function DeleteAnnouncementButton({ announcementId }: { announcementId: string }) {
+/**
+ * A client component to display a list of announcements.
+ */
+export default function AnnouncementsList({ announcements }: AnnouncementsListProps) {
   const { toast } = useToast();
-  const handleDelete = async () => {
-    const result = await deleteAnnouncement(announcementId);
+
+  const handleDelete = async (id: string) => {
+    const result = await deleteAnnouncement(id);
     if (result.success) {
-      toast({ title: 'Sucesso!', description: result.message });
+      toast({
+        title: 'Sucesso!',
+        description: result.message,
+      });
     } else {
-      toast({ title: 'Erro', description: result.message, variant: 'destructive' });
+      toast({
+        title: 'Erro',
+        description: result.message,
+        variant: 'destructive',
+      });
     }
   };
-  return (
-    <DeleteConfirmationDialog
-      onConfirm={handleDelete}
-      triggerButton={
-        <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      }
-      dialogTitle="Excluir Anúncio?"
-      dialogDescription="Esta ação não pode ser desfeita e o anúncio será removido permanentemente."
-    />
-  );
-}
 
-export default function AnnouncementsList({ announcements }: AnnouncementsListProps) {
   if (announcements.length === 0) {
     return (
-      <Card className="text-center py-12">
-        <CardContent>
-          <Megaphone className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold text-foreground">Nenhum anúncio encontrado.</h3>
-          <p className="text-muted-foreground mt-2 mb-6">Comece criando o primeiro anúncio para a sua instituição.</p>
-          <Button asChild>
-            <Link href="/announcements/new">
-              Criar Primeiro Anúncio
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
+        <h3 className="text-xl font-bold tracking-tight text-gray-900">
+          Nenhum anúncio encontrado
+        </h3>
+        <p className="mt-2 text-sm text-gray-500">
+          Crie o primeiro anúncio para começar a se comunicar.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+    <div className="space-y-4">
       {announcements.map((announcement) => (
-        <Card key={announcement.id} className="flex flex-col shadow-lg rounded-lg">
+        <Card key={announcement.id}>
           <CardHeader>
-            <div className="flex justify-between items-start gap-2">
-                <CardTitle className="font-headline text-lg">{announcement.title}</CardTitle>
-                <Badge 
-                    variant={announcement.priority === 'Urgente' ? 'destructive' : 'secondary'}
-                    className={cn(announcement.priority === 'Urgente' && 'flex items-center gap-1')}
-                >
-                    {announcement.priority === 'Urgente' && <AlertTriangle className="h-3 w-3" />}
-                    {announcement.priority}
-                </Badge>
-            </div>
+            <CardTitle>{announcement.title}</CardTitle>
             <CardDescription>
-                {announcement.type} - Por {announcement.author} em {format(parseISO(announcement.createdAt), "dd 'de' MMM, yyyy 'às' HH:mm", { locale: ptBR })}
+              Publicado em: {new Date(announcement.createdAt).toLocaleDateString('pt-BR')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex-grow">
-            <p className="text-sm text-foreground/90 whitespace-pre-wrap">{announcement.content}</p>
+          <CardContent className="space-y-4">
+            <p className="text-sm">{announcement.content}</p>
+            <div className="flex justify-end space-x-2">
+              <Button asChild variant="outline">
+                <Link href={`/announcements/${announcement.id}/edit`}>
+                  Editar
+                </Link>
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive">Excluir</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação não pode ser desfeita. Isso excluirá permanentemente o anúncio.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(announcement.id)}>
+                      Continuar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </CardContent>
-          <CardFooter className="flex justify-between items-center bg-muted/30 p-4">
-             <div className="flex items-center gap-2 text-sm">
-                {announcement.published ? (
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                ) : (
-                    <XCircle className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className={cn(announcement.published ? 'text-primary' : 'text-muted-foreground')}>
-                    {announcement.published ? 'Publicado' : 'Rascunho'}
-                </span>
-             </div>
-             <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/announcements/${announcement.id}/edit`}>
-                        <Edit className="h-4 w-4" />
-                    </Link>
-                </Button>
-                <DeleteAnnouncementButton announcementId={announcement.id} />
-             </div>
-          </CardFooter>
         </Card>
       ))}
     </div>
