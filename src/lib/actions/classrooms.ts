@@ -20,7 +20,6 @@ const toClassroom = (doc: FirebaseFirestore.DocumentSnapshot): Classroom => {
     capacity: data.capacity,
     isUnderMaintenance: data.isUnderMaintenance || false,
     maintenanceReason: data.maintenanceReason || '',
-    // Deprecated fields, kept for compatibility, can be removed later
     resources: data.resources || [],
     isLab: data.isLab || false,
   };
@@ -30,7 +29,7 @@ const toClassroom = (doc: FirebaseFirestore.DocumentSnapshot): Classroom => {
 type FormState = {
   success: boolean;
   message: string;
-  errors?: z.ZodIssue[];
+  errors?: Record<string, string[] | undefined>;
 };
 
 /**
@@ -39,7 +38,7 @@ type FormState = {
  * @param values - The validated classroom data from the form.
  * @returns A FormState object indicating success or failure.
  */
-export async function createClassroom(prevState: any, values: z.infer<typeof classroomSchema>) {
+export async function createClassroom(prevState: any, values: z.infer<typeof classroomSchema>): Promise<FormState> {
   const validatedFields = classroomSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -53,7 +52,6 @@ export async function createClassroom(prevState: any, values: z.infer<typeof cla
   const { name } = validatedFields.data;
 
   try {
-    // Check for duplicate classroom name
     const existingClassroomQuery = await classroomsCollection.where('name', '==', name).limit(1).get();
     if (!existingClassroomQuery.empty) {
       return { success: false, message: 'Já existe uma sala de aula com este nome.' };
@@ -109,7 +107,7 @@ export async function getClassroomById(id: string): Promise<Classroom | null> {
  * @param values - The validated classroom data from the form.
  * @returns A FormState object indicating success or failure.
  */
-export async function updateClassroom(id: string, prevState: any, values: z.infer<typeof classroomSchema>) {
+export async function updateClassroom(id: string, prevState: any, values: z.infer<typeof classroomSchema>): Promise<FormState> {
   const validatedFields = classroomSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -143,7 +141,6 @@ export async function updateClassroom(id: string, prevState: any, values: z.infe
  */
 export async function deleteClassroom(id: string): Promise<{ success: boolean; message: string }> {
   try {
-    // Before deleting, check if this classroom is assigned to any class group
     const querySnapshot = await db.collection('classgroups').where('assignedClassroomId', '==', id).limit(1).get();
 
     if (!querySnapshot.empty) {

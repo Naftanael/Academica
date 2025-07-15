@@ -26,14 +26,15 @@ export default function ClassGroupsPage() {
       <PageHeader
         title="Turmas"
         description="Gerencie as turmas e seus horários."
-      >
-        <Button asChild>
-          <Link href="/classgroups/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nova Turma
-          </Link>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button asChild>
+            <Link href="/classgroups/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Nova Turma
+            </Link>
+          </Button>
+        }
+      />
 
       <Suspense fallback={<ClassGroupsLoading />}>
         {/* The ClassGroupsTable server component now handles its own data fetching */}

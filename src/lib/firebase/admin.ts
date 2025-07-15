@@ -3,6 +3,7 @@
 // Importa as funções necessárias do SDK do Firebase Admin
 import { initializeApp, getApps, App, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getMessaging } from 'firebase-admin/messaging';
 
 // Esta função garante que o app do Firebase seja inicializado apenas uma vez.
 // Em ambientes de desenvolvimento com hot-reload (como o Next.js), o módulo pode ser
@@ -24,6 +25,7 @@ function getAdminApp(): App {
 
 const adminApp = getAdminApp();
 const db = getFirestore(adminApp);
+const messaging = getMessaging(adminApp);
 
-// Exporta a instância do Firestore para ser usada em outras partes da aplicação.
-export { db };
+// Exporta as instâncias do Firestore e do Messaging para serem usadas em outras partes da aplicação.
+export { db, messaging };

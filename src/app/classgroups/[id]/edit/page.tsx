@@ -32,14 +32,15 @@ export default async function EditClassGroupPage({ params }: EditClassGroupPageP
        <PageHeader
         title="Editar Turma"
         description={`Você está editando a turma: ${classGroup.name}`}
-      >
-        <Button asChild variant="outline">
-          <Link href="/classgroups">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Link>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/classgroups">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Link>
+          </Button>
+        }
+      />
       
       <EditClassGroupForm classGroup={classGroup} availableClassrooms={classrooms} />
     </div>

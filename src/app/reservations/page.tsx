@@ -23,22 +23,23 @@ export default function ReservationsPage() {
         title="Gerenciar Reservas de Sala"
         description="Crie e visualize reservas recorrentes para turmas e reservas pontuais para eventos."
         icon={ListChecks}
-      >
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button asChild>
-            <Link href="/reservations/new-recurring">
-              <CalendarClock className="mr-2 h-4 w-4" />
-              Nova Reserva Recorrente
-            </Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link href="/reservations/new-event">
-              <CalendarPlus className="mr-2 h-4 w-4" />
-              Nova Reserva de Evento
-            </Link>
-          </Button>
-        </div>
-      </PageHeader>
+        actions={
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild>
+              <Link href="/reservations/new-recurring">
+                <CalendarClock className="mr-2 h-4 w-4" />
+                Nova Reserva Recorrente
+              </Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/reservations/new-event">
+                <CalendarPlus className="mr-2 h-4 w-4" />
+                Nova Reserva de Evento
+              </Link>
+            </Button>
+          </div>
+        }
+      />
 
       <Suspense fallback={<ReservationsLoadingSkeleton />}>
         <RecurringReservationsSection />

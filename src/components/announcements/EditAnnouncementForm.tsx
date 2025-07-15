@@ -63,7 +63,6 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
   return (
     <Form {...form}>
       <form
-        action={formAction}
         onSubmit={form.handleSubmit(data => formAction(data))}
         className="space-y-8"
       >

@@ -102,7 +102,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     
     setCalculationResult({ text, endDate: lastClassDate });
 
-  }, [selectedClassGroup, watchedValues.startDate, watchedValues.numberOfClasses]);
+  }, [selectedClassGroup, watchedValues.startDate, watchedValues.numberOfClasses, watchedValues]);
 
   const calendarModifiers = React.useMemo(() => {
     const modifiers: DayModifiers = {};

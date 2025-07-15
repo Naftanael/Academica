@@ -37,14 +37,15 @@ export default function AnnouncementsPage() {
         title="Notícias e Comunicados"
         description="Gerencie os anúncios e comunicados da instituição."
         icon={Megaphone}
-      >
-        <Button asChild>
-          <Link href="/announcements/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Novo Anúncio
-          </Link>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button asChild>
+            <Link href="/announcements/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Novo Anúncio
+            </Link>
+          </Button>
+        }
+      />
       
       <Suspense fallback={<AnnouncementsLoading />}>
         <Announcements />

@@ -31,14 +31,15 @@ export default async function EditClassroomPage({ params }: EditClassroomPagePro
       <PageHeader
         title="Editar Sala de Aula"
         description={`Você está editando a sala: ${classroom.name}`}
-      >
-        <Button asChild variant="outline">
-          <Link href="/classrooms">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Link>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/classrooms">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Link>
+          </Button>
+        }
+      />
       <EditClassroomForm classroom={classroom} />
     </div>
   );

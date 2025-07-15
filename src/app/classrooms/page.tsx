@@ -1,3 +1,4 @@
+
 // src/app/classrooms/page.tsx
 import { getClassrooms } from "@/lib/actions/classrooms";
 import ClassroomsDisplay from "@/components/classrooms/ClassroomsDisplay";
@@ -44,14 +45,15 @@ export default function ClassroomsPage() {
         title="Salas de Aula"
         description="Gerencie as salas de aula disponíveis na instituição."
         icon={School}
-      >
-        <Button asChild>
-          <Link href="/classrooms/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Adicionar Nova Sala
-          </Link>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button asChild>
+            <Link href="/classrooms/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Nova Sala
+            </Link>
+          </Button>
+        }
+      />
       
       <Suspense fallback={<ClassroomsLoading />}>
         <ClassroomsList />

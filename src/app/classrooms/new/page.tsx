@@ -15,14 +15,15 @@ export default function NewClassroomPage() {
       <PageHeader
         title="Adicionar Nova Sala"
         description="Preencha os detalhes abaixo para adicionar uma nova sala de aula."
-      >
-        <Button asChild variant="outline">
-          <Link href="/classrooms">
-             <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Link>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/classrooms">
+               <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Link>
+          </Button>
+        }
+      />
       <NewClassroomForm />
     </div>
   );

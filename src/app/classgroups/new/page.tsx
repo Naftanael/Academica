@@ -14,14 +14,15 @@ export default function NewClassGroupPage() {
       <PageHeader
         title="Criar Nova Turma"
         description="Preencha os dados abaixo para registrar uma nova turma."
-      >
-        <Button asChild variant="outline">
-          <Link href="/classgroups">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Link>
-        </Button>
-      </PageHeader>
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/classgroups">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Link>
+          </Button>
+        }
+      />
       
       {/* The form will be presented in a card for better layout */}
       <NewClassGroupForm />
