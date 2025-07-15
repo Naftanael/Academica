@@ -5,64 +5,58 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-// import { FieldValue } from 'firebase-admin/firestore';
-import { parseISO, getDay, isWithinInterval } from 'date-fns';
-
-import { db } from '@/lib/firebase/firebaseAdmin';
-import {
-  eventReservationFormSchema,
-  type EventReservationFormValues,
-} from '@/lib/schemas/event_reservations';
-import {
-  SHIFT_TIME_RANGES,
-  JS_DAYS_OF_WEEK_MAP_TO_PT,
-} from '@/lib/constants';
-import { timeRangesOverlap } from '@/lib/utils';
-import type {
-  EventReservation,
-  ClassroomRecurringReservation,
-  ClassGroup,
-} from '@/types';
-
-// const eventReservationsCollection = db.collection('event_reservations');
-// const recurringReservationsCollection = db.collection('recurring_reservations');
-// const classGroupsCollection = db.collection('classgroups');
-// const classroomsCollection = db.collection('classrooms');
-
-const docToEventReservation = (
-  doc: any,
-): EventReservation => {
-  const data = doc.data();
-  if (!data) {
-    throw new Error(
-      `Dados não encontrados para o documento com ID ${doc.id}`,
-    );
-  }
-  return { id: doc.id, ...data } as EventReservation;
-};
+import { getDb } from '@/lib/database';
+import { eventReservationFormSchema, type EventReservationFormValues } from '@/lib/schemas/event_reservations';
+import type { EventReservation } from '@/types';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getEventReservations(): Promise<EventReservation[]> {
-    console.log("Firebase desativado: getEventReservations retornando array vazio.");
+  try {
+    const db = await getDb();
+    const reservations = await db.all('SELECT * FROM event_reservations');
+    return reservations;
+  } catch (error) {
+    console.error('Failed to fetch event reservations:', error);
     return [];
+  }
 }
 
-export async function createEventReservation(
-  prevState: any,
-  values: EventReservationFormValues,
-) {
-  console.log("Firebase desativado: createEventReservation retornando erro.");
+export async function createEventReservation(prevState: any, values: EventReservationFormValues) {
   const validatedFields = eventReservationFormSchema.safeParse(values);
-   if (!validatedFields.success) {
+  if (!validatedFields.success) {
     return {
       success: false,
-      message: 'Erro de validação (Firebase desativado).',
+      message: 'Validation error.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  return { success: false, message: 'Firebase está temporariamente desativado.' };
+
+  try {
+    const db = await getDb();
+    const newReservationId = uuidv4();
+    await db.run(
+      'INSERT INTO event_reservations (id, event_name, classroom_id, date, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?)',
+      newReservationId,
+      validatedFields.data.title,
+      validatedFields.data.classroomId,
+      validatedFields.data.date,
+      validatedFields.data.startTime,
+      validatedFields.data.endTime
+    );
+    revalidatePath('/reservations');
+    return { success: true, message: 'Event reservation created successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }
 
 export async function deleteEventReservation(id: string) {
-    console.log(`Firebase desativado: deleteEventReservation para o ID ${id} retornando erro.`);
-    return { success: false, message: 'Firebase está temporariamente desativado.' };
+  try {
+    const db = await getDb();
+    await db.run('DELETE FROM event_reservations WHERE id = ?', id);
+    revalidatePath('/reservations');
+    return { success: true, message: 'Event reservation deleted successfully.' };
+  } catch (error: any) {
+    return { success: false, message: `Server error: ${error.message}` };
+  }
 }

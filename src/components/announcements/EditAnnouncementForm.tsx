@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { announcementSchema, AnnouncementFormValues } from '@/lib/schemas/announcements';
+import { announcementEditSchema, AnnouncementEditFormValues } from '@/lib/schemas/announcements';
 import { updateAnnouncement } from '@/lib/actions/announcements';
 import type { Announcement } from '@/types';
 
@@ -33,13 +33,12 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
   const updateAnnouncementWithId = updateAnnouncement.bind(null, announcement.id);
   const [state, formAction] = useFormState(updateAnnouncementWithId, initialState);
 
-  const form = useForm<AnnouncementFormValues>({
-    resolver: zodResolver(announcementSchema),
+  const form = useForm<AnnouncementEditFormValues>({
+    resolver: zodResolver(announcementEditSchema),
     defaultValues: {
       title: announcement.title || '',
       content: announcement.content || '',
     },
-    errors: state.errors,
   });
 
   useEffect(() => {
@@ -58,7 +57,20 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
         });
       }
     }
-  }, [state, toast, router]);
+     // Clear form errors if the submission was successful
+     if (state.success) {
+      form.clearErrors();
+    } else if (state.errors) {
+      // Manually set form errors from the server response
+      Object.keys(state.errors).forEach((key) => {
+        const field = key as keyof AnnouncementEditFormValues;
+        const message = state.errors?.[field]?.[0];
+        if (message) {
+          form.setError(field, { type: 'server', message });
+        }
+      });
+    }
+  }, [state, toast, router, form]);
 
   return (
     <Form {...form}>

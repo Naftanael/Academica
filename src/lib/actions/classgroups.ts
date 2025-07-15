@@ -48,16 +48,14 @@ export async function createClassGroup(prevState: any, values: z.infer<typeof cl
     const db = await getDb();
     const newClassGroupId = uuidv4();
     await db.run(
-      'INSERT INTO class_groups (id, name, course, classroom_id, start_date, end_date, start_time, end_time, days_of_week) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO class_groups (id, name, start_date, end_date, start_time, end_time, days_of_week) VALUES (?, ?, ?, ?, ?, ?, ?)',
       newClassGroupId,
       validatedFields.data.name,
-      validatedFields.data.course,
-      validatedFields.data.classroom_id,
-      validatedFields.data.start_date,
-      validatedFields.data.end_date,
-      validatedFields.data.start_time,
-      validatedFields.data.end_time,
-      JSON.stringify(validatedFields.data.days_of_week)
+      validatedFields.data.startDate,
+      validatedFields.data.endDate,
+      '00:00', // Mock start time
+      '00:00', // Mock end time
+      JSON.stringify(validatedFields.data.classDays)
     );
     revalidatePath('/classgroups');
     return { success: true, message: 'Class group created successfully.' };
@@ -80,15 +78,13 @@ export async function updateClassGroup(id: string, prevState: any, values: z.inf
   try {
     const db = await getDb();
     await db.run(
-      'UPDATE class_groups SET name = ?, course = ?, classroom_id = ?, start_date = ?, end_date = ?, start_time = ?, end_time = ?, days_of_week = ? WHERE id = ?',
+      'UPDATE class_groups SET name = ?, start_date = ?, end_date = ?, start_time = ?, end_time = ?, days_of_week = ? WHERE id = ?',
       validatedFields.data.name,
-      validatedFields.data.course,
-      validatedFields.data.classroom_id,
-      validatedFields.data.start_date,
-      validatedFields.data.end_date,
-      validatedFields.data.start_time,
-      validatedFields.data.end_time,
-      JSON.stringify(validatedFields.data.days_of_week),
+      validatedFields.data.startDate,
+      validatedFields.data.endDate,
+      '00:00', // Mock start time
+      '00:00', // Mock end time
+      JSON.stringify(validatedFields.data.classDays),
       id
     );
     revalidatePath('/classgroups');

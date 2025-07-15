@@ -17,4 +17,11 @@ export const announcementSchema = z.object({
   published: z.boolean().default(true),
 });
 
+export const announcementEditSchema = z.object({
+  title: z.string().min(3, "O título deve ter pelo menos 3 caracteres.").max(150, "O título é muito longo."),
+  content: z.string().min(10, "O conteúdo deve ter pelo menos 10 caracteres."),
+});
+
+
 export type AnnouncementFormValues = z.infer<typeof announcementSchema>;
+export type AnnouncementEditFormValues = z.infer<typeof announcementEditSchema>;

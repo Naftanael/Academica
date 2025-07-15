@@ -33,13 +33,12 @@ const initialState = {
   success: false,
   message: '',
   errors: undefined,
-  data: undefined,
 };
 
 type ClassGroupFormValues = z.infer<typeof classGroupCreateSchema>;
 
 interface NewClassGroupFormProps {
-  onClassGroupCreated: (newClassGroup: ClassGroup) => Promise<void>;
+  onClassGroupCreated: () => Promise<void>;
 }
 
 
@@ -71,8 +70,9 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
   }, [state.errors, form]);
 
   React.useEffect(() => {
-    if (state.success && state.message && state.data) {
-      onClassGroupCreated(state.data);
+    if (state.success && state.message) {
+        toast({ title: 'Sucesso', description: state.message });
+        onClassGroupCreated();
     } else if (!state.success && state.message) {
       toast({ title: 'Erro', description: state.message, variant: 'destructive' });
     }

@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { getDb } from '@/lib/database';
-import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
+import { announcementSchema, announcementEditSchema, type AnnouncementFormValues, type AnnouncementEditFormValues } from '@/lib/schemas/announcements';
 import type { Announcement } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,8 +30,8 @@ export async function getAnnouncementById(id: string): Promise<Announcement | un
   }
 }
 
-export async function createAnnouncement(prevState: any, values: AnnouncementFormValues) {
-  const validatedValues = announcementSchema.safeParse(values);
+export async function createAnnouncement(prevState: any, values: AnnouncementEditFormValues) {
+  const validatedValues = announcementEditSchema.safeParse(values);
   if (!validatedValues.success) {
     return {
       success: false,
@@ -46,9 +46,9 @@ export async function createAnnouncement(prevState: any, values: AnnouncementFor
     await db.run(
       'INSERT INTO announcements (id, message, starts_at, ends_at) VALUES (?, ?, ?, ?)',
       newAnnouncementId,
-      validatedValues.data.message,
-      validatedValues.data.starts_at,
-      validatedValues.data.ends_at
+      validatedValues.data.content, // "message" in db
+      new Date().toISOString(), // mock starts_at
+      new Date().toISOString() // mock ends_at
     );
     revalidatePath('/announcements');
     return { success: true, message: 'Announcement created successfully.' };
@@ -57,8 +57,8 @@ export async function createAnnouncement(prevState: any, values: AnnouncementFor
   }
 }
 
-export async function updateAnnouncement(id: string, prevState: any, values: AnnouncementFormValues) {
-  const validatedValues = announcementSchema.safeParse(values);
+export async function updateAnnouncement(id: string, prevState: any, values: AnnouncementEditFormValues) {
+  const validatedValues = announcementEditSchema.safeParse(values);
   if (!validatedValues.success) {
     return {
       success: false,
@@ -70,10 +70,8 @@ export async function updateAnnouncement(id: string, prevState: any, values: Ann
   try {
     const db = await getDb();
     await db.run(
-      'UPDATE announcements SET message = ?, starts_at = ?, ends_at = ? WHERE id = ?',
-      validatedValues.data.message,
-      validatedValues.data.starts_at,
-      validatedValues.data.ends_at,
+      'UPDATE announcements SET message = ? WHERE id = ?',
+      validatedValues.data.content,
       id
     );
     revalidatePath('/announcements');

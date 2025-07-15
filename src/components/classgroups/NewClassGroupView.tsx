@@ -38,15 +38,12 @@ export default function NewClassGroupView() {
     fetchClassrooms();
   }, []);
 
-  const handleClassGroupCreated = async (newClassGroup: ClassGroup) => {
-    if (selectedClassroom) {
-      await assignClassroomToClassGroup(newClassGroup.id, selectedClassroom.id);
-    }
+  const handleClassGroupCreated = async () => {
     toast({
       title: "Turma Criada com Sucesso!",
-      description: `A turma "${newClassGroup.name}" foi criada.`,
+      description: `A nova turma foi criada.`,
     });
-    router.push(`/classgroups/${newClassGroup.id}/edit`);
+    router.push(`/classgroups`);
   };
   
   // Dummy ClassGroup to satisfy the ChangeClassroomDialog component
