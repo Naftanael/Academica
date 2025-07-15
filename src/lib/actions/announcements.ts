@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-import { db } from '@/lib/firebase/admin'; // A importação garante a inicialização. Se falhar, a app para.
+import { db } from '@/lib/firebase/firebaseAdmin'; // A importação garante a inicialização. Se falhar, a app para.
 import { announcementSchema, type AnnouncementFormValues } from '@/lib/schemas/announcements';
 import type { Announcement } from '@/types';
 

@@ -16,7 +16,7 @@ import { z } from 'zod'; // Biblioteca para validação de esquemas de dados.
 import { revalidatePath } from 'next/cache'; // Função do Next.js para invalidar o cache e atualizar a UI.
 import { FieldValue } from 'firebase-admin/firestore'; // Para usar valores especiais do Firestore, como timestamps.
 
-import { db } from '@/lib/firebase/admin'; // Instância do Firestore Admin SDK.
+import { db } from '@/lib/firebase/firebaseAdmin'; // Instância do Firestore Admin SDK.
 import { classroomSchema } from '@/lib/schemas/classrooms'; // Esquema de validação Zod para salas de aula.
 import type { Classroom } from '@/types'; // Tipagem TypeScript para uma sala de aula.
 

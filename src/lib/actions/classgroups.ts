@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-import { db } from '@/lib/firebase/admin';
+import { db } from '@/lib/firebase/firebaseAdmin';
 import { classGroupCreateSchema, classGroupEditSchema } from "@/lib/schemas/classgroups";
 import type { ClassGroup } from "@/types";
 

@@ -14,7 +14,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { parseISO, getDay, isWithinInterval } from 'date-fns'; // Funções para manipulação de datas.
 
 // Importações internas do projeto.
-import { db } from '@/lib/firebase/admin'; // Instância do Firestore Admin.
+import { db } from '@/lib/firebase/firebaseAdmin'; // Instância do Firestore Admin.
 import {
   eventReservationFormSchema,
   type EventReservationFormValues,

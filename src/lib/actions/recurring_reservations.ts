@@ -6,7 +6,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { z } from 'zod';
 import { parseISO, format, addDays, getDay } from 'date-fns';
 
-import { db } from '@/lib/firebase/admin';
+import { db } from '@/lib/firebase/firebaseAdmin';
 import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
 import { dateRangesOverlap } from '@/lib/utils';
 import type { ClassroomRecurringReservation, DayOfWeek, ClassGroup } from '@/types';
