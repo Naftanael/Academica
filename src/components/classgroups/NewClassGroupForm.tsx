@@ -50,6 +50,7 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
     resolver: zodResolver(classGroupCreateSchema),
     defaultValues: {
       name: '',
+      course: '',
       classDays: [],
       shift: 'Manhã',
       startDate: format(new Date(), 'yyyy-MM-dd'),
@@ -96,6 +97,17 @@ export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroup
                 <FormItem>
                   <FormLabel>Nome da Turma</FormLabel>
                   <FormControl><Input placeholder="Ex: FMC24.1N" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="course"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Curso</FormLabel>
+                  <FormControl><Input placeholder="Ex: Formação de Mecânicos" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}

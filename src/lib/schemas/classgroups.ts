@@ -9,6 +9,7 @@ const dateStringSchema = z.string().refine((val) => isValid(parseISO(val)), {
 
 const baseClassGroupSchema = z.object({
   name: z.string().min(1, "O nome da turma é obrigatório."),
+  course: z.string().min(1, "O nome do curso é obrigatório."),
   shift: z.enum(["Manhã", "Tarde", "Noite"], {
     required_error: "O turno é obrigatório.",
   }),

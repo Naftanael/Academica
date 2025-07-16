@@ -112,6 +112,17 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                 />
                 <FormField
                   control={form.control}
+                  name="course"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Curso</FormLabel>
+                      <FormControl><Input placeholder="Ex: Formação de Mecânicos" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="shift"
                   render={({ field }) => (
                     <FormItem>
