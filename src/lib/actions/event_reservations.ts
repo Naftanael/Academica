@@ -90,7 +90,7 @@ export async function getEventReservations(): Promise<(EventReservation & { clas
       return {
         id,
         ...reservation,
-        date: reservation.date.toDate(), // Convert Timestamp to Date
+        date: reservation.date.toDate().toISOString(), // Convert Timestamp to ISO String
         classroomName,
       } as EventReservation & { classroomName?: string };
     });

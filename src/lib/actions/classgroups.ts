@@ -4,10 +4,9 @@
  */
 'use server';
 
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firestore';
-import { classGroupSchema } from '@/lib/schemas/classgroups';
+import { classGroupCreateSchema, classGroupEditSchema } from '@/lib/schemas/classgroups';
 import type { ClassGroup } from '@/types';
 
 type FormState = {
@@ -20,33 +19,37 @@ type FormState = {
  * Creates a new class group document in Firestore.
  */
 export async function createClassGroup(prevState: FormState, formData: FormData): Promise<FormState> {
-  const validatedFields = classGroupSchema.safeParse({
+  const validatedFields = classGroupCreateSchema.safeParse({
     name: formData.get('name'),
-    classroomId: formData.get('classroomId'),
-    subject: formData.get('subject'),
-    teacher: formData.get('teacher'),
-    students: Number(formData.get('students')),
-    startTime: formData.get('startTime'),
-    endTime: formData.get('endTime'),
+    course: formData.get('course'),
+    shift: formData.get('shift'),
+    startDate: formData.get('startDate'),
+    endDate: formData.get('endDate'),
+    classDays: formData.getAll('classDays'),
+    notes: formData.get('notes'),
   });
 
   if (!validatedFields.success) {
     return {
       success: false,
-      message: 'Validation failed.',
+      message: 'A validação falhou.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
   try {
-    // FIRESTORE LOGIC: Add the new class group data to the 'classgroups' collection.
-    await db.collection('classgroups').add(validatedFields.data);
+    const { startDate, endDate, ...rest } = validatedFields.data;
+    await db.collection('classgroups').add({
+      ...rest,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+    });
 
     revalidatePath('/classgroups');
-    return { success: true, message: 'Class group created successfully!' };
+    return { success: true, message: 'Turma criada com sucesso!' };
   } catch (error) {
-    console.error('Error creating class group:', error);
-    return { success: false, message: 'Server Error: Failed to create class group.' };
+    console.error('Erro ao criar a turma:', error);
+    return { success: false, message: 'Erro do Servidor: Falha ao criar a turma.' };
   }
 }
 
@@ -60,15 +63,25 @@ export async function getClassGroups(): Promise<(ClassGroup & { classroomName?: 
       return [];
     }
 
-    // Create an array of promises to fetch the classroom name for each class group
     const classGroupsPromises = classGroupsSnapshot.docs.map(async (doc) => {
-      const classGroup = { id: doc.id, ...doc.data() } as ClassGroup;
+      const data = doc.data();
+      const classGroup: ClassGroup = {
+        id: doc.id,
+        name: data.name,
+        course: data.course,
+        shift: data.shift,
+        startDate: data.startDate?.toDate().toISOString() || '',
+        endDate: data.endDate?.toDate().toISOString() || '',
+        assignedClassroomId: data.assignedClassroomId,
+        classDays: data.classDays,
+        notes: data.notes,
+      };
       
-      let classroomName = 'Unassigned';
+      let classroomName = 'Não atribuída';
       if (classGroup.assignedClassroomId) {
         const classroomDoc = await db.collection('classrooms').doc(classGroup.assignedClassroomId).get();
         if (classroomDoc.exists) {
-          classroomName = classroomDoc.data()?.name || 'Unknown';
+          classroomName = classroomDoc.data()?.name || 'Desconhecida';
         }
       }
       
@@ -77,7 +90,7 @@ export async function getClassGroups(): Promise<(ClassGroup & { classroomName?: 
 
     return Promise.all(classGroupsPromises);
   } catch (error) {
-    console.error('Error fetching class groups:', error);
+    console.error('Erro ao buscar turmas:', error);
     return [];
   }
 }
@@ -92,9 +105,22 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
         if (!docSnap.exists) {
             return null;
         }
-        return { id: docSnap.id, ...docSnap.data() } as ClassGroup;
+        const data = docSnap.data();
+        if (!data) return null;
+
+        return { 
+          id: docSnap.id, 
+          name: data.name,
+          course: data.course,
+          shift: data.shift,
+          startDate: data.startDate?.toDate().toISOString() || '',
+          endDate: data.endDate?.toDate().toISOString() || '',
+          assignedClassroomId: data.assignedClassroomId,
+          classDays: data.classDays,
+          notes: data.notes,
+        } as ClassGroup;
     } catch (error) {
-        console.error(`Error fetching class group with ID ${id}:`, error);
+        console.error(`Erro ao buscar turma com ID ${id}:`, error);
         return null;
     }
 }
@@ -103,32 +129,37 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
  * Updates a class group document in Firestore.
  */
 export async function updateClassGroup(id: string, prevState: FormState, formData: FormData): Promise<FormState> {
-    const validatedFields = classGroupSchema.safeParse({
+    const validatedFields = classGroupEditSchema.safeParse({
         name: formData.get('name'),
-        classroomId: formData.get('classroomId'),
-        subject: formData.get('subject'),
-        teacher: formData.get('teacher'),
-        students: Number(formData.get('students')),
-        startTime: formData.get('startTime'),
-        endTime: formData.get('endTime'),
+        course: formData.get('course'),
+        shift: formData.get('shift'),
+        startDate: formData.get('startDate'),
+        endDate: formData.get('endDate'),
+        classDays: formData.getAll('classDays'),
+        notes: formData.get('notes'),
     });
 
     if (!validatedFields.success) {
         return {
             success: false,
-            message: 'Validation failed.',
+            message: 'A validação falhou.',
             errors: validatedFields.error.flatten().fieldErrors,
         };
     }
 
     try {
-        await db.collection('classgroups').doc(id).update(validatedFields.data);
+        const { startDate, endDate, ...rest } = validatedFields.data;
+        await db.collection('classgroups').doc(id).update({
+            ...rest,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+        });
         revalidatePath('/classgroups');
         revalidatePath(`/classgroups/${id}/edit`);
-        return { success: true, message: 'Class group updated successfully.' };
+        return { success: true, message: 'Turma atualizada com sucesso.' };
     } catch (error) {
-        console.error(`Error updating class group with ID ${id}:`, error);
-        return { success: false, message: 'Server Error: Failed to update class group.' };
+        console.error(`Erro ao atualizar turma com ID ${id}:`, error);
+        return { success: false, message: 'Erro do Servidor: Falha ao atualizar a turma.' };
     }
 }
 
@@ -138,15 +169,15 @@ export async function updateClassGroup(id: string, prevState: FormState, formDat
  */
 export async function deleteClassGroup(id: string): Promise<{ success: boolean; message: string }> {
   if (!id) {
-    return { success: false, message: 'Class group ID is required.' };
+    return { success: false, message: 'O ID da turma é obrigatório.' };
   }
   try {
     await db.collection('classgroups').doc(id).delete();
     revalidatePath('/classgroups');
-    return { success: true, message: 'Class group deleted successfully.' };
+    return { success: true, message: 'Turma deletada com sucesso.' };
   } catch (error) {
-    console.error(`Error deleting class group with ID ${id}:`, error);
-    return { success: false, message: 'Server Error: Failed to delete class group.' };
+    console.error(`Erro ao deletar turma com ID ${id}:`, error);
+    return { success: false, message: 'Erro do Servidor: Falha ao deletar a turma.' };
   }
 }
 
@@ -155,28 +186,28 @@ export async function deleteClassGroup(id: string): Promise<{ success: boolean; 
  */
 export async function changeClassroom(classGroupId: string, newClassroomId: string): Promise<{ success: boolean; message: string }> {
     if (!classGroupId || !newClassroomId) {
-        return { success: false, message: "Class group ID and new classroom ID are required." };
+        return { success: false, message: "O ID da turma e o ID da nova sala são obrigatórios." };
     }
     try {
         await db.collection('classgroups').doc(classGroupId).update({ assignedClassroomId: newClassroomId });
         revalidatePath('/classgroups');
-        return { success: true, message: "Classroom changed successfully." };
+        return { success: true, message: "Sala de aula alterada com sucesso." };
     } catch (error) {
-        console.error(`Error changing classroom for class group ${classGroupId}:`, error);
-        return { success: false, message: "Server Error: Failed to change classroom." };
+        console.error(`Erro ao alterar a sala da turma ${classGroupId}:`, error);
+        return { success: false, message: "Erro do Servidor: Falha ao alterar a sala." };
     }
 }
 
 export async function unassignClassroomFromClassGroup(classGroupId: string): Promise<{ success: boolean; message: string }> {
   if (!classGroupId) {
-    return { success: false, message: "Class group ID is required." };
+    return { success: false, message: "O ID da turma é obrigatório." };
   }
   try {
     await db.collection('classgroups').doc(classGroupId).update({ assignedClassroomId: null });
     revalidatePath('/classgroups');
-    return { success: true, message: "Classroom unassigned successfully." };
+    return { success: true, message: "Sala de aula desatribuída com sucesso." };
   } catch (error) {
-    console.error(`Error unassigning classroom for class group ${classGroupId}:`, error);
-    return { success: false, message: "Server Error: Failed to unassign classroom." };
+    console.error(`Erro ao desatribuir a sala da turma ${classGroupId}:`, error);
+    return { success: false, message: "Erro do Servidor: Falha ao desatribuir a sala." };
   }
 }

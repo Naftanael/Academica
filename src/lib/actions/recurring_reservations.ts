@@ -61,10 +61,14 @@ export async function getRecurringReservations(): Promise<ClassroomRecurringRese
         if (snapshot.empty) {
             return [];
         }
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        })) as ClassroomRecurringReservation[];
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                startDate: data.startDate.toDate().toISOString(),
+            } as ClassroomRecurringReservation
+        });
     } catch (error) {
         console.error('Error fetching recurring reservations:', error);
         return [];
