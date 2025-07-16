@@ -46,6 +46,17 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
     },
   });
 
+  const onSubmit = (data: ClassroomFormValues) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('capacity', data.capacity.toString());
+    formData.append('isUnderMaintenance', data.isUnderMaintenance ? 'true' : 'false');
+    if (data.maintenanceReason) {
+      formData.append('maintenanceReason', data.maintenanceReason);
+    }
+    formAction(formData);
+  };
+  
   useEffect(() => {
     if (state.errors) {
       for (const [key, value] of Object.entries(state.errors)) {
@@ -81,7 +92,7 @@ export default function EditClassroomForm({ classroom }: EditClassroomFormProps)
       <CardContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((data) => formAction(data))}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6"
           >
             <FormField

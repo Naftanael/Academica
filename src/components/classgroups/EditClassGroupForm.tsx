@@ -60,13 +60,29 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     },
   });
   
+  const onSubmit = (data: ClassGroupFormValues) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('course', data.course);
+    formData.append('shift', data.shift);
+    formData.append('startDate', data.startDate);
+    formData.append('endDate', data.endDate);
+    data.classDays.forEach(day => formData.append('classDays', day));
+    if (data.notes) {
+      formData.append('notes', data.notes);
+    }
+    formAction(formData);
+  };
+  
   React.useEffect(() => {
     if (state.errors) {
       for (const [key, value] of Object.entries(state.errors)) {
-        form.setError(key as keyof ClassGroupFormValues, {
-          type: 'manual',
-          message: value.join(', '),
-        });
+        if (Array.isArray(value)) {
+          form.setError(key as keyof ClassGroupFormValues, {
+            type: 'manual',
+            message: value.join(', '),
+          });
+        }
       }
     }
   }, [state.errors, form]);
@@ -95,7 +111,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
       <CardContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(data => formAction(data))}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-8"
           >
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

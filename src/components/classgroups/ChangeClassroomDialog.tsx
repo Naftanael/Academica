@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { assignClassroomToClassGroup } from '@/lib/actions/classgroups';
+import { changeClassroom, unassignClassroomFromClassGroup } from '@/lib/actions/classgroups';
 import type { ClassGroup, Classroom } from '@/types';
 import {
   Tooltip,
@@ -79,7 +79,12 @@ export function ChangeClassroomDialog({
     }
     
     setIsPending(true);
-    const result = await assignClassroomToClassGroup(classGroup.id, selectedClassroomId);
+    let result;
+    if (selectedClassroomId) {
+      result = await changeClassroom(classGroup.id, selectedClassroomId);
+    } else {
+      result = await unassignClassroomFromClassGroup(classGroup.id);
+    }
     setIsPending(false);
 
     if (result.success) {

@@ -1,62 +1,86 @@
-// src/lib/actions/recurring_reservations.ts
+
+/**
+ * @file Manages all server-side actions for recurring reservations using Firestore.
+ */
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { getDb } from '@/lib/database';
-import { recurringReservationFormSchema, type RecurringReservationFormValues } from '@/lib/schemas/recurring-reservations';
+import { revalidatePath } from 'next/cache';
+import { db } from '@/lib/firestore';
+import { recurringReservationSchema } from '@/lib/schemas/recurring-reservations';
 import type { ClassroomRecurringReservation } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
 
-export async function getRecurringReservations(): Promise<ClassroomRecurringReservation[]> {
-  try {
-    const db = await getDb();
-    const reservations = await db.all('SELECT * FROM recurring_reservations');
-    return reservations.map(r => ({ ...r, daysOfWeek: JSON.parse(r.days_of_week) }));
-  } catch (error) {
-    console.error('Failed to fetch recurring reservations:', error);
-    return [];
-  }
-}
+type FormState = {
+  success: boolean;
+  message: string;
+  errors?: Record<string, string[] | undefined>;
+};
 
-export async function createRecurringReservation(prevState: any, values: RecurringReservationFormValues) {
-  const validatedFields = recurringReservationFormSchema.safeParse(values);
+/**
+ * Creates a new recurring reservation document in Firestore.
+ */
+export async function createRecurringReservation(prevState: FormState, formData: FormData): Promise<FormState> {
+  const validatedFields = recurringReservationSchema.safeParse({
+    classGroupId: formData.get('classGroupId'),
+    classroomId: formData.get('classroomId'),
+    startDate: formData.get('startDate'),
+    numberOfClasses: Number(formData.get('numberOfClasses')),
+    purpose: formData.get('purpose'),
+  });
+
   if (!validatedFields.success) {
     return {
       success: false,
-      message: 'Validation error.',
+      message: 'Validation failed.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
   try {
-    const db = await getDb();
-    const newReservationId = uuidv4();
-    await db.run(
-      'INSERT INTO recurring_reservations (id, event_name, classroom_id, start_date, end_date, start_time, end_time, days_of_week) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      newReservationId,
-      validatedFields.data.purpose,
-      validatedFields.data.classroomId,
-      validatedFields.data.startDate,
-      '2024-12-31', // mock endDate
-      '00:00', // mock startTime
-      '00:00', // mock endTime
-      JSON.stringify([]) // mock days of week
-    );
+    // This is a simplified example. In a real application, you would
+    // calculate the end date based on the start date, number of classes, and class days.
+    await db.collection('recurring_reservations').add({
+        ...validatedFields.data,
+        // endDate would be calculated here
+    });
+
     revalidatePath('/reservations');
-    return { success: true, message: 'Recurring reservation created successfully.' };
-  } catch (error: any) {
-    return { success: false, message: `Server error: ${error.message}` };
+    return { success: true, message: 'Recurring reservation created successfully!' };
+  } catch (error) {
+    console.error('Error creating recurring reservation:', error);
+    return { success: false, message: 'Server Error: Failed to create recurring reservation.' };
   }
 }
 
-export async function deleteRecurringReservation(id: string) {
+/**
+ * Fetches all recurring reservations from Firestore.
+ */
+export async function getRecurringReservations(): Promise<ClassroomRecurringReservation[]> {
+    try {
+        const snapshot = await db.collection('recurring_reservations').get();
+        if (snapshot.empty) {
+            return [];
+        }
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        })) as ClassroomRecurringReservation[];
+    } catch (error) {
+        console.error('Error fetching recurring reservations:', error);
+        return [];
+    }
+}
+
+export async function deleteRecurringReservation(id: string): Promise<{ success: boolean; message: string }> {
+  if (!id) {
+    return { success: false, message: 'Reservation ID is required.' };
+  }
   try {
-    const db = await getDb();
-    await db.run('DELETE FROM recurring_reservations WHERE id = ?', id);
+    await db.collection('recurring_reservations').doc(id).delete();
     revalidatePath('/reservations');
     return { success: true, message: 'Recurring reservation deleted successfully.' };
-  } catch (error: any) {
-    return { success: false, message: `Server error: ${error.message}` };
+  } catch (error) {
+    console.error(`Error deleting recurring reservation with ID ${id}:`, error);
+    return { success: false, message: 'Server Error: Failed to delete recurring reservation.' };
   }
 }

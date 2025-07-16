@@ -48,6 +48,16 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     defaultValues: { classGroupId: '', classroomId: '', startDate: format(new Date(), 'yyyy-MM-dd'), numberOfClasses: 1, purpose: '' },
   });
 
+  const onSubmit = (data: RecurringReservationFormValues) => {
+    const formData = new FormData();
+    formData.append('classGroupId', data.classGroupId);
+    formData.append('classroomId', data.classroomId);
+    formData.append('startDate', data.startDate);
+    formData.append('numberOfClasses', data.numberOfClasses.toString());
+    formData.append('purpose', data.purpose);
+    formAction(formData);
+  };
+  
   const { watch } = form;
   const watchedValues = watch();
 
@@ -136,7 +146,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
       <CardHeader><CardTitle>Nova Reserva Recorrente</CardTitle></CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(data => formAction(data))} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField control={form.control} name="purpose" render={({ field }) => (
               <FormItem><FormLabel>Propósito</FormLabel><FormControl><Input placeholder="Ex: Aulas Regulares" {...field} /></FormControl><FormMessage /></FormItem>
             )} />

@@ -24,5 +24,5 @@ export const eventReservationFormSchema = z.object({
   message: "A hora de início deve ser anterior à hora de fim.",
   path: ["endTime"],
 });
-
+export const eventReservationSchema = eventReservationFormSchema;
 export type EventReservationFormValues = z.infer<typeof eventReservationFormSchema>;

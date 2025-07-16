@@ -1,62 +1,120 @@
+
 /**
- * @file Define as Server Actions para gerenciar as reservas de eventos pontuais.
+ * @file Manages all server-side actions for event reservations using Firestore.
  */
 'use server';
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { getDb } from '@/lib/database';
-import { eventReservationFormSchema, type EventReservationFormValues } from '@/lib/schemas/event_reservations';
+import { db } from '@/lib/firestore';
+import { eventReservationSchema } from '@/lib/schemas/event_reservations';
 import type { EventReservation } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
 
-export async function getEventReservations(): Promise<EventReservation[]> {
-  try {
-    const db = await getDb();
-    const reservations = await db.all('SELECT * FROM event_reservations');
-    return reservations;
-  } catch (error) {
-    console.error('Failed to fetch event reservations:', error);
-    return [];
-  }
-}
+type FormState = {
+  success: boolean;
+  message: string;
+  errors?: Record<string, string[] | undefined>;
+};
 
-export async function createEventReservation(prevState: any, values: EventReservationFormValues) {
-  const validatedFields = eventReservationFormSchema.safeParse(values);
+/**
+ * Creates a new event reservation, checking for classroom availability first.
+ */
+export async function createEventReservation(prevState: FormState, formData: FormData): Promise<FormState> {
+  const validatedFields = eventReservationSchema.safeParse({
+    eventName: formData.get('eventName'),
+    classroomId: formData.get('classroomId'),
+    date: new Date(formData.get('date') as string),
+    startTime: formData.get('startTime'),
+    endTime: formData.get('endTime'),
+  });
+
   if (!validatedFields.success) {
     return {
       success: false,
-      message: 'Validation error.',
+      message: 'Validation failed.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
+  const { classroomId, date, startTime, endTime } = validatedFields.data;
+
   try {
-    const db = await getDb();
-    const newReservationId = uuidv4();
-    await db.run(
-      'INSERT INTO event_reservations (id, event_name, classroom_id, date, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?)',
-      newReservationId,
-      validatedFields.data.title,
-      validatedFields.data.classroomId,
-      validatedFields.data.date,
-      validatedFields.data.startTime,
-      validatedFields.data.endTime
-    );
+    // FIRESTORE LOGIC: Check for existing reservations for the same classroom and time
+    const existingReservationsSnapshot = await db.collection('event_reservations')
+      .where('classroomId', '==', classroomId)
+      .where('date', '==', date)
+      .get();
+
+    const isOverlapping = existingReservationsSnapshot.docs.some(doc => {
+        const reservation = doc.data();
+        // Basic time overlap check
+        return startTime < reservation.endTime && endTime > reservation.startTime;
+    });
+
+    if (isOverlapping) {
+      return { success: false, message: 'This classroom is already booked for the selected date and time.' };
+    }
+
+    await db.collection('event_reservations').add(validatedFields.data);
+
     revalidatePath('/reservations');
-    return { success: true, message: 'Event reservation created successfully.' };
-  } catch (error: any) {
-    return { success: false, message: `Server error: ${error.message}` };
+    return { success: true, message: 'Event reservation created successfully!' };
+  } catch (error) {
+    console.error('Error creating event reservation:', error);
+    return { success: false, message: 'Server Error: Failed to create reservation.' };
   }
 }
 
-export async function deleteEventReservation(id: string) {
+/**
+ * Fetches all event reservations and enriches them with classroom names.
+ */
+export async function getEventReservations(): Promise<(EventReservation & { classroomName?: string })[]> {
   try {
-    const db = await getDb();
-    await db.run('DELETE FROM event_reservations WHERE id = ?', id);
+    const reservationsSnapshot = await db.collection('event_reservations').orderBy('date', 'desc').get();
+    if (reservationsSnapshot.empty) {
+      return [];
+    }
+
+    const reservationsPromises = reservationsSnapshot.docs.map(async (doc) => {
+      const reservation = doc.data();
+      const id = doc.id;
+      
+      let classroomName = 'Unknown';
+      if (reservation.classroomId) {
+        const classroomDoc = await db.collection('classrooms').doc(reservation.classroomId).get();
+        if (classroomDoc.exists) {
+          classroomName = classroomDoc.data()?.name || 'Unknown';
+        }
+      }
+      
+      return {
+        id,
+        ...reservation,
+        date: reservation.date.toDate(), // Convert Timestamp to Date
+        classroomName,
+      } as EventReservation & { classroomName?: string };
+    });
+
+    return Promise.all(reservationsPromises);
+  } catch (error) {
+    console.error('Error fetching event reservations:', error);
+    return [];
+  }
+}
+
+/**
+ * Deletes an event reservation from Firestore.
+ */
+export async function deleteEventReservation(id: string): Promise<{ success: boolean, message: string }> {
+  if (!id) {
+    return { success: false, message: 'Reservation ID is required.' };
+  }
+  try {
+    await db.collection('event_reservations').doc(id).delete();
     revalidatePath('/reservations');
     return { success: true, message: 'Event reservation deleted successfully.' };
-  } catch (error: any) {
-    return { success: false, message: `Server error: ${error.message}` };
+  } catch (error) {
+    console.error(`Error deleting event reservation with ID ${id}:`, error);
+    return { success: false, message: 'Server Error: Failed to delete reservation.' };
   }
 }

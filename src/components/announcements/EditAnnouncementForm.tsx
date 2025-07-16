@@ -41,6 +41,13 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
     },
   });
 
+  const onSubmit = (data: AnnouncementEditFormValues) => {
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('content', data.content);
+    formAction(formData);
+  };
+
   useEffect(() => {
     if (state.message) {
       if (state.success) {
@@ -75,7 +82,7 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(data => formAction(data))}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-8"
       >
         <FormField

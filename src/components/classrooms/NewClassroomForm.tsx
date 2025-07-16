@@ -38,6 +38,17 @@ export default function NewClassroomForm() {
       maintenanceReason: '',
     },
   });
+  
+  const onSubmit = (data: ClassroomFormValues) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('capacity', data.capacity.toString());
+    formData.append('isUnderMaintenance', data.isUnderMaintenance ? 'true' : 'false');
+    if (data.maintenanceReason) {
+      formData.append('maintenanceReason', data.maintenanceReason);
+    }
+    formAction(formData);
+  };
 
   useEffect(() => {
     if (state.errors) {
@@ -73,7 +84,7 @@ export default function NewClassroomForm() {
       <CardContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((data) => formAction(data))}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6"
           >
             <FormField

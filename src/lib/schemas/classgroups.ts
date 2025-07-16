@@ -27,3 +27,13 @@ export const classGroupCreateSchema = baseClassGroupSchema;
 
 // Schema for editing a class group (same as create for now, but can be extended separately)
 export const classGroupEditSchema = baseClassGroupSchema;
+
+export const classGroupSchema = z.object({
+  name: z.string().min(1, "O nome da turma é obrigatório."),
+  classroomId: z.string().optional(),
+  subject: z.string().min(1, "O nome do curso é obrigatório."),
+  teacher: z.string().optional(),
+  students: z.number().int().positive("O número de estudantes deve ser um inteiro positivo."),
+  startTime: dateStringSchema,
+  endTime: dateStringSchema,
+});

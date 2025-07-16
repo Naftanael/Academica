@@ -54,6 +54,20 @@ export default function NewEventReservationForm({ classrooms }: NewEventReservat
     },
   });
   
+  const onSubmit = (data: EventReservationFormValues) => {
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('classroomId', data.classroomId);
+    formData.append('date', data.date);
+    formData.append('startTime', data.startTime);
+    formData.append('endTime', data.endTime);
+    formData.append('reservedBy', data.reservedBy);
+    if (data.details) {
+      formData.append('details', data.details);
+    }
+    formAction(formData);
+  };
+  
   React.useEffect(() => {
     if (state.errors) {
       for (const [key, value] of Object.entries(state.errors)) {
@@ -86,7 +100,7 @@ export default function NewEventReservationForm({ classrooms }: NewEventReservat
       <CardContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(data => formAction(data))}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6"
           >
             <FormField

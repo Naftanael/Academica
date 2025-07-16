@@ -12,7 +12,7 @@ import NewClassGroupForm from '@/components/classgroups/NewClassGroupForm';
 import { ChangeClassroomDialog } from '@/components/classgroups/ChangeClassroomDialog';
 import type { Classroom, ClassGroup } from '@/types';
 import { getClassrooms } from '@/lib/actions/classrooms';
-import { assignClassroomToClassGroup } from '@/lib/actions/classgroups';
+import { changeClassroom } from '@/lib/actions/classgroups';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 

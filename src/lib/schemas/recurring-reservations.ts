@@ -18,5 +18,6 @@ export const recurringReservationFormSchema = z.object({
   ),
   purpose: z.string().min(3, "O propósito deve ter pelo menos 3 caracteres.").max(100, "Propósito muito longo."),
 });
+export const recurringReservationSchema = recurringReservationFormSchema;
 
 export type RecurringReservationFormValues = z.infer<typeof recurringReservationFormSchema>;
