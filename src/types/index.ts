@@ -28,7 +28,7 @@ export interface ClassGroup {
 }
 
 export interface ClassroomRecurringReservation {
-  id: string;
+  id:string;
   classGroupId: string;
   classroomId: string;
   startDate: string; // ISO Date string YYYY-MM-DD
@@ -72,7 +72,7 @@ export type CategorizedClassGroups = Map<string, ClassGroupWithDates[]>;
 export interface DashboardData {
   stats: DashboardStats;
   activeClassGroups: ClassGroupWithDates[];
-  currentDate: Date;
+  currentDate: string;
   classroomOccupancyChartData: DailyOccupancy[];
   categorizedActiveClassGroups?: CategorizedClassGroups;
 }

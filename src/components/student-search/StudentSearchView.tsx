@@ -44,30 +44,30 @@ const getCourseCategory = (className: string): CourseCategory | undefined => {
   return courseCategories.find(cat => className.toUpperCase().startsWith(cat.prefix));
 };
 
-const getCategorizedGroups = (groups: ClassGroup[]): Map<string, ClassGroup[]> => {
-  const categorized = new Map<string, ClassGroup[]>();
+const getCategorizedGroups = (groups: ClassGroup[]): { [key: string]: ClassGroup[] } => {
+  const categorized: { [key: string]: ClassGroup[] } = {};
   const others: ClassGroup[] = [];
 
-  // Initialize map for all main categories
-  courseCategories.forEach(cat => categorized.set(cat.name, []));
+  // Initialize object for all main categories
+  courseCategories.forEach(cat => categorized[cat.name] = []);
 
   groups.forEach(group => {
     const category = getCourseCategory(group.name);
     if (category) {
-      categorized.get(category.name)?.push(group);
+      categorized[category.name]?.push(group);
     } else {
       others.push(group);
     }
   });
 
   if (others.length > 0) {
-    categorized.set(otherCoursesCategory.name, others);
+    categorized[otherCoursesCategory.name] = others;
   }
 
   // Remove empty categories
-  for (const [key, value] of categorized.entries()) {
-    if (value.length === 0) {
-      categorized.delete(key);
+  for (const key in categorized) {
+    if (categorized[key].length === 0) {
+      delete categorized[key];
     }
   }
 
@@ -82,11 +82,11 @@ export default function StudentSearchView({ allClassrooms, allClassGroups }: Stu
   const categorizedClassGroups = React.useMemo(() => getCategorizedGroups(allClassGroups), [allClassGroups]);
   
   const categoryOrder = [...courseCategories.map(c => c.name), otherCoursesCategory.name];
-  const availableCategories = Array.from(categorizedClassGroups.keys()).sort((a,b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
+  const availableCategories = Object.keys(categorizedClassGroups).sort((a,b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
 
   const availableGroupsForCategory = React.useMemo(() => {
     if (!selectedCategory) return [];
-    return (categorizedClassGroups.get(selectedCategory.name) || [])
+    return (categorizedClassGroups[selectedCategory.name] || [])
       .sort((a, b) => {
         if (a.name !== b.name) return a.name.localeCompare(b.name);
         return a.shift.localeCompare(b.shift);

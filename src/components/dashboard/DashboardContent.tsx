@@ -99,7 +99,13 @@ async function getDashboardData(): Promise<DashboardData> {
     day: day.substring(0, 3), day_full: day, turmas: dailyOccupancyCounts[day],
   }));
 
-  return { stats, activeClassGroups: detailedActiveClassGroups, currentDate, classroomOccupancyChartData, categorizedActiveClassGroups };
+  return { 
+    stats, 
+    activeClassGroups: detailedActiveClassGroups, 
+    currentDate: currentDate.toISOString(), 
+    classroomOccupancyChartData, 
+    categorizedActiveClassGroups 
+  };
 }
 
 const ClassroomOccupancyChart = dynamic(() => import('@/components/dashboard/ClassroomOccupancyChart'), {
@@ -113,6 +119,10 @@ const ActiveClassGroups = dynamic(() => import('@/components/dashboard/ActiveCla
 
 export default async function DashboardContent() {
   const { stats, activeClassGroups, classroomOccupancyChartData, categorizedActiveClassGroups } = await getDashboardData();
+  
+  const serializableCategorizedGroups = categorizedActiveClassGroups 
+    ? Object.fromEntries(categorizedActiveClassGroups)
+    : {};
 
   const statItems = [
     { title: 'Total de Turmas', value: stats.totalClassGroups, icon: UsersRound, className: 'text-primary' },
@@ -125,28 +135,25 @@ export default async function DashboardContent() {
     <>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {statItems.map((item) => (
-          <Card key={item.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+          <Card key={item.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground font-headline">{item.title}</CardTitle>
-              <item.icon className={`h-5 w-5 ${item.className}`} />
+              <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
+              <item.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{item.value}</div>
+              <div className="text-2xl font-bold">{item.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <section className="mb-8">
+      <div className="grid gap-6 md:grid-cols-2">
         <ClassroomOccupancyChart data={classroomOccupancyChartData} />
-      </section>
-
-      <section>
         <ActiveClassGroups 
           activeClassGroups={activeClassGroups} 
-          categorizedActiveClassGroups={categorizedActiveClassGroups || new Map()} 
+          categorizedActiveClassGroups={serializableCategorizedGroups} 
         />
-      </section>
+      </div>
     </>
   );
 }
