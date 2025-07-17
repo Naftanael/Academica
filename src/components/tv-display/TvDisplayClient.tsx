@@ -52,13 +52,14 @@ export default function TvDisplayClient({ allGroups, announcements, lastPublishe
     if (currentTime === null) {
       return [];
     }
-    const filtered = filterActiveGroups(allGroups, currentTime);
-    // When the filtering is done and we have a result, mark as ready
-    if (currentTime) {
-        setIsReadyForCapture(true);
-    }
-    return filtered;
+    return filterActiveGroups(allGroups, currentTime);
   }, [allGroups, currentTime]);
+
+  useEffect(() => {
+    if (currentTime && !isReadyForCapture) {
+      setIsReadyForCapture(true);
+    }
+  }, [currentTime, isReadyForCapture]);
 
   useEffect(() => {
     // This effect runs when isReadyForCapture changes to true
