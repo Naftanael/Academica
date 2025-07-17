@@ -7,13 +7,36 @@
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firestore';
 import { classGroupCreateSchema, classGroupEditSchema } from '@/lib/schemas/classgroups';
-import type { ClassGroup } from '@/types';
+import type { ClassGroup, FirestoreTimestamp } from '@/types';
 
 type FormState = {
   success: boolean;
   message: string;
   errors?: Record<string, string[] | undefined>;
 };
+
+// =================================================================================
+// Helper Function for Robust Date Handling
+// =================================================================================
+
+/**
+ * Safely converts a Firestore timestamp to an ISO string.
+ * Handles cases where the timestamp might be null, undefined, or not a valid timestamp object.
+ * 
+ * @param timestamp - The Firestore timestamp to convert.
+ * @returns An ISO string if the timestamp is valid, otherwise null.
+ */
+function parseFirestoreTimestamp(timestamp: FirestoreTimestamp | undefined | null): string | null {
+  if (timestamp && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate().toISOString();
+  }
+  return null;
+}
+
+
+// =================================================================================
+// Main Server Actions
+// =================================================================================
 
 /**
  * Creates a new class group document in Firestore.
@@ -38,10 +61,16 @@ export async function createClassGroup(prevState: FormState, formData: FormData)
   }
 
   try {
-    await db.collection('classgroups').add({
-      ...validatedFields.data,
+    // Convert date strings back to Date objects for Firestore
+    const { startDate, endDate, ...rest } = validatedFields.data;
+    const dataToSave = {
+      ...rest,
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
       status: 'Planejada', // Default status for new class groups
-    });
+    };
+
+    await db.collection('classgroups').add(dataToSave);
 
     revalidatePath('/classgroups');
     return { success: true, message: 'Turma criada com sucesso!' };
@@ -63,17 +92,18 @@ export async function getClassGroups(): Promise<(ClassGroup & { classroomName?: 
 
     const classGroupsPromises = classGroupsSnapshot.docs.map(async (doc) => {
       const data = doc.data();
+      
       const classGroup: ClassGroup = {
         id: doc.id,
-        name: data.name,
-        subject: data.subject,
-        shift: data.shift,
-        startDate: data.startDate?.toDate().toISOString() || '',
-        endDate: data.endDate?.toDate().toISOString() || '',
+        name: data.name || 'Nome não encontrado',
+        subject: data.subject || 'Curso não encontrado',
+        shift: data.shift || 'Turno não definido',
+        startDate: parseFirestoreTimestamp(data.startDate), // Use the safe parser
+        endDate: parseFirestoreTimestamp(data.endDate),     // Use the safe parser
         assignedClassroomId: data.assignedClassroomId,
-        classDays: data.classDays,
+        classDays: data.classDays || [],
         notes: data.notes,
-        status: data.status || 'Planejada', // Add status, default if missing
+        status: data.status || 'Planejada',
       };
       
       let classroomName = 'Não atribuída';
@@ -90,6 +120,7 @@ export async function getClassGroups(): Promise<(ClassGroup & { classroomName?: 
     return Promise.all(classGroupsPromises);
   } catch (error) {
     console.error('Erro ao buscar turmas:', error);
+    // Return an empty array on error to prevent crashing the application
     return [];
   }
 }
@@ -102,8 +133,10 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
     try {
         const docSnap = await db.collection('classgroups').doc(id).get();
         if (!docSnap.exists) {
+            console.warn(`Turma com ID ${id} não encontrada.`);
             return null;
         }
+        
         const data = docSnap.data();
         if (!data) return null;
 
@@ -112,8 +145,8 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
           name: data.name,
           subject: data.subject,
           shift: data.shift,
-          startDate: data.startDate?.toDate().toISOString() || '',
-          endDate: data.endDate?.toDate().toISOString() || '',
+          startDate: parseFirestoreTimestamp(data.startDate),
+          endDate: parseFirestoreTimestamp(data.endDate),
           assignedClassroomId: data.assignedClassroomId,
           classDays: data.classDays,
           notes: data.notes,
@@ -148,7 +181,14 @@ export async function updateClassGroup(id: string, prevState: FormState, formDat
     }
 
     try {
-        await db.collection('classgroups').doc(id).update(validatedFields.data);
+        const { startDate, endDate, ...rest } = validatedFields.data;
+        const dataToUpdate = {
+          ...rest,
+          startDate: startDate ? new Date(startDate) : null,
+          endDate: endDate ? new Date(endDate) : null,
+        };
+
+        await db.collection('classgroups').doc(id).update(dataToUpdate);
         revalidatePath('/classgroups');
         revalidatePath(`/classgroups/${id}/edit`);
         return { success: true, message: 'Turma atualizada com sucesso.' };
@@ -193,6 +233,9 @@ export async function changeClassroom(classGroupId: string, newClassroomId: stri
     }
 }
 
+/**
+ * Unassigns the classroom from a specific class group.
+ */
 export async function unassignClassroomFromClassGroup(classGroupId: string): Promise<{ success: boolean; message: string }> {
   if (!classGroupId) {
     return { success: false, message: "O ID da turma é obrigatório." };

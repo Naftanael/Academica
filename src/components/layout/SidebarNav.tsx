@@ -12,10 +12,8 @@ import {
   GraduationCap,
   ListChecks,
   MonitorPlay,
-  Search,
   ChevronLeft,
   Megaphone,
-  HardDrive,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -35,10 +33,8 @@ const navItems = [
   { href: '/classgroups', label: 'Turmas', icon: UsersRound },
   { href: '/room-availability', label: 'Disponibilidade', icon: CalendarDays },
   { href: '/reservations', label: 'Reservas', icon: ListChecks },
-  { href: '/student-search', label: 'Consulta Aluno', icon: Search },
   { href: '/announcements', label: 'Anúncios', icon: Megaphone },
   { href: '/tv-display', label: 'Painel TV', icon: MonitorPlay },
-  { href: '/backup', label: 'Backup', icon: HardDrive },
 ];
 
 export default function SidebarNav() {

@@ -7,14 +7,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { updateClassGroup } from '@/lib/actions/classgroups';
 import { classGroupEditSchema } from '@/lib/schemas/classgroups';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
+import type { ClassGroup, DayOfWeek } from '@/types';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,26 @@ interface EditClassGroupFormProps {
   classGroup: ClassGroup;
 }
 
+// =================================================================================
+// Helper Function for Form Date Initialization
+// =================================================================================
+
+/**
+ * Safely parses an ISO date string for form initialization.
+ * Returns a valid Date object or null if the input is invalid.
+ * @param dateString - The ISO date string.
+ * @returns A Date object or null.
+ */
+function initializeDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null;
+  const date = parseISO(dateString);
+  return isValid(date) ? date : null;
+}
+
+// =================================================================================
+// Main Form Component
+// =================================================================================
+
 export default function EditClassGroupForm({ classGroup }: EditClassGroupFormProps) {
   const { toast } = useToast();
   const router = useRouter();
@@ -53,9 +73,10 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     resolver: zodResolver(classGroupEditSchema),
     defaultValues: {
       ...classGroup,
-      startDate: classGroup.startDate ? parseISO(classGroup.startDate) : new Date(),
-      endDate: classGroup.endDate ? parseISO(classGroup.endDate) : new Date(),
-      notes: classGroup.notes ?? '',
+      // Use the safe initializer for dates. Fallback to `null` if invalid.
+      startDate: initializeDate(classGroup.startDate),
+      endDate: initializeDate(classGroup.endDate),
+      notes: classGroup.notes ?? '', // Ensure notes is always a string
     },
   });
 
@@ -82,7 +103,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
 
   const watchedShift = form.watch('shift');
   const watchedClassDays = form.watch('classDays');
-  const showSaturdayNote = watchedClassDays.includes('Sábado') && watchedShift === 'Noite';
+  const showSaturdayNote = watchedClassDays?.includes('Sábado') && watchedShift === 'Noite';
 
   return (
     <Card>
@@ -91,8 +112,21 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
       </CardHeader>
       <CardContent>
         <Form {...form}>
+          {/* We now pass the form data directly to the server action */}
           <form
-            action={formAction}
+            onSubmit={form.handleSubmit(data => {
+              const formData = new FormData();
+              Object.entries(data).forEach(([key, value]) => {
+                if (value instanceof Date) {
+                  formData.append(key, value.toISOString());
+                } else if (Array.isArray(value)) {
+                  value.forEach(item => formData.append(key, item));
+                } else if (value != null) {
+                  formData.append(key, String(value));
+                }
+              });
+              formAction(formData);
+            })}
             className="space-y-8"
           >
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

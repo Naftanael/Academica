@@ -4,11 +4,10 @@
  */
 'use server';
 
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firestore';
 import { recurringReservationSchema } from '@/lib/schemas/recurring-reservations';
-import type { ClassroomRecurringReservation } from '@/types';
+import type { ClassroomRecurringReservation, FirestoreTimestamp } from '@/types';
 
 type FormState = {
   success: boolean;
@@ -16,39 +15,59 @@ type FormState = {
   errors?: Record<string, string[] | undefined>;
 };
 
+
+/**
+ * Safely converts a Firestore timestamp to an ISO string.
+ * @param timestamp The Firestore timestamp to convert.
+ * @returns An ISO string if valid, otherwise null.
+ */
+function parseFirestoreTimestamp(timestamp: FirestoreTimestamp | undefined | null): string | null {
+  if (timestamp && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate().toISOString();
+  }
+  return null;
+}
+
+
 /**
  * Creates a new recurring reservation document in Firestore.
  */
 export async function createRecurringReservation(prevState: FormState, formData: FormData): Promise<FormState> {
+  // Use the Zod schema to validate and coerce form data.
   const validatedFields = recurringReservationSchema.safeParse({
     classGroupId: formData.get('classGroupId'),
     classroomId: formData.get('classroomId'),
     startDate: formData.get('startDate'),
-    numberOfClasses: Number(formData.get('numberOfClasses')),
+    numberOfClasses: formData.get('numberOfClasses'), // Zod handles coercion to number
     purpose: formData.get('purpose'),
   });
 
   if (!validatedFields.success) {
     return {
       success: false,
-      message: 'Validation failed.',
+      message: 'A validação dos dados falhou. Por favor, verifique os erros.',
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
   try {
-    // This is a simplified example. In a real application, you would
-    // calculate the end date based on the start date, number of classes, and class days.
-    await db.collection('recurring_reservations').add({
-        ...validatedFields.data,
-        // endDate would be calculated here
-    });
+    const { startDate, ...rest } = validatedFields.data;
+
+    // The data is valid, so we can prepare it for Firestore.
+    // The `startDate` is already a Date object thanks to `z.coerce.date()`.
+    const dataToSave = {
+      ...rest,
+      startDate, // Save the Date object directly
+      // Note: endDate calculation logic would be implemented here in a real scenario.
+    };
+
+    await db.collection('recurring_reservations').add(dataToSave);
 
     revalidatePath('/reservations');
-    return { success: true, message: 'Recurring reservation created successfully!' };
+    return { success: true, message: 'Reserva recorrente criada com sucesso!' };
   } catch (error) {
-    console.error('Error creating recurring reservation:', error);
-    return { success: false, message: 'Server Error: Failed to create recurring reservation.' };
+    console.error('Erro ao criar a reserva recorrente:', error);
+    return { success: false, message: 'Erro do Servidor: Não foi possível criar a reserva.' };
   }
 }
 
@@ -63,28 +82,35 @@ export async function getRecurringReservations(): Promise<ClassroomRecurringRese
         }
         return snapshot.docs.map(doc => {
             const data = doc.data();
+            // Important: Use the safe timestamp parser
+            const startDate = parseFirestoreTimestamp(data.startDate);
+
             return {
                 id: doc.id,
                 ...data,
-                startDate: data.startDate.toDate().toISOString(),
-            } as ClassroomRecurringReservation
+                // Ensure the date is a valid ISO string or null
+                startDate: startDate,
+            } as ClassroomRecurringReservation;
         });
     } catch (error) {
-        console.error('Error fetching recurring reservations:', error);
+        console.error('Erro ao buscar reservas recorrentes:', error);
         return [];
     }
 }
 
+/**
+ * Deletes a recurring reservation document from Firestore.
+ */
 export async function deleteRecurringReservation(id: string): Promise<{ success: boolean; message: string }> {
   if (!id) {
-    return { success: false, message: 'Reservation ID is required.' };
+    return { success: false, message: 'O ID da reserva é obrigatório.' };
   }
   try {
     await db.collection('recurring_reservations').doc(id).delete();
     revalidatePath('/reservations');
-    return { success: true, message: 'Recurring reservation deleted successfully.' };
+    return { success: true, message: 'Reserva recorrente deletada com sucesso.' };
   } catch (error) {
-    console.error(`Error deleting recurring reservation with ID ${id}:`, error);
-    return { success: false, message: 'Server Error: Failed to delete recurring reservation.' };
+    console.error(`Erro ao deletar reserva recorrente com ID ${id}:`, error);
+    return { success: false, message: 'Erro do Servidor: Falha ao deletar a reserva.' };
   }
 }
