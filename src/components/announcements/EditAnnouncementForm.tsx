@@ -41,9 +41,6 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
     },
   });
 
-  // Destructure the stable functions from the form object
-  const { setError, clearErrors } = form;
-
   const onSubmit = (data: AnnouncementEditFormValues) => {
     const formData = new FormData();
     formData.append('title', data.title);
@@ -69,18 +66,18 @@ export default function EditAnnouncementForm({ announcement }: EditAnnouncementF
     }
      // Clear form errors if the submission was successful
      if (state.success) {
-      clearErrors();
+      form.clearErrors();
     } else if (state.errors) {
       // Manually set form errors from the server response
       Object.keys(state.errors).forEach((key) => {
         const field = key as keyof AnnouncementEditFormValues;
         const message = state.errors?.[field]?.[0];
         if (message) {
-          setError(field, { type: 'server', message });
+          form.setError(field, { type: 'server', message });
         }
       });
     }
-  }, [state, toast, router, setError, clearErrors]);
+  }, [state, toast, router, form]);
 
   return (
     <Form {...form}>

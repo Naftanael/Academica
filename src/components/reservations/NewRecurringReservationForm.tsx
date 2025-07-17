@@ -111,10 +111,13 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     defaultValues: { classGroupId: '', classroomId: '', startDate: new Date(), numberOfClasses: 1, purpose: '' },
   });
 
-  const watchedValues = form.watch();
+  const watchedStartDate = form.watch('startDate');
+  const watchedNumberOfClasses = form.watch('numberOfClasses');
+  const watchedClassGroupId = form.watch('classGroupId');
+
   const selectedClassGroup = React.useMemo(() => 
-    classGroups.find(cg => cg.id === watchedValues.classGroupId),
-    [watchedValues.classGroupId, classGroups]
+    classGroups.find(cg => cg.id === watchedClassGroupId),
+    [watchedClassGroupId, classGroups]
   );
 
   // Effect for handling form submission feedback
@@ -136,10 +139,9 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
 
   // Effect for calculating reservation end date
   React.useEffect(() => {
-    const { startDate, numberOfClasses } = watchedValues;
-    const result = calculateReservationDates(startDate, numberOfClasses, selectedClassGroup);
+    const result = calculateReservationDates(watchedStartDate, watchedNumberOfClasses, selectedClassGroup);
     setCalculationResult(result);
-  }, [selectedClassGroup, watchedValues]);
+  }, [selectedClassGroup, watchedStartDate, watchedNumberOfClasses]);
 
   // Memoize calendar modifiers for performance
   const calendarModifiers = React.useMemo(() => {
