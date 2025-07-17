@@ -8,10 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import type { ClassGroup, OccupancyItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-interface ExtendedOccupancyItem extends OccupancyItem {
-  type: OccupancyItem['type'] | 'maintenance' | 'free';
-  data?: OccupancyItem['data'] | { reason: string };
-}
+type ExtendedOccupancyItem = 
+  | OccupancyItem
+  | { type: 'maintenance'; data: { reason: string } }
+  | { type: 'free' };
 
 export const OccupancyBadge = ({ item, classGroups }: { item: ExtendedOccupancyItem, classGroups: ClassGroup[] }) => {
   const getTooltipContent = () => {
