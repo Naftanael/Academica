@@ -139,7 +139,7 @@ export default function NewRecurringReservationForm({ classGroups, classrooms }:
     const { startDate, numberOfClasses } = watchedValues;
     const result = calculateReservationDates(startDate, numberOfClasses, selectedClassGroup);
     setCalculationResult(result);
-  }, [selectedClassGroup, watchedValues.startDate, watchedValues.numberOfClasses]);
+  }, [selectedClassGroup, watchedValues]);
 
   // Memoize calendar modifiers for performance
   const calendarModifiers = React.useMemo(() => {

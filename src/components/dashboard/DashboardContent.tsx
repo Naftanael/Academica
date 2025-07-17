@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { ActiveClassGroups } from './ActiveClassGroups';
 import ClassroomOccupancyChart from './ClassroomOccupancyChart';
-import { DashboardData, ClassGroup, ClassGroupWithDates } from '@/types';
+import { DashboardData, ClassGroup, ClassGroupWithDates, ClassGroupStatus } from '@/types';
 import {
   Select,
   SelectContent,
@@ -18,20 +18,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { parseISO, isBefore, isAfter, isValid } from 'date-fns';
 
-function determineClassGroupStatus(cg: ClassGroup): 'Em Andamento' | 'Planejada' | 'Concluída' {
-    const now = new Date();
-    const startDate = new Date(cg.startDate);
-    const endDate = new Date(cg.endDate);
-
-    if (now >= startDate && now <= endDate) {
-        return 'Em Andamento';
-    } else if (now < startDate) {
+/**
+ * Safely determines the status of a class group based on its dates.
+ * Handles null or invalid dates gracefully.
+ * @param cg The class group to evaluate.
+ * @returns The calculated status of the class group.
+ */
+function determineClassGroupStatus(cg: ClassGroup): ClassGroupStatus {
+    // If dates are not set, we can consider it 'Planned' by default.
+    if (!cg.startDate || !cg.endDate) {
         return 'Planejada';
-    } else {
+    }
+    
+    const now = new Date();
+    const startDate = parseISO(cg.startDate);
+    const endDate = parseISO(cg.endDate);
+
+    // If dates are invalid after parsing, return a default status.
+    if (!isValid(startDate) || !isValid(endDate)) {
+        return 'Planejada';
+    }
+
+    if (isBefore(now, startDate)) {
+        return 'Planejada';
+    } else if (isAfter(now, endDate)) {
         return 'Concluída';
+    } else {
+        return 'Em Andamento';
     }
 }
+
+/**
+ * Safely formats a date string for display.
+ * @param dateString The date string to format.
+ * @returns A formatted date string or a fallback.
+ */
+function formatDisplayDate(dateString: string | null): string {
+    if (!dateString) return 'N/A';
+    const date = parseISO(dateString);
+    return isValid(date) ? date.toLocaleDateString('pt-BR') : 'Inválida';
+}
+
 
 export function DashboardContent() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -42,30 +71,26 @@ export function DashboardContent() {
     async function fetchData() {
       setLoading(true);
       try {
-        // Mock data for now
+        // This should be a proper API call in a real app.
+        // For now, using mock data structure.
         const dashboardData: {
             stats: any,
             classGroups: ClassGroup[],
             classroomOccupancyChartData: any[],
             currentDate: string
         } = {
-            stats: {
-                totalClassGroups: 0,
-                activeClassGroups: 0,
-                plannedClassGroups: 0,
-                totalClassrooms: 0,
-            },
-            classGroups: [],
+            stats: { totalClassGroups: 0, activeClassGroups: 0, plannedClassGroups: 0, totalClassrooms: 0 },
+            classGroups: [], // This would be fetched from the server
             classroomOccupancyChartData: [],
             currentDate: new Date().toISOString(),
         };
         
-        // Add status to each class group
+        // Add status and formatted dates to each class group safely
         const classGroupsWithDates: ClassGroupWithDates[] = dashboardData.classGroups.map(cg => ({
             ...cg,
             status: determineClassGroupStatus(cg),
-            formattedStartDate: new Date(cg.startDate).toLocaleDateString(),
-            formattedEndDate: new Date(cg.endDate).toLocaleDateString(),
+            formattedStartDate: formatDisplayDate(cg.startDate),
+            formattedEndDate: formatDisplayDate(cg.endDate),
             nearEnd: false, // You might want to implement this logic
         }));
 
@@ -110,36 +135,20 @@ export function DashboardContent() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Total de Turmas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{data.stats.totalClassGroups}</p>
-          </CardContent>
+          <CardHeader><CardTitle>Total de Turmas</CardTitle></CardHeader>
+          <CardContent><p className="text-2xl font-bold">{data.stats.totalClassGroups}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Turmas Ativas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{data.stats.activeClassGroups}</p>
-          </CardContent>
+          <CardHeader><CardTitle>Turmas Ativas</CardTitle></CardHeader>
+          <CardContent><p className="text-2xl font-bold">{data.stats.activeClassGroups}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Turmas Planejadas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{data.stats.plannedClassGroups}</p>
-          </CardContent>
+          <CardHeader><CardTitle>Turmas Planejadas</CardTitle></CardHeader>
+          <CardContent><p className="text-2xl font-bold">{data.stats.plannedClassGroups}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Total de Salas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{data.stats.totalClassrooms}</p>
-          </CardContent>
+          <CardHeader><CardTitle>Total de Salas</CardTitle></CardHeader>
+          <CardContent><p className="text-2xl font-bold">{data.stats.totalClassrooms}</p></CardContent>
         </Card>
       </div>
 

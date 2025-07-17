@@ -14,7 +14,7 @@ import { updateClassGroup } from '@/lib/actions/classgroups';
 import { classGroupEditSchema } from '@/lib/schemas/classgroups';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { ClassGroup, DayOfWeek } from '@/types';
+import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -40,29 +40,23 @@ type ClassGroupFormValues = z.infer<typeof classGroupEditSchema>;
 
 interface EditClassGroupFormProps {
   classGroup: ClassGroup;
+  availableClassrooms: Classroom[];
 }
-
-// =================================================================================
-// Helper Function for Form Date Initialization
-// =================================================================================
 
 /**
  * Safely parses an ISO date string for form initialization.
- * Returns a valid Date object or null if the input is invalid.
+ * Returns a valid Date object or undefined if the input is invalid.
+ * This matches the type expected by react-hook-form for optional date fields.
  * @param dateString - The ISO date string.
- * @returns A Date object or null.
+ * @returns A Date object or undefined.
  */
-function initializeDate(dateString: string | null | undefined): Date | null {
-  if (!dateString) return null;
+function initializeDate(dateString: string | null | undefined): Date | undefined {
+  if (!dateString) return undefined;
   const date = parseISO(dateString);
-  return isValid(date) ? date : null;
+  return isValid(date) ? date : undefined;
 }
 
-// =================================================================================
-// Main Form Component
-// =================================================================================
-
-export default function EditClassGroupForm({ classGroup }: EditClassGroupFormProps) {
+export default function EditClassGroupForm({ classGroup, availableClassrooms }: EditClassGroupFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   
@@ -73,10 +67,10 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     resolver: zodResolver(classGroupEditSchema),
     defaultValues: {
       ...classGroup,
-      // Use the safe initializer for dates. Fallback to `null` if invalid.
       startDate: initializeDate(classGroup.startDate),
       endDate: initializeDate(classGroup.endDate),
-      notes: classGroup.notes ?? '', // Ensure notes is always a string
+      assignedClassroomId: classGroup.assignedClassroomId ?? '',
+      notes: classGroup.notes ?? '',
     },
   });
 
@@ -112,7 +106,6 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          {/* We now pass the form data directly to the server action */}
           <form
             onSubmit={form.handleSubmit(data => {
               const formData = new FormData();
@@ -164,6 +157,23 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                           <SelectItem value="Manhã">Manhã</SelectItem>
                           <SelectItem value="Tarde">Tarde</SelectItem>
                           <SelectItem value="Noite">Noite</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="assignedClassroomId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sala de Aula</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione uma sala" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="">Não atribuir</SelectItem>
+                          {availableClassrooms.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />

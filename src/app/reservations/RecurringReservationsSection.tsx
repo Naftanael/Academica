@@ -1,3 +1,4 @@
+
 // src/app/reservations/RecurringReservationsSection.tsx
 import Link from 'next/link';
 import { PlusCircle, CalendarClock } from 'lucide-react';
@@ -10,23 +11,29 @@ import { getRecurringReservations } from '@/lib/actions/recurring_reservations';
 import { getClassrooms } from '@/lib/actions/classrooms';
 import { getClassGroups } from '@/lib/actions/classgroups';
 import type { ClassroomRecurringReservation, DayOfWeek } from '@/types';
-import { format, parse, isValid } from 'date-fns';
+import { format, parse, isValid, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DeleteRecurringReservationButton } from '@/components/reservations/DeleteRecurringReservationButton';
 
-// Helper to safely format YYYY-MM-DD string to DD/MM/YY
-function formatSimpleDate(dateString: string): string {
-  if (!dateString || typeof dateString !== 'string') return 'Data Inválida';
-  try {
-    const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
-    if (isValid(parsedDate)) {
-      return format(parsedDate, 'dd/MM/yy', { locale: ptBR });
-    }
-  } catch {
-    // Fallback for unexpected formats
+// Helper to safely format a date string (ISO or YYYY-MM-DD) to DD/MM/YY
+function formatSimpleDate(dateString: string | null): string {
+  if (!dateString) return 'Não def.'; // Handle null or empty strings safely
+  
+  // Try parsing as full ISO string first, then fallback to simple format
+  const date = parseISO(dateString);
+  if (isValid(date)) {
+    return format(date, 'dd/MM/yy', { locale: ptBR });
   }
-  return 'Data Inválida';
+
+  // Fallback for older YYYY-MM-DD format if needed, though ISO is preferred
+  const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
+  if (isValid(parsedDate)) {
+    return format(parsedDate, 'dd/MM/yy', { locale: ptBR });
+  }
+
+  return 'Inválida';
 }
+
 
 interface EnrichedRecurringReservation extends ClassroomRecurringReservation {
   classroomName: string;

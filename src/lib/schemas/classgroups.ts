@@ -20,6 +20,7 @@ const baseClassGroupSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   classDays: z.array(daysOfWeek).min(1, "Selecione pelo menos um dia de aula."),
+  assignedClassroomId: z.string().optional(),
   notes: z.string().optional(),
 }).refine(data => data.startDate <= data.endDate, {
   message: "A data de início não pode ser posterior à data de fim.",

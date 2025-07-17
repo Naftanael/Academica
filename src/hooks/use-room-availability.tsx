@@ -42,10 +42,9 @@ export function useRoomAvailability(
       currentSearch.delete('date');
     }
     
-    // Using setTimeout to debounce the update and avoid replacing history state too often
     const timer = setTimeout(() => {
       router.replace(`${pathname}?${currentSearch.toString()}`, { scroll: false });
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(timer);
 
@@ -63,7 +62,10 @@ export function useRoomAvailability(
 
     // 1. Process regular class groups
     initialClassGroups.forEach(cg => {
-        if (cg.status !== 'Em Andamento' || !cg.assignedClassroomId) return;
+        // SAFETY CHECK: Ensure dates exist before parsing
+        if (cg.status !== 'Em Andamento' || !cg.assignedClassroomId || !cg.startDate || !cg.endDate) {
+          return;
+        }
         const cgStart = parseISO(cg.startDate);
         const cgEnd = parseISO(cg.endDate);
         if (!isValid(cgStart) || !isValid(cgEnd)) return;
@@ -80,6 +82,9 @@ export function useRoomAvailability(
 
     // 2. Process recurring reservations
     initialRecurringReservations.forEach(res => {
+      // SAFETY CHECK: Ensure dates exist before parsing
+      if (!res.startDate || !res.endDate) return;
+
       const resStart = parseISO(res.startDate);
       const resEnd = parseISO(res.endDate);
       if (!isValid(resStart) || !isValid(resEnd)) return;

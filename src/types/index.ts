@@ -1,4 +1,12 @@
 
+/**
+ * A type representing the structure of a Firestore Timestamp object.
+ * This is useful for type-checking data coming from Firestore before conversion.
+ */
+export interface FirestoreTimestamp {
+  toDate: () => Date;
+}
+
 export type DayOfWeek = 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
 export type PeriodOfDay = 'Manhã' | 'Tarde' | 'Noite';
 
@@ -19,8 +27,8 @@ export interface ClassGroup {
   name: string;
   subject: string;
   shift: PeriodOfDay;
-  startDate: string; // ISO Date string
-  endDate: string; // ISO Date string
+  startDate: string | null; // Can be null if not set
+  endDate: string | null; // Can be null if not set
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
   notes?: string;
@@ -31,8 +39,8 @@ export interface ClassroomRecurringReservation {
   id:string;
   classGroupId: string;
   classroomId: string;
-  startDate: string; // ISO Date string YYYY-MM-DD
-  endDate: string; // ISO Date string YYYY-MM-DD
+  startDate: string | null; // Can be null
+  endDate: string | null; // Can be null
   purpose: string;
 }
 
