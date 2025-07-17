@@ -1,24 +1,28 @@
-import PageHeader from '@/components/shared/PageHeader';
-import { Search } from 'lucide-react';
-import { getClassrooms } from '@/lib/actions/classrooms';
+
 import { getClassGroups } from '@/lib/actions/classgroups';
-import type { Classroom, ClassGroup } from '@/types';
+import { getClassrooms } from '@/lib/actions/classrooms';
 import StudentSearchView from '@/components/student-search/StudentSearchView';
+import PageHeader from '@/components/shared/PageHeader';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+export const dynamic = 'force-dynamic';
 
 export default async function StudentSearchPage() {
-  const classrooms: Classroom[] = await getClassrooms();
-  const classGroups: ClassGroup[] = await getClassGroups();
+  const classGroups = await getClassGroups();
+  const classrooms = await getClassrooms();
 
   return (
     <>
       <PageHeader
-        title="Consulta de Sala do Aluno"
-        description="Encontre rapidamente a sala de aula da sua turma."
-        icon={Search}
+        title="Busca de Alunos"
+        description="Encontre rapidamente as informações de matrícula de um aluno."
       />
       <div className="max-w-2xl mx-auto">
-        <StudentSearchView allClassrooms={classrooms} allClassGroups={classGroups} />
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+          <StudentSearchView classrooms={classrooms} classGroups={classGroups} />
+        </Suspense>
       </div>
     </>
-  );
+ );
 }

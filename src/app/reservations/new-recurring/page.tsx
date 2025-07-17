@@ -1,34 +1,29 @@
-// src/app/reservations/new-recurring/page.tsx
-import NewRecurringReservationForm from "@/components/reservations/NewRecurringReservationForm";
-import PageHeader from "@/components/shared/PageHeader";
-import { getClassrooms } from "@/lib/actions/classrooms";
-import { getClassGroups } from "@/lib/actions/classgroups";
 
-/**
- * Page for creating a new recurring reservation.
- * Fetches required data (class groups and classrooms) on the server 
- * and passes it to the form component.
- */
+import NewRecurringReservationForm from '@/components/reservations/NewRecurringReservationForm';
+import PageHeader from '@/components/shared/PageHeader';
+import { getClassGroups } from '@/lib/actions/classgroups';
+import { getClassrooms } from '@/lib/actions/classrooms';
+
 export default async function NewRecurringReservationPage() {
-  const classGroups = await getClassGroups();
-  const allClassrooms = await getClassrooms();
+    // Fetch data for the form
+    const [classGroups, classrooms] = await Promise.all([
+        getClassGroups(),
+        getClassrooms()
+    ]);
 
-  // Only allow reservations for classrooms that are not under maintenance
-  const availableClassrooms = allClassrooms.filter(c => !c.isUnderMaintenance);
-  
-  // Filter class groups that are not yet "Concluída"
-  const availableClassGroups = classGroups.filter(cg => cg.status !== 'Concluída');
+    // No filtering needed anymore
+    const availableClassGroups = classGroups;
 
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Nova Reserva Recorrente"
-        description="Associe uma turma a uma sala de aula por um período determinado."
-      />
-      <NewRecurringReservationForm 
-        classGroups={availableClassGroups} 
-        classrooms={availableClassrooms} 
-      />
-    </div>
-  );
+    return (
+        <div className="space-y-6">
+            <PageHeader
+                title="Nova Reserva Recorrente"
+                description="Preencha o formulário para criar uma nova reserva recorrente de sala."
+            />
+            <NewRecurringReservationForm 
+                classGroups={availableClassGroups} 
+                classrooms={classrooms} 
+            />
+        </div>
+    );
 }

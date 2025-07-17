@@ -17,14 +17,14 @@ export type ClassGroupStatus = 'Planejada' | 'Em Andamento' | 'Concluída' | 'Ca
 export interface ClassGroup {
   id: string;
   name: string;
+  subject: string;
   shift: PeriodOfDay;
-  year: number;
-  status: ClassGroupStatus;
   startDate: string; // ISO Date string
   endDate: string; // ISO Date string
   assignedClassroomId?: string;
   classDays: DayOfWeek[];
   notes?: string;
+  status: ClassGroupStatus;
 }
 
 export interface ClassroomRecurringReservation {
@@ -78,7 +78,7 @@ export interface DashboardData {
 }
 
 // Type for Room Availability Display
-export type OccupancyItem = 
+export type OccupancyItem =
   | { type: 'class'; data: ClassGroup }
   | { type: 'recurring'; data: ClassroomRecurringReservation }
   | { type: 'event'; data: EventReservation };

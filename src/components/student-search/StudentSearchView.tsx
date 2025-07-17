@@ -1,227 +1,168 @@
 
 'use client';
 
-import * as React from 'react';
+import { useState, useMemo, ChangeEvent, FormEvent } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import type { Classroom, ClassGroup } from '@/types';
-import { Search, DoorOpen, AlertTriangle, Wrench, Pill, ScanLine, Stethoscope, Briefcase, BookOpen, LucideIcon } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { ClassGroup, Classroom } from '@/types';
 
 interface StudentSearchViewProps {
-  allClassrooms: Classroom[];
-  allClassGroups: ClassGroup[];
+  classGroups: (ClassGroup & { classroomName?: string })[];
+  classrooms: Classroom[];
 }
 
-interface SearchResult {
-  classGroup: ClassGroup;
-  classroom: Classroom | null;
-}
-
-interface CourseCategory {
+interface Student {
+  id: string;
   name: string;
-  prefix: string;
-  icon: LucideIcon;
+  classGroups: (ClassGroup & { classroomName?: string })[];
 }
 
-const courseCategories: CourseCategory[] = [
-  { name: 'Téc. em Farmácia', prefix: 'FMC', icon: Pill },
-  { name: 'Téc. em Radiologia', prefix: 'RAD', icon: ScanLine },
-  { name: 'Téc. em Enfermagem', prefix: 'ENF', icon: Stethoscope },
-  { name: 'Administração', prefix: 'ADM', icon: Briefcase },
+// Mock student data - in a real application, this would come from an API
+const MOCK_STUDENTS: Student[] = [
+  { id: '1', name: 'Alice Silva', classGroups: [] },
+  { id: '2', name: 'Bruno Costa', classGroups: [] },
+  { id: '3', name: 'Carla Dias', classGroups: [] },
+  { id: '4', name: 'Daniel Souza', classGroups: [] },
+  { id: '5', name: 'Beatriz Guimarães', classGroups: [] },
+  { id: '6', name: 'Felipe Antunes', classGroups: [] },
+  { id: '7', name: 'Gabriel Monteiro', classGroups: [] },
+  { id: '8', name: 'Heloísa Nogueira', classGroups: [] },
+  { id: '9', name: 'Igor Nascimento', classGroups: [] },
+  { id: '10', name: 'Juliana Castro', classGroups: [] },
+  { id: '11', name: 'Kátia Pereira', classGroups: [] },
+  { id: '12', name: 'Leandro Cardoso', classGroups: [] },
+  { id: '13', name: 'Márcia Barbosa', classGroups: [] },
+  { id: '14', name: 'Nícolas Azevedo', classGroups: [] },
+  { id: '15', name: 'Otávio Martins', classGroups: [] },
 ];
-const otherCoursesCategory: CourseCategory = { name: 'Outros Cursos', prefix: 'OTHERS', icon: BookOpen };
 
-const getCourseCategory = (className: string): CourseCategory | undefined => {
-  return courseCategories.find(cat => className.toUpperCase().startsWith(cat.prefix));
-};
+function assignClassGroupsToStudents(
+  students: Student[],
+  classGroups: (ClassGroup & { classroomName?: string })[]
+): Student[] {
+  return students.map((student, index) => ({
+    ...student,
+    // Simple mock assignment: each student gets 1 or 2 class groups
+    classGroups:
+      index % 3 === 0
+        ? classGroups.slice(index % classGroups.length, (index % classGroups.length) + 1)
+        : classGroups.slice(index % classGroups.length, (index % classGroups.length) + 2),
+  }));
+}
 
-const getCategorizedGroups = (groups: ClassGroup[]): { [key: string]: ClassGroup[] } => {
-  const categorized: { [key: string]: ClassGroup[] } = {};
-  const others: ClassGroup[] = [];
+export default function StudentSearchView({
+  classGroups,
+  classrooms,
+}: StudentSearchViewProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Student[]>([]);
+  const [searched, setSearched] = useState(false);
 
-  // Initialize object for all main categories
-  courseCategories.forEach(cat => categorized[cat.name] = []);
+  const studentsWithClassGroups = useMemo(
+    () => assignClassGroupsToStudents(MOCK_STUDENTS, classGroups),
+    [classGroups]
+  );
 
-  groups.forEach(group => {
-    const category = getCourseCategory(group.name);
-    if (category) {
-      categorized[category.name]?.push(group);
-    } else {
-      others.push(group);
-    }
-  });
-
-  if (others.length > 0) {
-    categorized[otherCoursesCategory.name] = others;
-  }
-
-  // Remove empty categories
-  for (const key in categorized) {
-    if (categorized[key].length === 0) {
-      delete categorized[key];
-    }
-  }
-
-  return categorized;
-};
-
-
-export default function StudentSearchView({ allClassrooms, allClassGroups }: StudentSearchViewProps) {
-  const [selectedCategory, setSelectedCategory] = React.useState<CourseCategory | undefined>(undefined);
-  const [selectedClassGroupId, setSelectedClassGroupId] = React.useState<string | undefined>(undefined);
-
-  const categorizedClassGroups = React.useMemo(() => getCategorizedGroups(allClassGroups), [allClassGroups]);
-  
-  const categoryOrder = [...courseCategories.map(c => c.name), otherCoursesCategory.name];
-  const availableCategories = Object.keys(categorizedClassGroups).sort((a,b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
-
-  const availableGroupsForCategory = React.useMemo(() => {
-    if (!selectedCategory) return [];
-    return (categorizedClassGroups[selectedCategory.name] || [])
-      .sort((a, b) => {
-        if (a.name !== b.name) return a.name.localeCompare(b.name);
-        return a.shift.localeCompare(b.shift);
-      });
-  }, [selectedCategory, categorizedClassGroups]);
-
-  const searchResult = React.useMemo((): SearchResult | null => {
-    if (!selectedClassGroupId) return null;
-
-    const classGroup = allClassGroups.find(cg => cg.id === selectedClassGroupId);
-    if (!classGroup) return null;
-
-    const classroom = classGroup.assignedClassroomId
-      ? allClassrooms.find(cr => cr.id === classGroup.assignedClassroomId) ?? null
-      : null;
-
-    return { classGroup, classroom };
-  }, [selectedClassGroupId, allClassGroups, allClassrooms]);
-
-  const handleCategorySelect = (categoryName: string) => {
-    const category = [...courseCategories, otherCoursesCategory].find(c => c.name === categoryName);
-    setSelectedCategory(category);
-    setSelectedClassGroupId(undefined);
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
   };
-  
-  const handleReset = () => {
-    setSelectedCategory(undefined);
-    setSelectedClassGroupId(undefined);
-  }
+
+  const handleSearchSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSearched(true);
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const results = studentsWithClassGroups.filter(student =>
+      student.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setSearchResults(results);
+  };
 
   return (
-    <Card className="shadow-lg rounded-lg w-full max-w-lg mx-auto">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Search className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="font-headline text-xl">Consulta Rápida de Sala</CardTitle>
-            <CardDescription>Encontre sua sala de aula em poucos passos.</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6 pt-2">
-        {/* Step 1: Course Category Selection */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-muted-foreground">
-            1. Selecione a área do seu curso
-          </Label>
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
-             {availableCategories.map(catName => {
-                const category = [...courseCategories, otherCoursesCategory].find(c => c.name === catName)!;
-                return (
-                    <Button
-                        key={catName}
-                        variant={selectedCategory?.name === catName ? "default" : "outline"}
-                        className="h-auto p-4 flex flex-col items-center justify-center gap-2 text-center"
-                        onClick={() => handleCategorySelect(catName)}
-                    >
-                        <category.icon className="h-7 w-7 mb-1 text-primary"/>
-                        <span className="font-semibold text-sm whitespace-normal leading-tight">{catName}</span>
-                    </Button>
-                )
-             })}
-          </div>
-        </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Busca por Aluno</CardTitle>
+          <CardDescription>
+            Digite o nome do aluno para ver as turmas em que ele está
+            matriculado.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSearchSubmit} className="flex gap-2">
+            <Input
+              type="search"
+              placeholder="Nome do aluno..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+            <Button type="submit">Buscar</Button>
+          </form>
+        </CardContent>
+      </Card>
 
-        {/* Step 2: Class Selection (appears after step 1) */}
-        {selectedCategory && (
-          <div className="space-y-3 animate-in fade-in-50 duration-500">
-            <Label className="text-sm font-semibold text-muted-foreground">
-              2. Selecione sua Turma e Turno
-            </Label>
-            <div className="grid grid-cols-1 gap-2">
-              {availableGroupsForCategory.length > 0 ? (
-                availableGroupsForCategory.map(cg => (
-                  <Button
-                    key={cg.id}
-                    variant={selectedClassGroupId === cg.id ? "default" : "outline"}
-                    className="w-full justify-start h-auto py-3 text-left"
-                    onClick={() => setSelectedClassGroupId(cg.id)}
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-semibold">{cg.name} - {cg.year}</span>
-                      <span className="text-sm font-normal">{cg.shift}</span>
-                    </div>
-                  </Button>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma turma encontrada para esta categoria.</p>
-              )}
-            </div>
-          </div>
-        )}
-      </CardContent>
-
-      {/* Result Display */}
-      {searchResult ? (
-        <CardFooter className="bg-primary/5 dark:bg-primary/10 p-6 rounded-b-lg mt-4 flex flex-col items-start gap-4">
-          <div className="w-full animate-in fade-in-50 duration-500">
-             <div className="flex items-center gap-3 mb-4">
-               <div className="bg-primary/10 p-2 rounded-lg">
-                <DoorOpen className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Sua Sala</h3>
-            </div>
-            
-            {searchResult.classroom ? (
-              <div className="bg-background p-4 rounded-lg shadow-sm border border-border w-full">
-                <p className="text-sm text-muted-foreground mb-1">{searchResult.classGroup.name} - {searchResult.classGroup.shift}</p>
-                <p className="text-4xl font-extrabold text-primary tracking-tight">{searchResult.classroom.name}</p>
-                 {searchResult.classroom.isUnderMaintenance && (
-                   <Badge variant="destructive" className="mt-2 bg-amber-600 text-white">
-                      <Wrench className="mr-1.5 h-3 w-3" />
-                      Sala em Manutenção
-                   </Badge>
-                )}
-              </div>
+      {searched && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Resultados da Busca</CardTitle>
+            <CardDescription>
+              {searchResults.length} aluno(s) encontrado(s).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {searchResults.length > 0 ? (
+              <Accordion type="single" collapsible className="w-full">
+                {searchResults.map(student => (
+                  <AccordionItem key={student.id} value={`student-${student.id}`}>
+                    <AccordionTrigger>{student.name}</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-2">
+                        <h4 className="font-semibold">Turmas:</h4>
+                        {student.classGroups && student.classGroups.length > 0 ? (
+                          student.classGroups.map(cg => (
+                            <Button
+                              key={cg.id}
+                              variant="outline"
+                              className="h-auto justify-start text-left"
+                            >
+                              <div className="flex flex-col">
+                                <span className="font-semibold">{cg.name}</span>
+                                <span className="text-sm font-normal">
+                                  {cg.shift}
+                                </span>
+                              </div>
+                            </Button>
+                          ))
+                        ) : (
+                          <p>Nenhuma turma encontrada.</p>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             ) : (
-              <div className="bg-destructive/10 p-4 rounded-lg text-center border border-destructive/20 w-full">
-                <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-2" />
-                <p className="text-2xl font-bold text-destructive">Não Atribuída</p>
-                <p className="text-sm text-destructive/80 mt-1">Por favor, consulte a secretaria.</p>
-              </div>
+              <p>Nenhum resultado para &quot;{searchTerm}&quot;.</p>
             )}
-          </div>
-          <Button variant="link" onClick={handleReset} className="p-0 h-auto self-center">
-            Fazer nova consulta
-          </Button>
-        </CardFooter>
-      ) : selectedCategory ? (
-        <CardFooter className="bg-muted/50 p-6 rounded-b-lg mt-4">
-          <p className="text-sm text-muted-foreground text-center w-full">Selecione uma turma para ver a sala.</p>
-        </CardFooter>
-      ) : null}
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

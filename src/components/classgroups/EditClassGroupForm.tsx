@@ -1,4 +1,4 @@
-// src/components/classgroups/EditClassGroupForm.tsx
+
 'use client';
 
 import * as React from 'react';
@@ -14,9 +14,9 @@ import { updateClassGroup } from '@/lib/actions/classgroups';
 import { classGroupEditSchema } from '@/lib/schemas/classgroups';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { ClassGroup, Classroom } from '@/types';
+import type { ClassGroup, Classroom, DayOfWeek } from '@/types';
 
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,7 +28,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const daysOfWeek = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] as const;
+const daysOfWeek: DayOfWeek[] = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 const initialState = {
   success: false,
@@ -40,7 +40,6 @@ type ClassGroupFormValues = z.infer<typeof classGroupEditSchema>;
 
 interface EditClassGroupFormProps {
   classGroup: ClassGroup;
-  availableClassrooms: Classroom[]; // Keep for future use with assignment dialog
 }
 
 export default function EditClassGroupForm({ classGroup }: EditClassGroupFormProps) {
@@ -54,39 +53,11 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
     resolver: zodResolver(classGroupEditSchema),
     defaultValues: {
       ...classGroup,
-      startDate: classGroup.startDate ? format(parseISO(classGroup.startDate), 'yyyy-MM-dd') : '',
-      endDate: classGroup.endDate ? format(parseISO(classGroup.endDate), 'yyyy-MM-dd') : '',
+      startDate: classGroup.startDate ? parseISO(classGroup.startDate) : new Date(),
+      endDate: classGroup.endDate ? parseISO(classGroup.endDate) : new Date(),
       notes: classGroup.notes ?? '',
     },
   });
-  
-  const onSubmit = (data: ClassGroupFormValues) => {
-    const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('course', data.course);
-    formData.append('shift', data.shift);
-    formData.append('startDate', data.startDate);
-    formData.append('endDate', data.endDate);
-    data.classDays.forEach(day => formData.append('classDays', day));
-    if (data.notes) {
-      formData.append('notes', data.notes);
-    }
-    formAction(formData);
-  };
-  
-  React.useEffect(() => {
-    if (state.errors) {
-      for (const [key, value] of Object.entries(state.errors)) {
-        if (Array.isArray(value)) {
-          form.setError(key as keyof ClassGroupFormValues, {
-            type: 'manual',
-            message: value.join(', '),
-          });
-        }
-      }
-    }
-  }, [state.errors, form]);
-
 
   React.useEffect(() => {
     if (state.message) {
@@ -97,8 +68,18 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
         toast({ title: 'Erro', description: state.message, variant: 'destructive' });
       }
     }
-  }, [state, toast, router]);
-  
+    if (state.errors) {
+      for (const [key, value] of Object.entries(state.errors)) {
+        if (Array.isArray(value)) {
+          form.setError(key as keyof ClassGroupFormValues, {
+            type: 'manual',
+            message: value.join(', '),
+          });
+        }
+      }
+    }
+  }, [state, toast, router, form]);
+
   const watchedShift = form.watch('shift');
   const watchedClassDays = form.watch('classDays');
   const showSaturdayNote = watchedClassDays.includes('Sábado') && watchedShift === 'Noite';
@@ -111,7 +92,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
       <CardContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            action={formAction}
             className="space-y-8"
           >
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -128,7 +109,7 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                 />
                 <FormField
                   control={form.control}
-                  name="course"
+                  name="subject"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Curso</FormLabel>
@@ -165,13 +146,13 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button variant="outline" className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                              {field.value ? format(parseISO(field.value), 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
+                              {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value ? parseISO(field.value) : undefined} onSelect={(d) => field.onChange(d ? format(d, 'yyyy-MM-dd') : '')} initialFocus />
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -188,13 +169,13 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button variant="outline" className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                              {field.value ? format(parseISO(field.value), 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
+                              {field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value ? parseISO(field.value) : undefined} onSelect={(d) => field.onChange(d ? format(d, 'yyyy-MM-dd') : '')} initialFocus />
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -210,7 +191,6 @@ export default function EditClassGroupForm({ classGroup }: EditClassGroupFormPro
                     <FormItem>
                         <div className="mb-4">
                             <FormLabel>Dias de Aula</FormLabel>
-                            <FormDescription>Selecione os dias em que a turma terá aula.</FormDescription>
                         </div>
                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                           {daysOfWeek.map((day) => (

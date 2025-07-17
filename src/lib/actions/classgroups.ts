@@ -21,7 +21,7 @@ type FormState = {
 export async function createClassGroup(prevState: FormState, formData: FormData): Promise<FormState> {
   const validatedFields = classGroupCreateSchema.safeParse({
     name: formData.get('name'),
-    course: formData.get('course'),
+    subject: formData.get('subject'),
     shift: formData.get('shift'),
     startDate: formData.get('startDate'),
     endDate: formData.get('endDate'),
@@ -38,11 +38,9 @@ export async function createClassGroup(prevState: FormState, formData: FormData)
   }
 
   try {
-    const { startDate, endDate, ...rest } = validatedFields.data;
     await db.collection('classgroups').add({
-      ...rest,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      ...validatedFields.data,
+      status: 'Planejada', // Default status for new class groups
     });
 
     revalidatePath('/classgroups');
@@ -68,13 +66,14 @@ export async function getClassGroups(): Promise<(ClassGroup & { classroomName?: 
       const classGroup: ClassGroup = {
         id: doc.id,
         name: data.name,
-        course: data.course,
+        subject: data.subject,
         shift: data.shift,
         startDate: data.startDate?.toDate().toISOString() || '',
         endDate: data.endDate?.toDate().toISOString() || '',
         assignedClassroomId: data.assignedClassroomId,
         classDays: data.classDays,
         notes: data.notes,
+        status: data.status || 'Planejada', // Add status, default if missing
       };
       
       let classroomName = 'Não atribuída';
@@ -111,13 +110,14 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
         return { 
           id: docSnap.id, 
           name: data.name,
-          course: data.course,
+          subject: data.subject,
           shift: data.shift,
           startDate: data.startDate?.toDate().toISOString() || '',
           endDate: data.endDate?.toDate().toISOString() || '',
           assignedClassroomId: data.assignedClassroomId,
           classDays: data.classDays,
           notes: data.notes,
+          status: data.status || 'Planejada',
         } as ClassGroup;
     } catch (error) {
         console.error(`Erro ao buscar turma com ID ${id}:`, error);
@@ -131,7 +131,7 @@ export async function getClassGroupById(id: string): Promise<ClassGroup | null> 
 export async function updateClassGroup(id: string, prevState: FormState, formData: FormData): Promise<FormState> {
     const validatedFields = classGroupEditSchema.safeParse({
         name: formData.get('name'),
-        course: formData.get('course'),
+        subject: formData.get('subject'),
         shift: formData.get('shift'),
         startDate: formData.get('startDate'),
         endDate: formData.get('endDate'),
@@ -148,12 +148,7 @@ export async function updateClassGroup(id: string, prevState: FormState, formDat
     }
 
     try {
-        const { startDate, endDate, ...rest } = validatedFields.data;
-        await db.collection('classgroups').doc(id).update({
-            ...rest,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-        });
+        await db.collection('classgroups').doc(id).update(validatedFields.data);
         revalidatePath('/classgroups');
         revalidatePath(`/classgroups/${id}/edit`);
         return { success: true, message: 'Turma atualizada com sucesso.' };

@@ -1,252 +1,192 @@
-// src/components/classgroups/NewClassGroupForm.tsx
+
 'use client';
 
-import * as React from 'react';
-import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-
-import { createClassGroup } from '@/lib/actions/classgroups';
 import { classGroupCreateSchema } from '@/lib/schemas/classgroups';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import type { ClassGroup } from '@/types';
-
-
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { createClassGroup } from '@/lib/actions/classgroups';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
-import FormSubmitButton from '@/components/shared/FormSubmitButton';
-import { CalendarIcon } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import type { DayOfWeek } from '@/types';
+import { useFormState } from 'react-dom';
+import { useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
-const daysOfWeek = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] as const;
-
-const initialState = {
-  success: false,
-  message: '',
-  errors: undefined,
-};
-
-type ClassGroupFormValues = z.infer<typeof classGroupCreateSchema>;
+const daysOfWeek: DayOfWeek[] = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 interface NewClassGroupFormProps {
-  onClassGroupCreated: () => Promise<void>;
+  onSuccess: () => void;
 }
 
-
-export default function NewClassGroupForm({ onClassGroupCreated }: NewClassGroupFormProps) {
-  const { toast } = useToast();
-  const [state, formAction] = useFormState(createClassGroup, initialState);
-
-  const form = useForm<ClassGroupFormValues>({
+export default function NewClassGroupForm({ onSuccess }: NewClassGroupFormProps) {
+  const form = useForm({
     resolver: zodResolver(classGroupCreateSchema),
     defaultValues: {
       name: '',
-      course: '',
-      classDays: [],
+      subject: '',
       shift: 'Manhã',
-      startDate: format(new Date(), 'yyyy-MM-dd'),
-      endDate: format(new Date(), 'yyyy-MM-dd'),
+      startDate: new Date(),
+      endDate: new Date(),
+      classDays: [],
       notes: '',
     },
   });
 
-  const onSubmit = (data: ClassGroupFormValues) => {
-    const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('course', data.course);
-    formData.append('shift', data.shift);
-    formData.append('startDate', data.startDate);
-    formData.append('endDate', data.endDate);
-    data.classDays.forEach(day => formData.append('classDays', day));
-    if (data.notes) {
-      formData.append('notes', data.notes);
-    }
-    formAction(formData);
-  };
+  const [state, formAction] = useFormState(createClassGroup, { success: false, message: '' });
+  const { toast } = useToast();
 
-  React.useEffect(() => {
-    if (state.errors) {
-      for (const [key, value] of Object.entries(state.errors)) {
-        if (Array.isArray(value)) {
-          form.setError(key as keyof ClassGroupFormValues, {
-            type: 'manual',
-            message: value.join(', '),
-          });
-        }
-      }
+  useEffect(() => {
+    if (state.success) {
+      toast({ title: "Sucesso!", description: state.message });
+      onSuccess();
+    } else if (state.message && !state.success) {
+      toast({ title: "Erro", description: state.message, variant: "destructive" });
     }
-  }, [state.errors, form]);
-
-  React.useEffect(() => {
-    if (state.success && state.message) {
-        toast({ title: 'Sucesso', description: state.message });
-        onClassGroupCreated();
-    } else if (!state.success && state.message) {
-      toast({ title: 'Erro', description: state.message, variant: 'destructive' });
-    }
-  }, [state, onClassGroupCreated, toast]);
-  
-  const watchedShift = form.watch('shift');
-  const watchedClassDays = form.watch('classDays');
-  const showSaturdayNote = watchedClassDays.includes('Sábado') && watchedShift === 'Noite';
+  }, [state, onSuccess, toast]);
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8"
-      >
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
+      <form action={formAction} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome da Turma</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Turma A de ADS" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="subject"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Curso</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Análise e Desenvolvimento de Sistemas" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+            control={form.control}
+            name="shift"
+            render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome da Turma</FormLabel>
-                  <FormControl><Input placeholder="Ex: FMC24.1N" {...field} /></FormControl>
-                  <FormMessage />
+                    <FormLabel>Turno</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione o turno" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="Manhã">Manhã</SelectItem>
+                            <SelectItem value="Tarde">Tarde</SelectItem>
+                            <SelectItem value="Noite">Noite</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
                 </FormItem>
-              )}
+            )}
+        />
+        <div className="grid grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Data de Início</FormLabel>
+                        <FormControl>
+                            <Input 
+                                type="date" 
+                                {...field} 
+                                value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''}
+                                onChange={(e) => field.onChange(new Date(e.target.value))}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
             />
             <FormField
-              control={form.control}
-              name="course"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Curso</FormLabel>
-                  <FormControl><Input placeholder="Ex: Formação de Mecânicos" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="shift"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Turno</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      <SelectItem value="Manhã">Manhã</SelectItem>
-                      <SelectItem value="Tarde">Tarde</SelectItem>
-                      <SelectItem value="Noite">Noite</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Data de Início</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button variant="outline" className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                          {field.value ? format(parseISO(field.value), 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={field.value ? parseISO(field.value) : undefined} onSelect={(d) => field.onChange(d ? format(d, 'yyyy-MM-dd') : '')} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Data de Fim</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button variant="outline" className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                          {field.value ? format(parseISO(field.value), 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={field.value ? parseISO(field.value) : undefined} onSelect={(d) => field.onChange(d ? format(d, 'yyyy-MM-dd') : '')} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Data de Fim</FormLabel>
+                        <FormControl>
+                            <Input 
+                                type="date" 
+                                {...field} 
+                                value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''}
+                                onChange={(e) => field.onChange(new Date(e.target.value))}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
             />
         </div>
-        
         <FormField
             control={form.control}
             name="classDays"
             render={() => (
                 <FormItem>
-                    <div className="mb-4">
-                        <FormLabel>Dias de Aula</FormLabel>
-                        <FormDescription>Selecione os dias em que a turma terá aula.</FormDescription>
+                    <FormLabel>Dias de Aula</FormLabel>
+                    <div className="grid grid-cols-4 gap-2">
+                        {daysOfWeek.map((day) => (
+                            <FormField
+                                key={day}
+                                control={form.control}
+                                name="classDays"
+                                render={({ field }) => (
+                                    <FormItem className="flex items-center space-x-2">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value?.includes(day)}
+                                                onCheckedChange={(checked) => {
+                                                    const newValue = checked
+                                                        ? [...(field.value || []), day]
+                                                        : (field.value || []).filter((value) => value !== day);
+                                                    field.onChange(newValue);
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">{day}</FormLabel>
+                                    </FormItem>
+                                )}
+                            />
+                        ))}
                     </div>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                      {daysOfWeek.map((day) => (
-                        <FormField
-                            key={day}
-                            control={form.control}
-                            name="classDays"
-                            render={({ field }) => (
-                              <FormItem key={day} className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                      checked={field.value?.includes(day)}
-                                      onCheckedChange={(checked) => checked
-                                          ? field.onChange([...field.value, day])
-                                          : field.onChange(field.value?.filter((v) => v !== day))
-                                      }
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal">{day}</FormLabel>
-                              </FormItem>
-                            )}
-                        />
-                      ))}
-                    </div>
-                    {showSaturdayNote && <p className="mt-3 text-sm text-amber-600">Lembrete: Aulas de Sábado à Noite são transferidas para a Tarde.</p>}
                     <FormMessage />
                 </FormItem>
             )}
         />
-        
         <FormField
             control={form.control}
             name="notes"
             render={({ field }) => (
-              <FormItem>
-                  <FormLabel>Observações</FormLabel>
-                  <FormControl><Textarea placeholder="Adicione observações relevantes..." {...field} /></FormControl>
-                  <FormMessage />
-              </FormItem>
+                <FormItem>
+                    <FormLabel>Observações</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="Alguma observação sobre a turma?" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
             )}
         />
-
-        <div className="flex justify-end">
-            <FormSubmitButton>Criar Turma</FormSubmitButton>
-        </div>
+        <Button type="submit">Salvar</Button>
       </form>
     </Form>
   );
