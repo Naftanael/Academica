@@ -5,7 +5,6 @@
 'use server';
 
 import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firestore';
 import { announcementSchema } from '@/lib/schemas/announcements';
 import type { Announcement } from '@/types';
@@ -33,10 +32,29 @@ export async function createAnnouncement(prevState: FormState, formData: FormDat
     };
   }
 
+  // The formData contains all fields including dataInicio and dataFim as strings
+  // Access the raw data from formData for date parsing
+  const rawDataInicio = formData.get('dataInicio');
+  const rawDataFim = formData.get('dataFim');
+
   try {
+    // Parse dataInicio and dataFim from the original form data
+    const dataInicio = rawDataInicio ? new Date(rawDataInicio.toString()) : undefined;
+    const dataFim = rawDataFim ? new Date(rawDataFim.toString()) : undefined;
+
+    // Ensure dates are valid before creating the new announcement object
+    if (dataInicio && isNaN(dataInicio.getTime())) {
+      return { success: false, message: 'Invalid start date.' };
+    }
+    if (dataFim && isNaN(dataFim.getTime())) {
+      return { success: false, message: 'Invalid end date.' };
+    }
+
+    const newAnnouncementData = {
+      ...validatedFields.data, // Include other validated fields from schema
+    };
     // FIRESTORE LOGIC: Add a new document with a server-side timestamp.
     await db.collection('announcements').add({
-      ...validatedFields.data,
       createdAt: new Date(),
     });
 
@@ -62,7 +80,10 @@ export async function getAnnouncements(): Promise<Announcement[]> {
         return {
             id: doc.id,
             title: data.title,
+            content: data.content, // Include content
             content: data.content,
+            dataInicio: data.dataInicio.toDate(), // Convert Firestore Timestamp to Date
+            dataFim: data.dataFim.toDate(), // Convert Firestore Timestamp to Date
             author: data.author,
             type: data.type,
             priority: data.priority,
@@ -93,8 +114,10 @@ export async function getAnnouncementById(id: string): Promise<Announcement | nu
         }
         return { 
             id: docSnap.id, 
-            ...data,
-            createdAt: data.createdAt.toDate(),
+            title: data.title, // Include title
+            content: data.content, // Include content
+            dataInicio: data.dataInicio.toDate ? data.dataInicio.toDate() : data.dataInicio, // Handle potential non-timestamp dates
+            createdAt: data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt, // Handle potential non-timestamp dates
         } as Announcement;
     } catch (error) {
         console.error(`Error fetching announcement with ID ${id}:`, error);
@@ -121,7 +144,19 @@ export async function updateAnnouncement(id: string, prevState: FormState, formD
     }
 
     try {
-        await db.collection('announcements').doc(id).update(validatedFields.data);
+        // Access the raw data from formData for date parsing
+        const rawDataInicio = formData.get('dataInicio');
+        const rawDataFim = formData.get('dataFim');
+
+        // Parse dataInicio and dataFim from the original form data
+        const dataInicio = rawDataInicio ? new Date(rawDataInicio.toString()) : undefined;
+        const dataFim = rawDataFim ? new Date(rawDataFim.toString()) : undefined;
+
+        await db.collection('announcements').doc(id).update({
+            ...validatedFields.data,
+            dataInicio: dataInicio,
+            dataFim: dataFim,
+        });
         revalidatePath('/announcements');
         revalidatePath(`/announcements/${id}/edit`);
         return { success: true, message: 'Announcement updated successfully.' };
