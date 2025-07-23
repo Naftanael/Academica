@@ -169,10 +169,13 @@ export default function EditClassGroupForm({ classGroup, availableClassrooms }: 
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sala de Aula</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={value => field.onChange(value === 'none' ? '' : value)}
+                        defaultValue={field.value || 'none'}
+                      >
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione uma sala" /></SelectTrigger></FormControl>
                         <SelectContent>
-                          <SelectItem value="">Não atribuir</SelectItem>
+                          <SelectItem value="none">Não atribuir</SelectItem>
                           {availableClassrooms.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
